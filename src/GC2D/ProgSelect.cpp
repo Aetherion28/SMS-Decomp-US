@@ -1,0 +1,167 @@
+#include <GC2D/ProgSelect.hpp>
+#include <stdio.h>
+#include <JSystem/J2D/J2DTextBox.hpp>
+#include <JSystem/JUtility/JUTResFont.hpp>
+#include <JSystem/J2D/J2DOrthoGraph.hpp>
+#include <JSystem/J2D/J2DPrint.hpp>
+#include <System/Application.hpp>
+#include <System/MarioGamePad.hpp>
+#include <GC2D/MessageUtil.hpp>
+#include <JSystem/JKernel/JKRFileLoader.hpp>
+#include <version.h>
+
+TProgSelect::TProgSelect(u8 param_1, const char* name)
+    : JDrama::TViewObj(name)
+    , mPulsingTimer(255)
+    , mSelection(param_1)
+    , mIncreasePulsing(false)
+    , mHideTextBoxes(false)
+{
+	f32 sync     = SMSGetVSyncTimesPerSec();
+	unk128       = 0;
+	mRefreshRate = sync;
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+	mMessageBmg = nullptr;
+	char* yes   = new char[0x20];
+	unk120[0]   = new J2DTextBox(gpSystemFont->getResFont(), yes);
+	char* no    = new char[0x20];
+	unk120[1]   = new J2DTextBox(gpSystemFont->getResFont(), no);
+	setLang(0);
+#else
+	snprintf(unk1C, 0x100, "プログレッシブモードで\n表示しますか？");
+	unk120[0] = new J2DTextBox(gpSystemFont->getResFont(), "はい");
+	unk120[1] = new J2DTextBox(gpSystemFont->getResFont(), "いいえ");
+#endif
+
+	unk120[0]->setFontSize(28, 28);
+	unk120[1]->setFontSize(28, 28);
+	if (!mSelection) {
+		unk120[0]->setBlackWhite(0x00ff0000, 0x00ff00ff);
+		unk120[1]->setBlackWhite(0x7f7f7f00, 0x7f7f7fff);
+	} else {
+		unk120[1]->setBlackWhite(0x00ff0000, 0x00ff00ff);
+		unk120[0]->setBlackWhite(0x7f7f7f00, 0x7f7f7fff);
+	}
+}
+
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+void TProgSelect::setLang(s32 lang)
+{
+	static const char* filename[] = {
+		"/nintendo/progmessage_en.bmg", "/nintendo/progmessage_ge.bmg",
+		"/nintendo/progmessage_fr.bmg", "/nintendo/progmessage_sp.bmg",
+		"/nintendo/progmessage_it.bmg",
+	};
+
+	const char* name = filename[lang];
+	mMessageBmg      = JKRFileLoader::getGlbResource(name);
+	snprintf(unk1C, 0x100, SMSGetMessageData(mMessageBmg, 0));
+	snprintf(unk120[0]->getStringPtr(), 0x20,
+	         SMSGetMessageData(mMessageBmg, 4));
+	snprintf(unk120[1]->getStringPtr(), 0x20,
+	         SMSGetMessageData(mMessageBmg, 1));
+}
+#endif
+
+void TProgSelect::perform(u32 cue, JDrama::TGraphics* graphics)
+{
+	if (cue & CUE_MOVE) {
+		if (mIncreasePulsing) {
+			mPulsingTimer += 16;
+			if (mPulsingTimer > 255) {
+				mPulsingTimer    = 255;
+				mIncreasePulsing = false;
+			}
+		} else {
+			mPulsingTimer -= 16;
+			if (mPulsingTimer < 0) {
+				mPulsingTimer    = 0;
+				mIncreasePulsing = true;
+			}
+		}
+
+		u32 prevSelection = mSelection;
+		if (mGamePad->checkFrameMeaning(TMarioGamePad::MEANING_MENU_LEFT)) {
+			if (mSelection) {
+				mSelection = 0;
+				unk128     = 0;
+			}
+		} else if (mGamePad->checkFrameMeaning(
+		               TMarioGamePad::MEANING_MENU_RIGHT)) {
+			if (mSelection != 1) {
+				mSelection = 1;
+				unk128     = 0;
+			}
+		} else if (mGamePad->checkFrameMeaning(TMarioGamePad::MEANING_MENU_A)
+		           || thing()) {
+			{
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+				if (!mSelection) {
+					snprintf(unk1C, 256, SMSGetMessageData(mMessageBmg, 3));
+					OSSetEuRgb60Mode(1);
+				} else {
+					snprintf(unk1C, 256, SMSGetMessageData(mMessageBmg, 2));
+					OSSetEuRgb60Mode(0);
+				}
+#else
+				if (!mSelection) {
+					// clang-format off
+					snprintf(unk1C, 256,
+						J2DPRINT_GRADIENT_MODE(0)
+						"画面表示モードは\n"
+						J2DPRINT_FONT_WIDTH(24)
+						J2DPRINT_FONT_HEIGHT(24)
+						J2DPRINT_CHAR_COLOR("ffff00")
+						"プログレッシブモード"
+						J2DPRINT_FONT_WIDTH(20)
+						J2DPRINT_FONT_HEIGHT(20)
+						J2DPRINT_CHAR_COLOR("ffffff")
+						"に\nセットされました。");
+					// clang-format on
+					OSSetProgressiveMode(1);
+				} else {
+					// clang-format off
+					snprintf(unk1C, 256,
+						J2DPRINT_GRADIENT_MODE(0)
+						"画面表示モードは\n"
+						J2DPRINT_FONT_WIDTH(24)
+						J2DPRINT_FONT_HEIGHT(24)
+						J2DPRINT_CHAR_COLOR("ffff00")
+						"インターレースモード"
+						J2DPRINT_FONT_WIDTH(20)
+						J2DPRINT_FONT_HEIGHT(20)
+						J2DPRINT_CHAR_COLOR("ffffff")
+						"に\nセットされました。");
+					// clang-format on
+					OSSetProgressiveMode(0);
+				}
+#endif
+				mHideTextBoxes = true;
+			}
+		}
+
+		if (prevSelection != mSelection) {
+			mPulsingTimer = 255;
+			unk120[mSelection]->setBlackWhite(0x00ff0000, 0x00ff00ff);
+			unk120[prevSelection]->setBlackWhite(0x7f7f7f00, 0x7f7f7fff);
+			unk120[prevSelection]->setAlpha(255);
+		}
+
+		unk120[mSelection]->setBlackWhite(0x00ff0000,
+		                                  mPulsingTimer + 0x00ff0000);
+	}
+
+	if (cue & CUE_DRAW) {
+		J2DOrthoGraph graph(graphics->getViewport());
+		graph.setup2D();
+		J2DPrint printer(gpSystemFont, 0);
+		printer.setUnk50(32);
+		printer.printReturn(unk1C, VERSION_SELECT(580, GMSJ01(300)), 160,
+		                    HBIND_CENTER, VBIND_TOP,
+		                    VERSION_SELECT(35, GMSJ01(175)), 300, 255);
+		if (!mHideTextBoxes) {
+			unk120[0]->draw(240, 400);
+			unk120[1]->draw(340, 400);
+		}
+	}
+}

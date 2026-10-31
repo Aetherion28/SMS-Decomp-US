@@ -1,0 +1,231 @@
+#include <Camera/Camera.hpp>
+#include <Camera/CameraKindParam.hpp>
+#include <Camera/CameraMarioData.hpp>
+#include <Camera/camerasave.hpp>
+#include <Camera/cameralib.hpp>
+#include <Enemy/Conductor.hpp>
+#include <Strategic/LiveManager.hpp>
+#include <Player/Mario.hpp>
+#include <Player/MarioAccess.hpp>
+#include <Player/WaterGun.hpp>
+#include <System/MarioGamePad.hpp>
+#include <MarioUtil/MathUtil.hpp>
+#include <JSystem/JDrama/JDRNameRefGen.hpp>
+#include <JSystem/JMath.hpp>
+#include <Enemy/Enemy.hpp>
+
+#include <System/Application.hpp>
+static const char* sNoticeActorManagerName[] = {
+	"ヒノクリマネージャー",
+	"ヒノクリ２マネージャー",
+	"ボスパックンマネージャー",
+	nullptr,
+};
+
+const char* bossGesoViewObjName = "ボスゲッソー";
+
+void CPolarSubCamera::setNoticeInfo()
+{
+	unk2A0       = new TLiveActor*[0x10];
+	mNoticeActor = nullptr;
+	unk29C       = 0;
+
+	for (int i = 0; sNoticeActorManagerName[i] != nullptr; ++i) {
+		TLiveManager* mgr
+		    = gpConductor->getManagerByName(sNoticeActorManagerName[i]);
+
+		if (mgr != nullptr) {
+			s32 e = mgr->getObjNum();
+			for (int j = 0; j < e; ++unk29C, ++j)
+				unk2A0[unk29C] = (TLiveActor*)mgr->getObj(j);
+		}
+	}
+
+	unk2A8 = static_cast<TLiveActor*>(
+	    JDrama::TNameRefGen::search(bossGesoViewObjName));
+}
+
+// fabricated: the target squares each component on its own (no fused
+// multiply-adds), so this isn't TVec3::squared(). Its result is still computed
+// after the CLBSquared call in getNoticeActor_, where the target computes it
+// before.
+static inline f32 distSq(const Vec& a, const Vec& b)
+{
+	f32 dx = a.x - b.x;
+	f32 dy = a.y - b.y;
+	f32 dz = a.z - b.z;
+	f32 x2 = dx * dx;
+	f32 y2 = dy * dy;
+	f32 z2 = dz * dz;
+	return x2 + y2 + z2;
+}
+
+// fabricated: the target tests both clip coordinates in one && chain and then
+// turns the result into a bool again.
+static inline bool isInClip(const JGeometry::TVec2<f32>& p, f32 c)
+{
+	return (-c <= p.x && p.x <= c && -c <= p.y && p.y <= c) ? true : false;
+}
+
+TLiveActor* CPolarSubCamera::getNoticeActor_()
+{
+	if (mNoticeActor != nullptr && !mNoticeActor->checkLiveFlag(LIVE_FLAG_DEAD)
+	    && !mNoticeActor->checkLiveFlag(LIVE_FLAG_HIDDEN)) {
+		f32 dist2 = distSq(mNoticeActor->mPosition, SMS_GetMarioPos());
+		if (dist2 < CLBSquared<f32>(mSaveNotice->mOffDist.get())) {
+			f32 clip = mSaveNotice->mOffClipRatio.get();
+			JGeometry::TVec2<f32> clipPos;
+			CLBCalc2DFPos(&clipPos, unk16C, unk1EC, mNoticeActor->mPosition,
+			              nullptr, false);
+			if (isInClip(clipPos, clip))
+				return mNoticeActor;
+		}
+	}
+
+	TLiveActor* noticeActor = nullptr;
+	f32 closestDist2        = CLBSquared<f32>(mSaveNotice->mOnDist.get());
+
+	for (int i = 0; i < unk29C; i++) {
+		if (unk2A0[i]->checkLiveFlag(LIVE_FLAG_DEAD)
+		    || unk2A0[i]->checkLiveFlag(LIVE_FLAG_HIDDEN))
+			continue;
+
+		if (mNoticeActor != nullptr && unk2A0[i] == mNoticeActor)
+			continue;
+
+		// TODO: the target keeps both &unk16C and &unk1EC in registers across
+		// this loop (one more saved GPR, frame 0x10 larger); ours hoists only
+		// one of them.
+		f32 dist2 = distSq(unk2A0[i]->mPosition, SMS_GetMarioPos());
+		if (dist2 < closestDist2) {
+			f32 clip = mSaveNotice->mOnClipRatio.get();
+			JGeometry::TVec2<f32> clipPos;
+			CLBCalc2DFPos(&clipPos, unk16C, unk1EC, unk2A0[i]->mPosition,
+			              nullptr, false);
+			if (!isInClip(clipPos, clip))
+				continue;
+
+			if (!MsIsInSight(*gpMarioPos, SHORTANGLE2DEG(SMS_GetMarioAngleY()),
+			                 unk2A0[i]->mPosition, dist2,
+			                 mSaveNotice->mOnDegree.get(), -1.0f))
+				continue;
+
+			closestDist2 = dist2;
+			noticeActor  = unk2A0[i];
+		}
+	}
+
+	return noticeActor;
+}
+
+void CPolarSubCamera::execNoticeOnOffProc_(EnumNoticeOnOffMode mode)
+{
+	switch (mode) {
+	case NOTICE_MODE_UNK0:
+		mNoticeActor = nullptr;
+		unk64 &= ~CAMERA_FLAG_NOTICE_ACTIVE;
+		break;
+	case NOTICE_MODE_UNK1: {
+		TLiveActor* actor = getNoticeActor_();
+		if (actor != mNoticeActor && actor == nullptr) {
+			mNoticeActor = nullptr;
+			unk64 &= ~CAMERA_FLAG_NOTICE_ACTIVE;
+		}
+		break;
+	}
+	case NOTICE_MODE_UNK2: {
+		TLiveActor* actor = getNoticeActor_();
+		if (actor != mNoticeActor && actor != nullptr) {
+			mNoticeActor = actor;
+			unk64 |= CAMERA_FLAG_NOTICE_ACTIVE;
+		}
+		break;
+	}
+	}
+}
+
+void CPolarSubCamera::calcNoticeTargetYrot_(const Vec& target)
+{
+	Vec mPos     = gpCameraMario->unk0;
+	f32 dz2      = CLBSquared<f32>(mPos.z - target.z);
+	f32 dx2      = CLBSquared<f32>(mPos.x - target.x);
+	f32 dist2    = dx2 + dz2;
+	f32 near2    = CLBSquared<f32>(mSaveNotice->mRotateMinDistXZ.get());
+	f32 farClip2 = CLBSquared<f32>(mSaveNotice->mRotateFastMinDistXZ.get());
+
+	if (dist2 > near2) {
+		JGeometry::TVec3<f32> diff(mPos.x - target.x, mPos.y - target.y,
+		                           mPos.z - target.z);
+		MsVECNormalize(&diff, &diff);
+		// TODO: many inlines from cameralib maybe?
+		f32 dx  = diff.x * 500.0f + mPos.x;
+		f32 dz  = diff.z * 500.0f + mPos.z;
+		s16 ang = matan(dz - mCurrentTarget.mTarget.z,
+		                dx - mCurrentTarget.mTarget.x);
+		f32 ratio
+		    = (2.0f / 65536.0f) * CLBAbs<int>((s16)(mCurrentTarget.mYaw - ang));
+
+		f32 chase;
+		if (dist2 > farClip2) {
+			chase = 1.0f;
+		} else {
+			chase = CLBCalcRatio<f32>(near2, farClip2, dist2);
+		}
+		f32 base = CLBLinearInbetween<f32>(
+		    1.0f, mSaveNotice->mRotateMagnifXmax.get(), mCurrentTarget.unk28);
+		f32 speed
+		    = unk288
+		      * (chase
+		         * (ratio * ((f32)mSaveNotice->mRotateYSpeed.get() * base)));
+		if (speed > 32766.998f)
+			speed = 32766.998f;
+		s16 delta = CLBRoundf<s16>(speed);
+		CLBChaseGeneralConstantSpecifySpeed<s16>(&mCurrentTarget.mYaw, ang,
+		                                         delta);
+	}
+}
+
+void CPolarSubCamera::getNozzleTopPos_(JGeometry::TVec3<f32>* out) const
+{
+	if (SMS_GetMarioWaterGun() == nullptr) {
+		out->set(gpCameraMario->unk0);
+	} else {
+		MtxPtr mtx = SMS_GetMarioWaterGun()->getNozzleMtx();
+		out->x     = mtx[0][3];
+		out->y     = mtx[1][3];
+		out->z     = mtx[2][3];
+
+		JGeometry::TVec3<f32> dir(mtx[0][1], mtx[1][1], mtx[2][1]);
+		dir.normalize();
+		dir *= 30.0f;
+		*out += dir;
+	}
+}
+
+void CPolarSubCamera::ctrlLButtonCamera_()
+{
+	f32 stickX = -unk120->mCompSPos[4];
+	f32 stickY = -unk120->mCompSPos[5];
+
+	if (mTargetFreezeFrames == 0) {
+		if (!SMS_CheckMarioFlag(MARIO_FLAG_HAS_FLUDD))
+			mCurrentTarget.mTarget.set(gpCameraMario->unk0);
+		else
+			getNozzleTopPos_(&mCurrentTarget.mTarget);
+	}
+
+	if (mPosFreezeFrames == 0) {
+		if (unk64 & CAMERA_FLAG_NOTICE_ACTIVE) {
+			if (stickX != 0.0f) {
+				rotateY_ByStickX_(stickX);
+			} else {
+				calcNoticeTargetYrot_(mNoticeActor->mPosition);
+			}
+		} else {
+			rotateY_ByStickX_(stickX);
+		}
+		rotateX_ByStickY_(stickY);
+	}
+
+	calcPosAndAt_();
+}

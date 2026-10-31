@@ -1,0 +1,453 @@
+#ifndef MOVE_BG_MAP_OBJ_BASE_HPP
+#define MOVE_BG_MAP_OBJ_BASE_HPP
+
+#include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
+#include <Strategic/LiveActor.hpp>
+#include <dolphin/mtx.h>
+
+class J3DJoint;
+class J3DMaterialTable;
+class TMapCollisionStatic;
+class TMapCollisionMove;
+class TMapCollisionWarp;
+class TJointObj;
+class JPABaseEmitter;
+
+// fabricated
+struct TMapObjAnimData {
+	/* 0x0 */ const char* mBmdFileName;
+	/* 0x4 */ const char* mAnmName;
+	/* 0x8 */ u8 mAnmType;
+	/* 0xC */ const char* unkC;
+	/* 0x10 */ const char* mBasFilePath;
+};
+
+// the only real name we have, everything else is fabricated
+struct TMapObjAnimDataInfo {
+	/* 0x0 */ u16 mEntryNum;
+	/* 0x2 */ u16 mMaxMActors;
+	/* 0x4 */ const TMapObjAnimData* mEntries;
+};
+
+struct TMapObjHitDataTable {
+	/* 0x0 */ f32 mAttackRadius;
+	/* 0x4 */ f32 mAttackHeight;
+	/* 0x8 */ f32 mDamageRadius;
+	/* 0xC */ f32 mDamageHeight;
+};
+
+// fabricated
+struct TMapObjHitInfo {
+	/* 0x0 */ int mEntryNum;
+	/* 0x4 */ u32 mHitFilter;
+	/* 0x8 */ f32 unk8;
+	/* 0xC */ const TMapObjHitDataTable* mEntries;
+};
+
+// fabricated
+struct TMapObjCollisionData {
+	/* 0x0 */ const char* mColFileNoExt;
+	/* 0x4 */ u16 mFlags;
+};
+
+// fabricated
+struct TMapObjCollisionInfo {
+	/* 0x0 */ u16 mEntryNum;
+	/* 0x2 */ u16 mMaxEntries;
+	/* 0x4 */ const TMapObjCollisionData* mEntries;
+};
+
+// fabricated
+struct TMapObjSoundData {
+	/* 0x0 */ u32 mSoundIdTable[10];
+};
+
+// fabricated
+struct TMapObjSoundInfo {
+	/* 0x0 */ u32 unk0;
+	/* 0x4 */ const TMapObjSoundData* mData;
+};
+
+// fabricated
+struct TMapObjPhysicalData {
+	/* 0x0 */ f32 mGravity;
+	/* 0x4 */ f32 unk4;
+	/* 0x8 */ f32 unk8;
+	/* 0xC */ f32 unkC;
+	/* 0x10 */ f32 unk10;
+	/* 0x14 */ f32 unk14;
+	/* 0x18 */ f32 unk18;
+	/* 0x1C */ f32 unk1C;
+	/* 0x20 */ f32 unk20;
+	/* 0x24 */ f32 unk24;
+	/* 0x28 */ f32 unk28;
+	/* 0x2C */ f32 unk2C;
+	/* 0x30 */ f32 unk30;
+};
+
+// fabricated
+struct TMapObjPhysicalInfo {
+	/* 0x0 */ u32 unk0;
+	/* 0x4 */ TMapObjPhysicalData* mData;
+	/* 0x8 */ u32 mWallCheckFlags;
+};
+
+// fabricated
+struct TMapObjSinkData {
+	/* 0x0 */ f32 mSinkSpeed;
+	/* 0x4 */ f32 mRecoverSpeed;
+};
+
+class J3DModelData;
+
+// fabricated
+struct TMapObjHoldData {
+	/* 0x0 */ const char* mTakingBmdPath;
+	/* 0x4 */ const char* mTakingJointName;
+	/* 0x8 */ J3DModelData* mTakingModelData;
+	/* 0xC */ J3DModel* mTakingModel;
+	/* 0x10 */ MtxPtr mTakingMtx;
+};
+
+class J3DAnmTransform;
+class J3DFrameCtrl;
+
+// fabricated
+struct TMapObjMoveData {
+	/* 0x0 */ const char* mBckFile;
+	/* 0x4 */ J3DAnmTransform* mBckAnm;
+	/* 0x8 */ J3DFrameCtrl* mFrameCtrl;
+};
+
+// fabricated
+struct TMapObjData {
+	/* 0x0 */ const char* mIndividualName;
+	/* 0x4 */ u32 mActorType;
+	/* 0x8 */ const char* mManagerName;
+	/* 0xC */ const char* mIdxGroupName;
+	/* 0x10 */ const TMapObjAnimDataInfo* mAnim;
+	/* 0x14 */ const TMapObjHitInfo* mHit;
+	/* 0x18 */ const TMapObjCollisionInfo* mCollision;
+	/* 0x1C */ const TMapObjSoundInfo* mSound;
+	/* 0x20 */ const TMapObjPhysicalInfo* mPhysical;
+	/* 0x24 */ const TMapObjSinkData* mSink;
+	/* 0x28 */ TMapObjHoldData* mHold;
+	/* 0x2C */ TMapObjMoveData* mMove;
+	/* 0x30 */ f32 unk30;
+	/* 0x34 */ u32 mMapObjFlags;
+	/* 0x38 */ u32 mIndividualKeycode;
+};
+
+class TMapObjBase : public TLiveActor {
+public:
+	TMapObjBase(const char* name = "地形オブジェ基底");
+
+	virtual ~TMapObjBase() { }
+	virtual void load(JSUMemoryInputStream&);
+	virtual void loadAfter();
+	virtual void perform(u32 cue, JDrama::TGraphics* graphics);
+	virtual BOOL receiveMessage(THitActor* sender, u32 message);
+	virtual MtxPtr getTakingMtx()
+	{
+		if (checkMapObjFlag(MAP_OBJ_FLAG_CLIMBABLE))
+			return nullptr;
+		return TLiveActor::getTakingMtx();
+	}
+	virtual void ensureTakeSituation();
+	virtual f32 getRadiusAtY(f32) const { return mBodyRadius; }
+	virtual Mtx* getRootJointMtx() const;
+	virtual void calcRootMatrix();
+	virtual void setGroundCollision();
+	virtual void control();
+	virtual u32 getShadowType();
+	// Both are defined here, not in the .cpp: the map records them as weak,
+	// and EventWatcher.cpp holds the copy that survives dead-strip.
+	virtual void kill() { makeObjDead(); }
+	virtual void appear() { makeObjAppeared(); }
+	virtual void makeObjAppeared();
+	virtual void makeObjDead();
+	virtual void changeObjSRT(const JGeometry::TVec3<f32>&,
+	                          const JGeometry::TVec3<f32>&,
+	                          const JGeometry::TVec3<f32>&);
+	virtual void changeObjMtx(MtxPtr);
+	virtual void updateObjMtx();
+	virtual void setUpCurrentMapCollision();
+	virtual void setObjHitData(u16);
+	virtual void setModelMtx(MtxPtr mtx) { getModel()->setAnmMtx(0, mtx); }
+	virtual void initMapObj();
+	virtual void loadBeforeInit(JSUMemoryInputStream&) { }
+	virtual void initMapCollisionData();
+	virtual void makeMActors();
+	virtual u32 getSDLModelFlag() const;
+	virtual void checkIllegalAttr() const;
+	virtual void calc() { }
+	virtual void draw() const { }
+	virtual void dead() { }
+	virtual void touchActor(THitActor*);
+	virtual void touchPlayer(THitActor*);
+	virtual u32 touchWater(THitActor*) { return 0; }
+	virtual void touchEnemy(THitActor*);
+	virtual void touchBoss(THitActor*);
+	virtual void makeObjDefault();
+	virtual u16 getHitObjNumMax() { return 5; }
+	virtual f32 getDepthAtFloating() { return 0.0f; }
+
+	void initAndRegister(const char*);
+	void moveByBck();
+	void startAnim(u16 index);
+	void startBck(const char*);
+	void startControlAnim(u16);
+	void stopAnim();
+	bool animIsFinished() const;
+	bool hasAnim(u16) const;
+	bool hasModelOrAnimData(u16) const;
+	void startSound(u16 index);
+	void soundBas(u32, f32, f32);
+	void setUpMapCollision(u16);
+	void removeMapCollision();
+	void sleep();
+	void awake();
+	void initActorData();
+	void initModelData();
+	MActor* initMActor(const char*, const char*, u32);
+	void initBckMoveData();
+	void initObjCollisionData();
+	void initHoldData();
+	void initEventData();
+	void initUnique();
+	void setMatTableTex(J3DMaterialTable*);
+	void setMatTable(J3DMaterialTable*);
+	JPABaseEmitter* emitAndRotate(s32, u8, const JGeometry::TVec3<f32>*) const;
+	JPABaseEmitter* emitAndScale(s32, u8, const JGeometry::TVec3<f32>*,
+	                             const JGeometry::TVec3<f32>&) const;
+	JPABaseEmitter* emitAndBindScale(s32, u8, const JGeometry::TVec3<f32>*,
+	                                 const JGeometry::TVec3<f32>&) const;
+	JPABaseEmitter* emitAndScale(s32, u8, const JGeometry::TVec3<f32>*) const;
+	void emitAndRotateScale(s32, u8, const JGeometry::TVec3<f32>*) const;
+	static void emitAndSRT(s32, u8, const JGeometry::TVec3<f32>*,
+	                       const JGeometry::TVec3<f32>&,
+	                       const JGeometry::TVec3<f32>&);
+	void emitColumnWater();
+	bool marioHipAttack() const;
+	bool marioHeadAttack() const;
+	bool marioIsOn() const;
+	static bool marioIsOn(const TLiveActor*);
+	void actorIsOn(TLiveActor*) const;
+	void sendMsgToAll(u32);
+	void sendMsg(u32, u32);
+	static bool waterHitPlane(THitActor*);
+	static const JGeometry::TVec3<f32>& getWaterPos(THitActor*);
+	static const JGeometry::TVec3<f32>& getWaterSpeed(THitActor*);
+	static const TBGCheckData* getWaterPlane(THitActor*);
+	static int getWaterID(THitActor*);
+	f32 getDistance(const JGeometry::TVec3<f32>&) const;
+	f32 getDistanceXZ(const JGeometry::TVec3<f32>&) const;
+	f32 getRotYFromAxisZ(const JGeometry::TVec3<f32>&) const;
+	f32 getRotYFromAxisX(const JGeometry::TVec3<f32>&) const;
+	void makeVecToLocalX(f32, JGeometry::TVec3<f32>*) const;
+	void makeVecToLocalZ(f32, JGeometry::TVec3<f32>*) const;
+	void getNormalVecFromTarget(f32, f32, f32, JGeometry::TVec3<f32>*) const;
+	static void getNormalVecFromOffset(f32, f32, f32, JGeometry::TVec3<f32>*);
+	void getNormalVecFromTargetXZ(f32, f32, JGeometry::TVec3<f32>*) const;
+	static void getNormalVecFromOffsetXZ(f32, f32, JGeometry::TVec3<f32>*);
+	static void rotateVecByAxisY(JGeometry::TVec3<f32>*, f32);
+	static void getVerticalVecFromOffsetXZ(f32, f32, JGeometry::TVec3<f32>*);
+	void getVerticalVecToTargetXZ(f32, f32, JGeometry::TVec3<f32>*) const;
+	void calcReflectingVelocity(const TBGCheckData* wall, f32,
+	                            JGeometry::TVec3<f32>* velocity) const;
+	void makeObjMtxRotByAxis(const JGeometry::TVec3<f32>&, f32, MtxPtr) const;
+	static void makeMtxRotByAxis(const JGeometry::TVec3<f32>&, f32, MtxPtr);
+	static void concatOnlyRotFromRight(MtxPtr, MtxPtr, MtxPtr);
+	static void concatOnlyRotFromLeft(MtxPtr, MtxPtr, MtxPtr);
+	void setRootMtxTrans();
+	void makeRootMtxTrans(MtxPtr);
+	void updateRootMtxTrans();
+	void setRootMtxRotX();
+	void makeRootMtxRotX(MtxPtr);
+	void setRootMtxRotY();
+	void makeRootMtxRotY(MtxPtr);
+	void setRootMtxRotZ();
+	void makeRootMtxRotZ(MtxPtr);
+	static void makeLowerStr(const char*, char*);
+	static void moveJoint(J3DJoint*, f32, f32, f32);
+	static f32 getJointTransX(J3DJoint*);
+	static f32 getJointTransY(J3DJoint*);
+	static f32 getJointTransZ(J3DJoint*);
+	static void setJointTrans(J3DJoint*, f32, f32, f32);
+	static void setJointTransX(J3DJoint*, f32);
+	static void setJointTransY(J3DJoint*, f32);
+	static void setJointTransZ(J3DJoint*, f32);
+	static f32 getJointRotateX(J3DJoint*);
+	static f32 getJointRotateY(J3DJoint*);
+	static f32 getJointRotateZ(J3DJoint*);
+	void setJointRotate(J3DJoint*, short, short, short);
+	void setJointRotateX(J3DJoint*, short);
+	void setJointRotateY(J3DJoint*, short);
+	void setJointRotateZ(J3DJoint*, short);
+	void rotateJointX(J3DJoint*, f32);
+	void rotateJointY(J3DJoint*, f32);
+	void rotateJointZ(J3DJoint*, f32);
+	static f32 getJointScaleX(J3DJoint*);
+	static f32 getJointScaleY(J3DJoint*);
+	static f32 getJointScaleZ(J3DJoint*);
+	static void setJointScale(J3DJoint*, f32, f32, f32);
+	static void setJointScaleX(J3DJoint*, f32);
+	static void setJointScaleY(J3DJoint*, f32);
+	static void setJointScaleZ(J3DJoint*, f32);
+	static void calcMap();
+	static J3DModel* getMapModel();
+	void getMapModelData();
+	void getMapMActor();
+	static TJointObj* getBuildingJointObj(int);
+	static J3DJoint* getBuildingJoint(int);
+
+	static TMapCollisionStatic* newAndInitBuildingCollisionStatic(int,
+	                                                              TLiveActor*);
+	static TMapCollisionMove* newAndInitBuildingCollisionMove(int, TLiveActor*);
+	static TMapCollisionWarp* newAndInitBuildingCollisionWarp(int, TLiveActor*);
+
+	static void joinToGroup(const char*, THitActor*);
+	static void startAllAnim(MActor*, const char*);
+	static void initPacketMatColor(J3DModel*, GXTevRegID, const GXColorS10*);
+	static bool isFruit(THitActor*);
+	static bool isCoin(THitActor*);
+	static void throwObjFromPointWithRot(TMapObjBase* obj,
+	                                     const JGeometry::TVec3<f32>& point,
+	                                     const JGeometry::TVec3<f32>& rot,
+	                                     f32 speed, f32 up_speed);
+	void throwObjToFrontFromPoint(TMapObjBase*, const JGeometry::TVec3<f32>&,
+	                              f32, f32) const;
+	void throwObjToFront(TMapObjBase* object, f32 y_offset, f32 speed,
+	                     f32 vertical_speed) const;
+	void throwObjToOverhead(TMapObjBase*, f32, f32) const;
+	void checkOnManhole();
+	static void loadHideObjInfo(JSUMemoryInputStream&, s32*, f32*, f32*, s32*);
+	static bool isDemo();
+	static bool isHideObj(THitActor*);
+	f32 getObjCollisionHeightOffset() const { return mYOffset; }
+
+	// fabricated
+	bool checkMapObjFlag(u32 flag) const { return mMapObjFlags & flag; }
+	void onMapObjFlag(u32 flag) { mMapObjFlags |= flag; }
+	void offMapObjFlag(u32 flag) { mMapObjFlags &= ~flag; }
+
+	// fabricated
+	TMapObjData* getMapObjData() { return mMapObjData; }
+
+	// fabricated
+	u32 getEventId() { return mEventId; }
+	void setEventId(u32 v) { mEventId = v; }
+
+	// Fabricated
+	bool isState(u32 v) { return mState == v ? true : false; }
+	void setState(u32 state) { mState = state; }
+
+	// Fabricated
+	void startStateTimer(int time) { mStateTimer = time; }
+	bool isStateTimerEngaged() { return mStateTimer > 0 ? true : false; }
+	int getStateTimer() { return mStateTimer; }
+
+	// Fabricated
+	const JGeometry::TVec3<f32>& getInitialPosition() const
+	{
+		return mInitialPosition;
+	}
+	const JGeometry::TVec3<f32>& getInitialRotation() const
+	{
+		return mInitialRotation;
+	}
+	const JGeometry::TVec3<f32>& getInitialScaling() const
+	{
+		return mInitialScaling;
+	}
+
+	const char* getUnkF4() { return mIndividualName; }
+
+public:
+	enum {
+		MOVE_COLLISION_ON_CONTACT_GRACE_TIMER = 4,
+	};
+
+	enum {
+		/// If set, frustum clipping will not be applied to the object.
+		MAP_OBJ_FLAG_NO_CLIPPING = 0x1,
+		/// Optimization: only move the collision when the object is in contact
+		/// with something and for 4 frames afterwards.
+		MAP_OBJ_FLAG_MOVE_COLLISION_ON_CONTACT = 0x2,
+		/// If set, the collision is scaled and rotated with the object.
+		/// Otherwise, only translation is applied.
+		MAP_OBJ_FLAG_SCALE_AND_ROTATE_COLLISION = 0x4,
+		MAP_OBJ_FLAG_UNK8                       = 0x8,
+		MAP_OBJ_FLAG_UNK10                      = 0x10,
+		MAP_OBJ_FLAG_UNK20                      = 0x20,
+		/// Allows climbing and other types of attachment to the object.
+		MAP_OBJ_FLAG_CLIMBABLE = 0x40,
+		/// If set, the object will load it's hit height from save data.
+		/// Useful for objects with customizable height like poles.
+		MAP_OBJ_FLAG_LOAD_HIT_HEIGHT = 0x80,
+		/// If set, the object is not animated. Attempting to start an animation
+		/// will turn this flag off.
+		MAP_OBJ_FLAG_NO_ANIMATIONS = 0x100,
+		/// If set, MAP_OBJ_FLAG_NO_ANIMATIONS is automatically turned on when
+		/// the current animation ends.
+		MAP_OBJ_FLAG_TURN_OFF_ANIMATIONS_AT_END = 0x200,
+		/// Enables simplified view calc mode. See SDLModel::viewCalcSimple
+		MAP_OBJ_FLAG_USE_SIMPLE_VIEW_CALC = 0x400,
+		/// If set, entry into draw buffers is performed once at load time
+		/// instead of every frame.
+		MAP_OBJ_FLAG_STATIC_DRAW = 0x800,
+		MAP_OBJ_FLAG_UNK1000     = 0x1000,
+		/// Makes the shadow square instead of round.
+		MAP_OBJ_FLAG_SQUARE_SHADOW = 0x2000,
+		MAP_OBJ_FLAG_UNK4000       = 0x4000,
+		/// Enables indirect TEV texturing for the object.
+		/// See J3DMLF_MaterialUseIndirect
+		MAP_OBJ_FLAG_INDIRECT_TEXTURE = 0x8000,
+
+		// TMapObjGeneral-only flags.
+
+		/// Makes the object check for collisions with walls while moving.
+		MAP_OBJ_FLAG_ENABLE_WALL_COLLISION = 0x10000,
+		/// Makes the object check for collisions with roofs while moving.
+		MAP_OBJ_FLAG_ENABLE_ROOF_COLLISION = 0x20000,
+		/// The object disappears when the state timer elapses.
+		/// Also flashes when timer becomes smaller than getFlushTime().
+		MAP_OBJ_FLAG_DISAPPEARING = 0x40000,
+		/// Object respawns after being destroyed.
+		MAP_OBJ_FLAG_RESPAWNING = 0x80000,
+		/// Allows the object to be picked up.
+		MAP_OBJ_FLAG_TAKEABLE  = 0x100000,
+		MAP_OBJ_FLAG_UNK200000 = 0x200000,
+		/// Makes the object die when it touches water.
+		MAP_OBJ_FLAG_KILLED_BY_WATER = 0x400000,
+		MAP_OBJ_FLAG_UNK800000       = 0x800000,
+		/// Object sinks when it is in pollution.
+		MAP_OBJ_FLAG_CAN_SINK    = 0x1000000,
+		MAP_OBJ_FLAG_UNK2000000  = 0x2000000,
+		MAP_OBJ_FLAG_UNK4000000  = 0x4000000,
+		MAP_OBJ_FLAG_UNK8000000  = 0x8000000,
+		MAP_OBJ_FLAG_UNK10000000 = 0x10000000,
+		MAP_OBJ_FLAG_UNK20000000 = 0x20000000,
+	};
+
+	enum {
+		STATE_DEAD   = 0x0,
+		STATE_NORMAL = 0x1,
+	};
+
+	/* 0xF4 */ const char* mIndividualName;
+	/* 0xF8 */ u32 mMapObjFlags;
+	/* 0xFC */ u16 mState;
+	/* 0xFE */ u16 mActiveAnimIndex;
+	/* 0x100 */ u16 mActiveSoundIndex;
+	/* 0x102 */ s16 mMoveCollisionOnContactGraceTimer;
+	/* 0x104 */ int mStateTimer;
+	/* 0x108 */ f32 mYOffset; // TODO: offset from what to what?
+	/* 0x10C */ JGeometry::TVec3<f32> mInitialPosition;
+	/* 0x118 */ JGeometry::TVec3<f32> mInitialRotation;
+	/* 0x124 */ JGeometry::TVec3<f32> mInitialScaling;
+	/* 0x130 */ TMapObjData* mMapObjData;
+	/* 0x134 */ u32 mEventId;
+};
+
+#endif

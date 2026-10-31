@@ -1,0 +1,355 @@
+#ifndef GCCONSOLE2_HPP
+#define GCCONSOLE2_HPP
+
+#include <dolphin/types.h>
+#include <version.h>
+#include <JSystem/JDrama/JDRViewObj.hpp>
+#include <JSystem/JUtility/JUTColor.hpp>
+#include <JSystem/JUtility/JUTPoint.hpp>
+
+class THelpActor;
+class TBlendPane;
+class J2DOrthoGraph;
+class J2DSetScreen;
+class J2DScreen;
+class TBoundPane;
+class JUTTexture;
+class TExPane;
+class JPABaseEmitter;
+class J2DPicture;
+class J2DPane;
+class J2DWindow;
+class J2DTextBox;
+class TMessageLoader;
+class TBathtub;
+class TBossEel;
+class TConsoleStr;
+class JSUMemoryInputStream;
+class JSUMemoryOutputStream;
+
+class TGCConsole2 : public JDrama::TViewObj {
+public:
+	enum LifeState {
+		LIFE_HIDDEN              = 0,
+		LIFE_HEALTH_APPEARING    = 1,
+		LIFE_HEALTH_VISIBLE      = 2,
+		LIFE_HEALTH_DISAPPEARING = 3,
+		LIFE_AIR_APPEARING       = 4,
+		LIFE_AIR_VISIBLE         = 5,
+		LIFE_AIR_DISAPPEARING    = 6,
+		LIFE_HEALTH_INSERTING    = 7,
+		LIFE_AIR_INSERTING       = 8,
+		LIFE_AIR_DIVING          = 9,
+		LIFE_CAMERA_DEMO         = 10,
+	};
+
+	TGCConsole2(const char* name = "<TGCConsole2>");
+	void load(JSUMemoryInputStream&);
+	void loadAfter();
+	void entryHelpActor(THelpActor*);
+	void startCameraDemo();
+	void resetMoveTank();
+	void endCameraDemo();
+	void startAppearTank();
+	void startDisappearTank();
+	void startAppearCoin();
+	void startDisappearCoin();
+	void startInsertLife(int);
+	void resetLife(int);
+	bool startAppearLife(int);
+	bool startDisappearLife(int);
+	void startDownLeftBot();
+	void startUpLeftBot();
+	void startAppearTelop(bool);
+	void startDisappearTelop();
+	void startDisappearTimer();
+	void startAppearTimer(int, s32);
+	void startInsertTimer();
+	void startAppearJetBalloon(int, int);
+	void startInsertJetBalloon();
+	void startAppearRedCoin();
+	void pauseIn();
+	void pauseOut();
+	bool startDisappearBalloon(u32, bool);
+	bool startAppearBalloon(u32, bool);
+	void startDisappearStar();
+	void startAppearStar();
+	void drawWaterBack();
+	void startDisappearMario();
+	void startAppearMario(bool);
+	void processMoveNozzle();
+	void changeNum(TBlendPane*, int, int);
+#if !defined(VERSION_GMSJ01)
+	void countBlueCoin();
+	void countShine();
+#endif
+	void setTimer(s32);
+#if !defined(VERSION_GMSJ01)
+	u32* checkDolpic8();
+#endif
+	void startMoveTimer(int);
+	void stopMoveTimer();
+	int getFinishedTime();
+
+	void perform(u32 cue, JDrama::TGraphics* graphics);
+
+	inline bool processAppearLife(int);
+	inline bool processInsertLife(int);
+	inline bool processAppearStar(int);
+	inline bool processDownCoin(int);
+	inline bool processAppearTank(int);
+	inline bool processAppearCoin(int);
+	inline bool processAppearMario(int);
+	inline bool processDrawTelop(u32);
+	inline void checkChangeTelopArray();
+	inline bool processAppearJet(int);
+	inline bool processAppearRed(int);
+	inline bool processAppearTimer(int);
+	inline bool processAppearBalloon();
+	inline bool processDisappearBalloon();
+	inline void drawJuice(J2DOrthoGraph&, u32);
+	inline void drawWater(J2DOrthoGraph&);
+
+	// fabricated
+	inline void performMovement();
+	// fabricated
+	inline void performCalcAnim();
+
+	u32 getUnk508() { return unk508; }
+
+	static JUTPoint cDownTopPoint;
+	static JUTPoint cDownMidPoint;
+	static JUTPoint cDownBotPoint;
+	static JUTPoint cUpTopPoint;
+	static JUTPoint cUpMidPoint;
+	static JUTPoint cUpBotPoint;
+	static JUTPoint cCoinTopPoint;
+	static JUTPoint cCoinMidPoint;
+	static JUTPoint cCoinBotPoint;
+
+public:
+	/* 0x10 */ int unk10;
+	/* 0x14 */ u32 unk14;
+	/* 0x18 */ int unk18;
+	/* 0x1C */ s16 unk1C;
+	/* 0x20 */ s32 unk20;
+	/* 0x24 */ s32 unk24;
+	/* 0x28 */ s32 unk28;
+	/* 0x2C */ s32 unk2C;
+	/* 0x30 */ s32 unk30;
+	/* 0x34 */ u8 unk34;
+	/* 0x35 */ u8 unk35;
+	/* 0x36 */ u8 unk36;
+	/* 0x37 */ u8 unk37;
+	/* 0x38 */ u8 unk38;
+	/* 0x39 */ u8 unk39;
+	/* 0x3A */ u8 unk3A;
+	/* 0x3B */ u8 unk3B;
+	/* 0x3C */ u8 unk3C;
+	/* 0x3D */ u8 unk3D;
+	/* 0x3E */ u8 unk3E;
+	/* 0x3F */ u8 unk3F;
+	/* 0x40 */ u8 unk40;
+	/* 0x41 */ u8 unk41;
+	/* 0x42 */ u8 unk42;
+	/* 0x43 */ u8 unk43;
+	/* 0x44 */ u8 unk44;
+	/* 0x45 */ u8 unk45;
+	/* 0x46 */ u8 unk46;
+	/* 0x47 */ u8 unk47;
+	/* 0x48 */ u8 unk48;
+	/* 0x49 */ u8 unk49;
+	/* 0x4A */ u8 unk4A;
+	/* 0x4B */ u8 unk4B;
+	/* 0x4C */ u8 unk4C;
+	/* 0x4D */ u8 unk4D;
+	/* 0x4E */ u8 unk4E;
+	/* 0x4F */ u8 unk4F;
+	/* 0x50 */ u8 unk50;
+	/* 0x51 */ u8 unk51;
+	/* 0x54 */ u32 unk54;
+	/* 0x58 */ u8 unk58;
+	/* 0x59 */ u8 unk59;
+	/* 0x5A */ u8 unk5A;
+	/* 0x5C */ u32 unk5C;
+	/* 0x60 */ s8 unk60;
+	/* 0x64 */ s32 unk64;
+	/* 0x68 */ s8 unk68;
+	/* 0x6C */ s32 unk6C;
+	/* 0x70 */ u16 unk70;
+	/* 0x72 */ s8 unk72;
+	/* 0x73 */ u8 unk73;
+	/* 0x74 */ u16 unk74;
+	/* 0x76 */ s8 unk76;
+	/* 0x77 */ u8 unk77;
+	/* 0x78 */ u16 unk78;
+	/* 0x7A */ u8 unk7A;
+	/* 0x7C */ s16 unk7C;
+	/* 0x80 */ u32 unk80;
+	/* 0x84 */ u16 unk84;
+	/* 0x86 */ u16 unk86;
+	/* 0x88 */ s8 unk88;
+	/* 0x8A */ u16 unk8A;
+	/* 0x8C */ int unk8C;
+	/* 0x90 */ THelpActor** unk90;
+	/* 0x94 */ TConsoleStr* unk94;
+	/* 0x98 */ s16 unk98;
+	/* 0x9A */ JUtility::TColor unk9A;
+	/* 0x9E */ JUtility::TColor unk9E;
+	/* 0xA2 */ JUtility::TColor unkA2;
+	/* 0xA6 */ JUtility::TColor unkA6;
+	/* 0xAA */ JUtility::TColor unkAA;
+	/* 0xB0 */ J2DSetScreen* mHudScreen;
+	/* 0xB4 */ u8 unkB4;
+	/* 0xB6 */ s16 unkB6;
+	/* 0xB8 */ u32 unkB8;
+	/* 0xBC */ TBathtub* unkBC;
+	/* 0xC0 */ TBossEel* unkC0;
+	/* 0xC4 */ void* unkC4;
+
+	/* 0xC8 */ TBoundPane* mCoinCountBackground;
+	/* 0xCC */ TBoundPane* mCoinCountIcon;
+	/* 0xD0 */ TBoundPane* mCoinCountX;
+	/* 0xD4 */ TBlendPane* mCoinCountDigits[3];
+	/* 0xE0 */ JUTTexture* unkE0[10];
+	/* 0x108 */ TExPane* mCoinCountRoot;
+	/* 0x10C */ char unk10C[0x124 - 0x10C];
+	/* 0x124 */ JPABaseEmitter* unk124;
+
+	/* 0x128 */ TBoundPane* mShineCountBackground;
+	/* 0x12C */ TBoundPane* mShineCountIcon;
+	/* 0x130 */ TBoundPane* mShineCountX;
+	/* 0x134 */ TBlendPane* mShineCountDigits[3];
+	/* 0x140 */ TExPane* mShineCountRoot;
+	/* 0x144 */ JPABaseEmitter* unk144;
+
+	/* 0x148 */ TBoundPane* mBlueCoinCountBackground;
+	/* 0x14C */ TBoundPane* mBlueCoinCountIcon;
+	/* 0x150 */ TBoundPane* mBlueCoinCountX;
+	/* 0x154 */ TBoundPane* mBlueCoinCountDigits[3];
+	/* 0x160 */ TExPane* unk160;
+	/* 0x164 */ JPABaseEmitter* unk164;
+	/* 0x168 */ s32 unk168;
+	/* 0x16C */ u16 unk16C;
+	/* 0x16E */ char unk16E[2];
+	/* 0x170 */ s32 unk170;
+
+	/* 0x174 */ TBoundPane* mLifeMeterBackground;
+	/* 0x178 */ TBoundPane* mLifeMeterText;
+	/* 0x17C */ J2DPane* mLifeMeterPetals[18];
+	/* 0x1C4 */ TBoundPane* mLifeMeterRoot;
+	/* 0x1C8 */ s16 unk1C8;
+	/* 0x1CA */ s16 unk1CA;
+	/* 0x1CC */ u8 unk1CC;
+	/* 0x1D0 */ JUTRect mLifeMeterPetalsOriginalBounds[9];
+	/* 0x260 */ TBoundPane* mLifeMeterPetalsRoot;
+	/* 0x264 */ u16 unk264;
+	/* 0x266 */ u8 unk266;
+	/* 0x268 */ u16 unk268;
+
+	/* 0x26A */ s16 unk26A;
+	/* 0x26C */ TBoundPane* unk26C;
+	/* 0x270 */ TBoundPane* unk270;
+	/* 0x274 */ TBoundPane* unk274;
+	/* 0x278 */ TBoundPane* unk278[4];
+	/* 0x288 */ J2DPane* unk288;
+	/* 0x28C */ J2DPane* unk28C[4];
+	/* 0x29C */ TBoundPane* unk29C;
+	/* 0x2A0 */ J2DPicture* unk2A0[3];
+	/* 0x2AC */ J2DPicture* unk2AC[3];
+	/* 0x2B8 */ f32 unk2B8;
+	/* 0x2BC */ JUTRect unk2BC[3];
+	/* 0x2EC */ JUtility::TColor unk2EC[3];
+	/* 0x2F8 */ TExPane* unk2F8;
+	/* 0x2FC */ JUTRect unk2FC;
+	/* 0x30C */ u8 unk30C;
+	/* 0x310 */ s32 unk310;
+	/* 0x314 */ J2DPane* unk314[4];
+	/* 0x324 */ J2DPane* unk324;
+	/* 0x328 */ J2DPicture* unk328;
+	/* 0x32C */ J2DPicture* unk32C;
+	/* 0x330 */ u8 unk330;
+	/* 0x334 */ J2DPane* unk334[22];
+	/* 0x38C */ TBoundPane* mLifeCountBackground;
+	/* 0x390 */ TBoundPane* mLifeCountText;
+	/* 0x394 */ TBoundPane* mLifeCountIcon;
+	/* 0x398 */ TBoundPane* mLifeCountX;
+	/* 0x39C */ TBoundPane* mLifeCountDigits[3];
+	/* 0x3A8 */ TExPane* mLifeCountRoot;
+	/* 0x3AC */ u8 unk3AC;
+#if !defined(VERSION_GMSJ01)
+	/* 0x3AE */ u16 unk3AE;
+#endif
+	/* 0x3AD */ u8 unk3AD;
+	/* 0x3B0 */ J2DWindow* unk3B0;
+	/* 0x3B4 */ J2DTextBox* unk3B4;
+	/* 0x3B8 */ J2DTextBox* unk3B8;
+	/* 0x3BC */ JUTRect unk3BC;
+	/* 0x3CC */ s16 unk3CC;
+	/* 0x3D0 */ TMessageLoader* mBalloonMessageLoader;
+	/* 0x3D4 */ JSUMemoryInputStream* unk3D4;
+	/* 0x3D8 */ JSUMemoryOutputStream* unk3D8;
+	/* 0x3DC */ JSUMemoryOutputStream* unk3DC;
+	/* 0x3E0 */ u32 unk3E0;
+	/* 0x3E4 */ int unk3E4;
+	/* 0x3E8 */ s16 unk3E8;
+	/* 0x3EC */ f32 unk3EC;
+	/* 0x3F0 */ s16 unk3F0;
+	/* 0x3F4 */ u32 unk3F4;
+	/* 0x3F8 */ u8 unk3F8;
+	/* 0x3F9 */ char unk3F9[0x3];
+	/* 0x3FC */ TExPane* unk3FC;
+	/* 0x400 */ TBoundPane* unk400;
+	/* 0x404 */ TBoundPane* unk404;
+	/* 0x408 */ TBoundPane* unk408;
+	/* 0x40C */ TBoundPane* unk40C;
+	/* 0x410 */ TBoundPane* unk410;
+	/* 0x414 */ TBlendPane* unk414[4];
+	/* 0x424 */ u8 unk424[2];
+	/* 0x426 */ u8 unk426;
+	/* 0x428 */ TExPane* unk428;
+	/* 0x42C */ TBoundPane* unk42C;
+	/* 0x430 */ TBoundPane* unk430;
+	/* 0x434 */ TBoundPane* unk434;
+	/* 0x438 */ TBoundPane* unk438;
+	/* 0x43C */ TBoundPane* unk43C[2];
+	/* 0x444 */ s32 unk444;
+	/* 0x448 */ u8 unk448;
+	/* 0x44C */ TExPane* unk44C;
+	/* 0x450 */ TBoundPane* unk450;
+	/* 0x454 */ TBoundPane* unk454;
+	/* 0x458 */ TBoundPane* unk458[10];
+	/* 0x480 */ TBoundPane* unk480[3];
+	/* 0x48C */ JUTRect unk48C;
+	/* 0x49C */ JUTRect unk49C;
+	/* 0x4AC */ JUTRect unk4AC;
+	/* 0x4BC */ JUTPoint unk4BC[6];
+	/* 0x4EC */ JUTPoint unk4EC[2];
+	/* 0x4FC */ int unk4FC;
+	/* 0x500 */ J2DPane* unk500[2];
+	/* 0x508 */ u32 unk508;
+	/* 0x50C */ int unk50C;
+	/* 0x510 */ bool unk510;
+	/* 0x514 */ s32 unk514;
+	/* 0x518 */ int unk518;
+	/* 0x51C */ u8 unk51C;
+	/* 0x520 */ TExPane* mTelopRoot;
+	/* 0x524 */ TExPane* mTelop;
+	/* 0x528 */ J2DTextBox* unk528;
+	/* 0x52C */ J2DTextBox* unk52C;
+	/* 0x530 */ TMessageLoader* unk530;
+	/* 0x534 */ JUTRect unk534;
+	/* 0x544 */ JUTRect unk544;
+	/* 0x554 */ s32 mTelopTextWidth;
+	/* 0x558 */ u8 unk558;
+	/* 0x55C */ u32 unk55C;
+	/* 0x560 */ s16 unk560;
+	/* 0x562 */ s16 unk562;
+	/* 0x564 */ f32 unk564;
+	/* 0x568 */ f32 unk568;
+	/* 0x56C */ u8 unk56C;
+	/* 0x56D */ u8 unk56D;
+	/* 0x570 */ u32* unk570; // Some sort of Dolphic News struct?
+};
+
+#endif

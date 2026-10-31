@@ -1,0 +1,51 @@
+# IDE folders
+.idea/
+.vs/
+.vscode/
+.zed/
+.claude/
+
+# Caches
+__pycache__
+.mypy_cache
+.cache/
+
+# Original files
+orig/*/*
+!orig/*/.gitkeep
+*.dol
+*.rel
+*.elf
+*.o
+*.map
+*.MAP
+
+# Build files
+build/
+build_play/
+.ninja_*
+build.ninja
+
+# decompctx output
+ctx.*
+*.ctx
+
+# Generated configs
+objdiff.json
+compile_commands.json
+
+# Miscellaneous
+/*.txt
+*.exe
+tools/mwcc_compiler
+
+# Private fork: track the game executable and the compilers we build with
+!orig/GMSJ01/sys/
+orig/GMSJ01/sys/*
+!orig/GMSJ01/sys/main.dol
+!compilers/**
+!orig/GMSJ01/files/
+orig/GMSJ01/files/*
+!orig/GMSJ01/files/mario.MAP
+# Apple
+.DS_Store

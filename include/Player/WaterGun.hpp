@@ -1,0 +1,354 @@
+#ifndef WATERGUN_HPP
+#define WATERGUN_HPP
+
+#include <Player/NozzleBase.hpp>
+#include <Player/NozzleTrigger.hpp>
+#include <Player/NozzleDeform.hpp>
+#include <MSound/MSound.hpp>
+#include <MSound/MSoundSE.hpp>
+#include <Strategic/MirrorActor.hpp>
+
+class MActor;
+class TMario;
+class TMultiMtxEffect;
+
+struct NozzleJointData {
+	u8 flags; // TODO: This is likely an enum. 0x1 is used, 0x4 is disabled.
+	u8 jointIndex;
+};
+
+struct NozzleData {
+	/* 0x00 */ u32 _00; // Number of water streams emitted by this nozzle
+	/* 0x04 */ u32 _04; // Unused padding
+	/* 0x08 */ const char* mHelmetPath; // Path to optional helmet model (used
+	                                    // by underwater nozzle)
+	/* 0x0C */ const char* mPath;       // Path to base nozzle model directory
+	/* 0x10 */ const char* mBmdPath;    // Full path to nozzle's BMD model file
+	/* 0x14 */ u8 mNumEmitters; // Number of water emitter points on the nozzle
+	/* 0x15 */ u8 _15;          // Unknown/padding
+	/* 0x16 */ NozzleJointData mJoints[3]; // Array of joint data for the nozzle
+};
+
+// Data structure containing model paths and configuration for each FLUDD nozzle
+// type
+class TNozzleBmdData {
+public:
+	u8 getEmitterCount(int index) const { return mNozzles[index].mNumEmitters; }
+
+	u8 getFlags(int index, int jointIndex) const
+	{
+		return mNozzles[index].mJoints[jointIndex].flags;
+	}
+
+	u8 getJointIndex(int index, int jointIndex) const
+	{
+		return mNozzles[index].mJoints[jointIndex].jointIndex;
+	}
+
+	u8 setJointIndex(int index, int jointIndex, s32 value)
+	{
+		return mNozzles[index].mJoints[jointIndex].jointIndex = value;
+	}
+
+	NozzleData mNozzles[6];
+};
+
+extern TNozzleBmdData nozzleBmdData;
+
+class TWaterGun {
+public:
+	class TDeParams : public TParams {
+	public:
+		TDeParams();
+		TParamRT<f32> mRocketHeight;
+		TParamRT<f32> mHHoverHeight;
+		TParamRT<f32> mLAngleNormal;
+		TParamRT<f32> mNozzleAngleYSpeed;
+		TParamRT<f32> mNozzleAngleYBrake;
+		TParamRT<s16> mNozzleAngleYSpeedMax;
+		TParamRT<s16> mHoverRotMax;
+		TParamRT<f32> mHoverSmooth;
+		TParamRT<f32> mChangeSpeed;
+	};
+
+	// TODO: UNUSED methods; return types still need reconstruction.
+	void endDashEffect();
+	void startDashEffect();
+	s32 getMarioUpperStatus();
+	void getWillBeEmitted();
+	void getWaterGunAnmID(int);
+	void setEmitPt();
+	void finalDrawInitialize();
+	void entryAll();
+	void createGunBody();
+
+	enum TNozzleType {
+		Spray            = 0,
+		Rocket           = 1,
+		Underwater       = 2,
+		Yoshi            = 3,
+		Hover            = 4,
+		Turbo            = 5,
+		NOZZLE_TYPE_UNK6 = 6,
+		DivingHelmet     = 7
+	};
+
+	TWaterGun(TMario* mario);
+
+	virtual void perform(u32 cue, JDrama::TGraphics* graphics);
+
+	void changeBackup();
+	void calcAnimation(JDrama::TGraphics*);
+	void changeNozzle(TNozzleType, bool);
+	BOOL damage();
+	void emit();
+	TNozzleBase* getCurrentNozzle() const;
+	MtxPtr getEmitMtx(int);
+	void getEmitPosDirSpeed(int, JGeometry::TVec3<f32>* pos,
+	                        JGeometry::TVec3<f32>* dir,
+	                        JGeometry::TVec3<f32>* speed);
+	MtxPtr getNozzleMtx();
+	f32 getPressure();
+	f32 getPressureMax();
+	void init();
+	void initInLoadAfter();
+	bool isEmitting()
+	{
+		if (mCurrentWater == 0)
+			return false;
+
+		if (getCurrentNozzle()->getNozzleKind() == 1) {
+			if (((TNozzleTrigger*)getCurrentNozzle())->getSprayState()
+			    == TNozzleTrigger::SPRAY_STATE_ACTIVE)
+				return true;
+			return false;
+		}
+
+		if (getCurrentNozzle()->getUnk378() > 0.0f)
+			return true;
+
+		return false;
+	}
+
+	BOOL isPressureOn();
+	void movement();
+	void rotateProp(f32);
+	void setAmountToRate(f32);
+	void setBaseTRMtx(Mtx);
+	BOOL suck();
+	void triggerPressureMovement(const TMarioControllerWork&);
+
+	J3DModel* getModel();
+
+	// Fabricated
+	inline BOOL hasFlag(u16 flag)
+	{
+		BOOL hasFlag;
+		if ((mFlags & flag) != 0) {
+			hasFlag = true;
+		} else {
+			hasFlag = false;
+		}
+		return hasFlag;
+	}
+
+	// Fabricated
+	void onFlag(u16 flag) { mFlags |= flag; }
+	void offFlag(u16 flag) { mFlags &= ~flag; }
+
+	// Fabricated
+	s32 getSuckRate()
+	{
+		return mCurrentPressure * getCurrentNozzle()->mSuckRate.get();
+	}
+
+	// Fabricated
+	TNozzleBase* getNozzle(u8 index) { return mNozzleList[index]; }
+
+	// Fabricated
+	TNozzleBase* getNozzle(u8 nozzle_index) const
+	{
+		return mNozzleList[nozzle_index];
+	}
+
+	// Fabricated
+	bool hasWater() const { return mCurrentWater > 0; }
+
+	// Fabricated
+	void depleteWater(s32 amount)
+	{
+		mCurrentWater -= amount;
+		if (mCurrentWater < 0) {
+			mCurrentWater = 0;
+		}
+	}
+
+	// Fabricated
+	void addWater(s32 amount)
+	{
+		mCurrentWater += amount;
+		s32 maxWater = getMaxWater();
+		if (mCurrentWater > maxWater) {
+			mCurrentWater = maxWater;
+		}
+	}
+
+	// Fabricated
+	void resetWaterToFull() { mCurrentWater = getMaxWater(); }
+
+	// Fabricated
+	s32 getCurrentWater() const { return mCurrentWater; }
+
+	// Fabricated
+	void updateUnk1C88(u8 emittedWater)
+	{
+		mEmittedWaterCount = emittedWater;
+		unk1C88 += 10.0f
+		           * (emittedWater * (f32)getCurrentNozzle()->mDecRate.get()
+		              / mNozzleList[0]->mAmountMax.get());
+	}
+
+	// Fabricated
+	s32 getMaxWater() const { return getCurrentNozzle()->mAmountMax.get(); }
+
+	// Fabricated
+	bool isSwitchingToPrimaryNozzle()
+	{
+		return mSwitchToSecondNozzleSpeed < 0.0f ? true : false;
+	}
+
+	// Fabricated
+	bool isSwitchingToSecondaryNozzle()
+	{
+		return mSwitchToSecondNozzleSpeed > 0.0f ? true : false;
+	}
+
+	// Fabricated
+	bool checkCurrentNozzleRocketType(u32 pType) const
+	{
+		return getCurrentNozzle()->mRocketType.get() == pType;
+	}
+
+	// Fabricated
+	bool checkCurrentNozzleKind(s32 pNozzleKind) const
+	{
+		return getCurrentNozzle()->getNozzleKind() == pNozzleKind;
+	}
+
+	// Fabricated and fairly certainly fake
+	bool checkCurrentNozzleTriggerSprayState(s32 pState) const
+	{
+		return ((TNozzleTrigger*)getCurrentNozzle())->getSprayState() == pState;
+	}
+
+	// Fabricated (maybe should be indexed?)
+	const JGeometry::TVec3<f32>& getEmitPos(u8 emitterIdx) const
+	{
+		return mEmitPos[emitterIdx];
+	}
+
+	// Fabricated
+	s16 getPropellerAngle() const { return mPropellerAngle; }
+	// Fabricated
+	s16 getHoverAngleL() const { return mHoverAngleL; }
+	// Fabricated
+	s16 getHoverAngleR() const { return mHoverAngleR; }
+
+	// Fabricated
+	TMario* getMario() const { return mMario; }
+
+	// Fabricated
+	int getCurrentNozzleType() const { return mCurrentNozzle; }
+
+	// Fabricated
+	int getSecondNozzleType() const { return mSecondNozzle; }
+
+	// Fabricated
+	TWaterEmitInfo* getEmitInfo() const { return mEmitInfo; }
+
+	// Fabricated
+	f32 getSwitchProgress() const { return mSwitchToSecondNozzleProgress; }
+
+	// Fabricated
+	u8 getEmittedWaterCount() const { return mEmittedWaterCount; }
+
+	// Fabricated
+	f32 getHouseProgress() const { return mHouseProgress; }
+	void resetHouseProgress() { mHouseProgress = 0.0f; }
+
+	// Fabricated and i suspect it to be fake
+	TDeParams* getParams() { return &mWatergunParams; }
+
+	// Fabricated
+	TMultiMtxEffect* getMultiMtxEffect() { return mMultiMtxEffect; }
+
+	// Fabricated, might be single function?
+	void setHoverAngleTargetL(s16 angle) { mHoverAngleTargetL = angle; }
+	void setHoverAngleTargetR(s16 angle) { mHoverAngleTargetR = angle; }
+
+	// Fabricated
+	f32 getUsedRatio()
+	{
+		return mCurrentWater / getCurrentNozzle()->mAmountMax.get();
+	}
+
+	enum {
+		WATER_GUN_FLAG_UNK2  = 0x2,
+		WATER_GUN_FLAG_UNK4  = 0x4,
+		WATER_GUN_FLAG_UNK10 = 0x10,
+	};
+
+public:
+	/* 0x0004 */ u16 mFlags;
+	/* 0x0008 */ TMario* mMario;
+	/* 0x000C */ TNozzleDeform mNozzleDeform;
+	/* 0x0720 */ TNozzleTrigger mNozzleRocket;
+	/* 0x0AB0 */ TNozzleBase mNozzleUnderWater;
+	/* 0x0E34 */ TNozzleDeform mNozzleYoshiDeform;
+	/* 0x1548 */ TNozzleTrigger mNozzleHover;
+	/* 0x18D8 */ TNozzleTrigger mNozzleTurbo;
+	/* 0x1C68 */ TNozzleBase* mNozzleList[6];
+	/* 0x1C80 */ s32 mCurrentWater;
+	/* 0x1C84 */ u8 mCurrentNozzle;
+	/* 0x1C85 */ u8 mSecondNozzle;
+	/* 0x1C86 */ u8 mEmittedWaterCount;
+	/* 0x1C87 */ u8 unk1C87;
+	/* 0x1C88 */ f32 unk1C88;
+	/* 0x1C8C */ u8 mCurrentPressure;
+	/* 0x1C8D */ u8 mPreviousPressure;
+	/* 0x1C8E */ u8 unk1C8E;
+	/* 0x1C8F */ u8 unk1C8F;
+	/* 0x1C90 */ JGeometry::TVec3<f32> mEmitPos[3];
+	/* 0x1CB4 */ JGeometry::TVec3<f32> unk1CB4;
+	/* 0x1CC0 */ s16 unk1CC0;
+	/* 0x1CC2 */ s16 mHoverAngleTargetL;
+	/* 0x1CC4 */ s16 mHoverAngleTargetR;
+	/* 0x1CC6 */ s16 unk1CC6;
+	/* 0x1CC8 */ f32 mHoverAngleL;
+	/* 0x1CCC */ f32 mHoverAngleR;
+	/* 0x1CD0 */ s16 mPropellerAngle;
+	/* 0x1CD2 */ s16 unk1CD2;
+	/* 0x1CD4 */ MActor* mFluddModel;
+	/* 0x1CD8 */ u8 mJointIdxNozzleCenter;
+	/* 0x1CD9 */ u8 unk1CD9;
+	/* 0x1CDA */ u16 unk1CDA;
+	/* 0x1CDC */ TMultiMtxEffect* mMultiMtxEffect;
+	/* 0x1CE0 */ f32 unk1CE0;
+	/* 0x1CE4 */ u32 unk1CE4;
+	/* 0x1CE8 */ u32 unk1CE8;
+	/* 0x1CEC */ f32 mHouseProgress;
+	/* 0x1CF0 */ f32 unk1CF0;
+	/* 0x1CF4 */ f32 mHouseSpeed;
+	/* 0x1CF8 */ u16 mHouseDelay;
+	/* 0x1CFA */ u16 mHouseTimer;
+	/* 0x1CFC */ f32 mSwitchToSecondNozzleProgress;
+	/* 0x1D00 */ f32 mSwitchToSecondNozzleSpeed;
+	/* 0x1D04 */ s16 mBaseTiltAngleMax;
+	/* 0x1D06 */ s16 mBaseTiltAngleMin;
+	/* 0x1D08 */ s16 unk1D08;
+	/* 0x1D0C */ TWaterEmitInfo* mEmitInfo; // TWaterEmitInfo
+	/* 0x1D10 */ TMirrorActor* mMirrorActor;
+	/* 0x1D14 */ TDeParams mWatergunParams;
+};
+
+#endif

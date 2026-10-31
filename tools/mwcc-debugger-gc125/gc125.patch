@@ -1,0 +1,182 @@
+diff --git a/mwcc_debugger.py b/mwcc_debugger.py
+index 3b31374..beb3c32 100755
+--- a/mwcc_debugger.py
++++ b/mwcc_debugger.py
+@@ -224,6 +224,89 @@ def init_mwcc_version():
+             frame_base_size_addr=0x5888CC,
+             frame_call_args_size_addr=0x58792C,
+         )
++    elif bytes(gdb.selected_inferior().read_memory(0x540BBC, 10)) == b"Metrowerks":
++        # GC/1.2.5: addresses ported from GC/1.1 by aligning code against rayanht/mwcc symbol maps
++        MWCC_VERSION = MwccVersion(
++            name="GC/1.1",
++            codegen_start_addr=0x4351C0,
++            codegen_end_addr=0x435DB9,
++            gfunction_addr=None,
++            cmangler_getlinkname_addr=0x4C2560,
++            nodenames_addr=0x560CB4,
++            nodenames_size=75,
++            ast_breakpoints={
++                0x43539D: "initial-code",
++                0x4353C4: "after-optimizations",
++                0x4353C9: "final-code",
++            },
++            opcodeinfo_addr=0x5654B0,
++            opcodeinfo_size=468,
++            pcbasicblocks_addr=0x587C74,
++            pcode_breakpoints={
++                0x435AFF: "initial-code",
++                # -O2
++                0x4C4486: "after-common-subexpression-elimination",
++                0x4C44B9: "after-copy-propagation",
++                0x4C44E9: "after-add-propagation",
++                # -O3
++                0x4C4926: "after-common-subexpression-elimination",
++                0x4C4959: "after-copy-propagation",
++                0x4C4993: "after-add-propagation",
++                0x4C49F6: "after-loop-code-motion",
++                0x4C4A26: "after-loop-strength-reduction",
++                0x4C4A2D: "after-copy-propagation",
++                0x4C4A5E: "after-loop-transforms",
++                0x4C4A65: "after-copy-propagation",
++                0x4C4A6B: "after-add-propagation",
++                0x4C4AA7: "after-copy-propagation",
++                0x4C4ADB: "after-constant-propagation",
++                0x4C4B0B: "after-load-deletion",
++                0x4C4B3B: "after-add-propagation",
++                0x4C4B6E: "after-common-subexpression-elimination",
++                0x4C4B75: "after-copy-propagation",
++                # -O4
++                0x4C4546: "after-common-subexpression-elimination",
++                0x4C4579: "after-copy-propagation",
++                0x4C45B3: "after-add-propagation",
++                0x4C4616: "after-loop-code-motion",
++                0x4C4646: "after-loop-strength-reduction",
++                0x4C464D: "after-copy-propagation",
++                0x4C467E: "after-loop-transforms",
++                0x4C4685: "after-copy-propagation",
++                0x4C468B: "after-add-propagation",
++                0x4C46C7: "after-copy-propagation",
++                0x4C46FB: "after-constant-propagation",
++                0x4C472B: "after-load-deletion",
++                0x4C475D: "after-copy-propagation",
++                0x4C476C: "after-add-propagation",
++                0x4C47A5: "after-array-register-transforms",
++                0x4C47D5: "after-constant-propagation",
++                0x4C47DC: "after-copy-propagation",
++                0x4C480D: "after-common-subexpression-elimination",
++                0x4C4817: "after-copy-propagation",
++                0x4C48AB: "after-code-motion",
++                0x4C48DE: "after-common-subexpression-elimination",
++                0x4C48E5: "after-copy-propagation",
++                # Shared passes
++                0x435B7E: "after-scheduling",
++                0x435BDA: "after-peephole-forward",
++                0x435BFE: "before-regalloc",
++                0x435C03: "after-regalloc",
++                0x435CB8: "after-prologue-epilogue",
++                0x435D20: "after-peephole",
++                0x435D75: "after-scheduling",
++            },
++            regalloc_breakpoint_addr=0x4CE3F4,
++            interferencegraph_addr=0x587E3C,
++            used_virtual_registers_gpr_addr=0x58846E,
++            used_virtual_registers_fpr_addr=0x58846C,
++            coloring_class_addr=None,
++            arguments_addr=0x58806C,
++            locals_addr=0x587FB8,
++            temps_addr=0x57F6C0,
++            frame_base_size_addr=0x5880CC,
++            frame_call_args_size_addr=0x58712C,
++        )
+     elif bytes(gdb.selected_inferior().read_memory(0x58D224, 10)) == b"Metrowerks":
+         MWCC_VERSION = MwccVersion(
+             name="GC/2.6",
+@@ -1551,8 +1634,17 @@ def print_objects(f, stack_base: int, objects: list[int], is_locals=False):
+         else:
+             register_str = ""
+ 
++        kind = ""
++        try:
++            tp = read_u32(obj_addr + 0xE)
++            if tp:
++                kind = {1: "int", 2: "float", 3: "enum", 4: "struct", 5: "class",
++                        6: "ptr"}.get(read_u8(tp), f"t{read_u8(tp)}")
++                kind = f" :{kind}"
++        except Exception:
++            pass
+         print(
+-            f"  {stack_str}{register_str}{obj.name}",
++            f"  {stack_str}{register_str}{obj.name}{kind}",
+             file=f,
+         )
+ 
+@@ -1618,6 +1710,10 @@ def run_compiler():
+     load_node_names()
+     load_opcode_info()
+ 
++    if os.environ.get("INLINE_TRACE"):
++        run_inline_trace()
++        return
++
+     # Find the function to analyze
+     gdb.execute(f"break *{MWCC_VERSION.codegen_start_addr:#x}")
+ 
+@@ -1666,6 +1762,57 @@ def run_compiler():
+             gdb.execute("quit")
+ 
+ 
++
++# GC/1.2.5 inliner addresses (rayanht/mwcc config/GC_1_2_5/symbols.txt)
++CAN_INLINE_ADDR = 0x5125D0
++INLINE_PASS_ADDR = 0x582468
++CAN_INLINE_RETS = (0x512640, 0x51264E, 0x512663, 0x512677, 0x51267B, 0x512683)
++
++
++def run_inline_trace():
++    """Log every can_inline() verdict, grouped under the function codegen'd next."""
++    gdb.execute(f"break *{CAN_INLINE_ADDR:#x}")
++    for r in CAN_INLINE_RETS:
++        gdb.execute(f"break *{r:#x}")
++    gdb.execute(f"break *{MWCC_VERSION.codegen_start_addr:#x}")
++    pending = []
++    cur = None
++    out = open(os.path.join(OUTPUT_DIR, "inline_trace.txt"), "w")
++    while True:
++        try:
++            gdb.execute("continue")
++        except gdb.error:
++            break
++        pc = int(gdb.parse_and_eval("$pc"))
++        if pc == CAN_INLINE_ADDR:
++            sp = int(gdb.parse_and_eval("$esp"))
++            node = read_u32(sp + 4)
++            obj = read_u32(node + 0xA)
++            try:
++                callee = MwccObject.load(obj).name
++            except Exception:
++                callee = f"<obj {obj:#x}>"
++            info = read_u32(obj + 0x26)
++            extra = ""
++            if info:
++                ln = read_u32(obj + 0x2E)
++                lname = read_string(ln + 0xA) if ln else "?"
++                extra = f" [{lname} kind={read_u8(info + 0x28)} nstmts={read_u16(info + 0xC)}]"
++            cur = (read_s16(INLINE_PASS_ADDR), callee + extra)
++        elif pc in CAN_INLINE_RETS and cur:
++            ok = int(gdb.parse_and_eval("$eax")) & 0xFF
++            pending.append(f"  pass={cur[0]} {'INLINE' if ok else 'call  '} {cur[1]}")
++            cur = None
++        elif pc == MWCC_VERSION.codegen_start_addr:
++            func = find_current_function()
++            if FUNCTION_NAME in ("*", func.linkname):
++                out.write(f"{func.linkname}\n" + "\n".join(pending) + "\n\n")
++                out.flush()
++                if FUNCTION_NAME != "*":
++                    break
++            pending = []
++    out.close()
++
+ def start_gdb():
+     # TODO: Run ninja to get compiler path and arguments?
+     parser = argparse.ArgumentParser(
