@@ -32,8 +32,11 @@ the retail DOL is linked instead; the script lists them.
 object is compiled with -DSMS_ORACLE, which turns on the replay/logging hooks
 in the sources, and oracle.cpp is linked in.
 
+The version defaults to the one in region.json.
+Put the DOL into a copy of your own disc image with a GameCube ISO tool.
+
 Usage: python3 tools/build_playable.py [--build-dir build_play]
-       [--version GMSJ01] [--fallback-bytes 512] [--pure] [--oracle]
+       [--version VERSION] [--fallback-bytes 512] [--pure] [--oracle]
 """
 
 import argparse
@@ -116,6 +119,15 @@ def map_path(version: str) -> Path:
     return ROOT / (m.group(1) if m else f"orig/{version}/files/mario.MAP")
 
 
+def default_version() -> str:
+    """The version named by region.json, or GMSJ01."""
+    try:
+        import json
+        return json.loads((ROOT / "region.json").read_text())["version"]
+    except (OSError, ValueError, KeyError):
+        return "GMSJ01"
+
+
 def ninja_command(target: str) -> list:
     r = run(["ninja", "-t", "commands", target])
     return shlex.split(r.stdout.strip().splitlines()[-1])
@@ -124,7 +136,7 @@ def ninja_command(target: str) -> list:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--build-dir", default="build_play")
-    ap.add_argument("--version", default="GMSJ01")
+    ap.add_argument("--version", default=default_version())
     ap.add_argument("--fallback-bytes", type=int, default=512)
     ap.add_argument("--pure", action="store_true")
     ap.add_argument("--oracle", action="store_true",
@@ -134,7 +146,12 @@ def main():
     ver_dir = ROOT / args.build_dir / args.version
     out_dir = ver_dir / "playable"
     objcopy = ROOT / "build/binutils/powerpc-eabi-objcopy"
-    owners = map_owners(map_path(args.version))
+    mp = map_path(args.version)
+    if mp.exists():
+        owners = map_owners(mp)
+    else:
+        print(f"no linker map at {mp.relative_to(ROOT)}; duplicate globals keep the first copy")
+        owners = {}
 
     cfg = [sys.executable, "configure.py", "--version", args.version,
            "--non-matching", "--all-source", "--build-dir", args.build_dir]

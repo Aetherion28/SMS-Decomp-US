@@ -149,7 +149,7 @@ config.dtk_path = args.dtk
 config.objdiff_path = args.objdiff
 config.binutils_path = args.binutils
 config.compilers_path = args.compilers
-# Private fork: use the compilers committed in ./compilers when none is given
+# Use compilers placed in ./compilers when none is given (not tracked; otherwise they are downloaded)
 if config.compilers_path is None and Path("compilers/GC/1.2.5").is_dir():
     config.compilers_path = Path("compilers")
 config.generate_map = args.map

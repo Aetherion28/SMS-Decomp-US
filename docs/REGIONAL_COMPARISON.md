@@ -49,7 +49,7 @@ The repository rebuilds a DOL whose SHA-1 equals this version's original executa
 `ninja baseline` and `ninja changes_all` were run against the previous commit; no function lost points.
 Seven functions score lower than in the earlier upstream-derived snapshot, because this source removes upstream's `#pragma dont_inline` and fabricated helpers; they score the same as in the main JP project.
 No ISO files are in Git.
-This version's own executable and linker map are tracked under `orig/GMSE01/` so that the repository builds without the disc; nothing from any other version is tracked.
+This repository contains no game files: no disc image, executable or linker map is tracked, now or in its history; the build reads them from your own disc in `orig/GMSE01/`.
 The US disc ships no linker map; the `marioUS.MAP` tracked here is the map of this same US executable as shipped on the Korean disc.
 
 Toolchain: decomp-toolkit v1.8.4, objdiff-cli v3.8.1 and the repository's pinned MWCC compilers; the 2026-11-01 measurements were made on Linux.
@@ -66,7 +66,7 @@ This image's ISO SHA-256 and executable SHA-1/SHA-256 values are in `assets/disc
 
 GitHub displays HTML as source; download the HTML file and open it in a browser to use the interactive map.
 The maps contain their own data, styles, and scripts and work offline.
-Source links open the corresponding private GitHub repository.
+Source links open this GitHub repository.
 The progress map's function count also includes zero-size function symbols; executable-overlap analysis excludes them.
 
 ## Reproduce
@@ -82,7 +82,7 @@ python tools/progress_treemap.py
 For the comparison with JP 1.0, install `pyelftools`, build this target and a JP 1.0 checkout first, and run:
 
 ```sh
-python tools/regional_compare.py --baseline ../sms-ai-decomp --baseline-version GMSJ01
+python tools/regional_compare.py --baseline ../SMS-Decomp-JP-1.0 --baseline-version GMSJ01
 python tools/reuse_treemap.py
 ```
 

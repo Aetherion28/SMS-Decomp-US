@@ -2,7 +2,7 @@
 """Measure named original-function overlap without emitting game bytes.
 
 pip install pyelftools
-python tools/regional_compare.py --baseline ../sms-ai-decomp --baseline-version GMSJ01
+python tools/regional_compare.py --baseline ../SMS-Decomp-JP-1.0 --baseline-version GMSJ01
 Build both repositories first. This uses dtk original objects, report addresses,
 and original DOL bytes. Relocation-masked matches are candidates only: relocation
 destinations and referenced data can differ even when the instruction body agrees.

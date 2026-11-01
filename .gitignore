@@ -39,11 +39,5 @@ compile_commands.json
 *.exe
 tools/mwcc_compiler
 
-# Private fork: track this version's executable and linker map, and the compilers we build with
-!orig/GMSE01/sys/
-orig/GMSE01/sys/*
-!orig/GMSE01/sys/main.dol
-!compilers/**
-!orig/GMSE01/files/
-orig/GMSE01/files/*
-!orig/GMSE01/files/marioUS.MAP
+# Compilers placed here locally (otherwise they are downloaded at build time)
+compilers/
