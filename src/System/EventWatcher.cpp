@@ -1078,10 +1078,12 @@ static void evStartEventSE(TSpcTypedInterp<TEventWatcher>* interp, u32 arg_num)
 	int se;
 	switch (interp->pop().getDataInt()) {
 	case 0:
-		se = 0x4842;
+		se = VERSION_SELECT(MSD_SE_DUMMY_COIN_COUNT_1,
+		                    GMSJ01(MSD_SE_SY_COIN_BOUND));
 		break;
 	case 1:
-		se = 0x484f;
+		se = VERSION_SELECT(MSD_SE_DUMMY_COIN_COUNT_10,
+		                    GMSJ01(MSD_SE_SY_GET_POMP));
 		break;
 	}
 	SMSGetMSound()->startSoundSystemSE(se, 0, nullptr, 0);
@@ -1282,7 +1284,7 @@ static void evStartMontemanBGM(TSpcTypedInterp<TEventWatcher>* interp,
 {
 	interp->verifyArgNum(0, &arg_num);
 	MSBgm::stopTrackBGM(0, 10);
-	MSBgm::startBGM(MSD_STR_SPACEWORLD);
+	MSBgm::startBGM(MSD_BGM_MONTEMAN_RACE);
 	SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_RACE_START, 0, nullptr, 0);
 	interp->push();
 }
@@ -1291,7 +1293,7 @@ static void evStartMontemanFanfare(TSpcTypedInterp<TEventWatcher>* interp,
                                    u32 arg_num)
 {
 	interp->verifyArgNum(0, &arg_num);
-	MSBgm::startBGM(MSD_BGM_CAMERA_KAGE);
+	MSBgm::startBGM(MSD_BGM_FANFARE_RACE);
 	interp->push();
 }
 #endif

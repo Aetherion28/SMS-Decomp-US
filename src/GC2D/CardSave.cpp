@@ -1336,19 +1336,19 @@ s8 TCardSave::waitForSelect2(TEProgress param_1, TEProgress param_2)
 		u32 messageID = cMessageID[unk310];
 		switch (mDialogPurpose) {
 		case PURPOSE_BLUE_COIN_GET:
-			messageID = VERSION_SELECT(0x24, GMSJ01(0x1C), GMSJ01_01(0x1C));
+			messageID = VERSION_SELECT(0x24, GMSJ01(0x1C));
 			break;
 		case PURPOSE_HOVER_NOZZLE_GET:
-			messageID = VERSION_SELECT(0x25, GMSJ01(0x1D), GMSJ01_01(0x1D));
+			messageID = VERSION_SELECT(0x25, GMSJ01(0x1D));
 			break;
 		case PURPOSE_ROCKET_NOZZLE_GET:
-			messageID = VERSION_SELECT(0x26, GMSJ01(0x1E), GMSJ01_01(0x1E));
+			messageID = VERSION_SELECT(0x26, GMSJ01(0x1E));
 			break;
 		case PURPOSE_TURBO_NOZZLE_GET:
-			messageID = VERSION_SELECT(0x27, GMSJ01(0x1F), GMSJ01_01(0x1F));
+			messageID = VERSION_SELECT(0x27, GMSJ01(0x1F));
 			break;
 		case PURPOSE_YOSHI_UNLOCKED:
-			messageID = VERSION_SELECT(0x28, GMSJ01(0x20), GMSJ01_01(0x20));
+			messageID = VERSION_SELECT(0x28, GMSJ01(0x20));
 			break;
 		}
 
@@ -1466,8 +1466,9 @@ s8 TCardSave::waitForSelect3(TEProgress param_1, TEProgress param_2,
 		    mShineGetSaveWindowInitialBounds.getHeight(), 0, 0);
 
 		mShineGetSaveWindowTextShadow->hide();
-		setMessage(mShineGetSaveWindowText, 0x200, 0x21);
-		setMessage(mShineGetSaveWindowTextShadow, 0x200, 0x21);
+		setMessage(mShineGetSaveWindowText, 0x200, VERSION_SELECT(0x29, GMSJ01(0x21)));
+		setMessage(mShineGetSaveWindowTextShadow, 0x200,
+		           VERSION_SELECT(0x29, GMSJ01(0x21)));
 
 		mShineGetSaveOptions[0][1]->hide();
 		mShineGetSavePointerHands[0][0]->hide();

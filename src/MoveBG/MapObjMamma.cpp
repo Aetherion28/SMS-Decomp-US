@@ -564,7 +564,7 @@ void TLeanMirror::touchPlayer(THitActor* player)
 	if (isState(STATE_NORMAL) && marioIsOn()) {
 		updateSpeedVec(player->mPosition, unk160);
 		if (!unk1AC) {
-			MSBgm::startBGM(MSD_BGM_EXTRA);
+			MSBgm::startBGM(MSD_BGM_CHUBOSS2);
 			MSBgm::setTrackVolume(0, 0.0f, 10, 0);
 			unk1AC = 1;
 		}

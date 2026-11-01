@@ -217,8 +217,10 @@ void TMovieSubTitle::setCurMessage()
 
 	snprintf(unk1C->getStringPtr(), 0x400, "%s", unk18->getStringPtr());
 #else
-	snprintf(unk18->getStringPtr(), 256, "%s", msg);
-	snprintf(unk1C->getStringPtr(), 256, "%s", msg);
+	snprintf(unk18->getStringPtr(), VERSION_SELECT(256, GMSJ01_01(0x400)), "%s",
+	         msg);
+	snprintf(unk1C->getStringPtr(), VERSION_SELECT(256, GMSJ01_01(0x400)), "%s",
+	         msg);
 #endif
 }
 

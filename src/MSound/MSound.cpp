@@ -550,7 +550,7 @@ void MSound::mainLoop()
 
 #if !(!defined(VERSION_GMSJ01))
 	if (unkD1 == 1) {
-		MSBgm::startBGM(MSD_BGM_KUPPA);
+		MSBgm::startBGM(MSD_BGM_SHINE_APPEAR);
 		unkD1 = 0;
 	}
 #endif

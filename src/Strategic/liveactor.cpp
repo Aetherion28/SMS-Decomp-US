@@ -23,6 +23,7 @@
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
+#include <version.h>
 
 f32 TLiveActor::mVelocityMinY = -40.0f;
 
@@ -476,7 +477,8 @@ void TLiveActor::updateAnmSound()
 void TLiveActor::setAnmSound(const char* path)
 {
 	if (!mAnmSound)
-		OSPanic(__FILE__, 0x385, "TLiveActor[%s] : mAnmSound == NULL\n", mName);
+		OSPanic(__FILE__, VERSION_SELECT(0x393, GMSJ01(0x385), GMSE01(0x386)),
+		        "TLiveActor[%s] : mAnmSound == NULL\n", mName);
 
 	mAnmSoundPath = path;
 

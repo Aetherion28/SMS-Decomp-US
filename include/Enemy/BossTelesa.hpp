@@ -147,7 +147,7 @@ public:
 	static f32 mCameraMoveSp;
 
 	enum {
-		LIVE_FLAG_UNK10000 = 0x10000,
+		LIVE_FLAG_UNK10000 = VERSION_SELECT(0x20000, GMSJ01(0x10000), GMSE01(0x10000)),
 	};
 
 public:

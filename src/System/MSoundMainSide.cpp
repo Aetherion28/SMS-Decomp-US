@@ -170,7 +170,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 
 	MSStageInfo::msStg                     = MSBgm::getSceneNo(0xfffffff0);
 	MSStageInfo::stageBgm                  = 0xfffffff0;
-	MSStageInfo::demoBgm                   = MSD_BGM_MONTE_ONSEN;
+	MSStageInfo::demoBgm                   = MSD_BGM_CAMERA;
 	MSStageInfo::flags                     = 10;
 	MSStageInfo::stageBgmSilent            = 0xfffffff0;
 	MSStageInfo::stageBgmSilentStartStatus = 2;
@@ -192,12 +192,12 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 
 	switch (param_1) {
 	case 0:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_UNDERGROUND);
-		MSStageInfo::stageBgm = MSD_BGM_UNDERGROUND;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_AIRPORT);
+		MSStageInfo::stageBgm = MSD_BGM_AIRPORT;
 		break;
 	case 1:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BIANCO);
-		MSStageInfo::stageBgm = MSD_BGM_BIANCO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DOLPIC);
+		MSStageInfo::stageBgm = MSD_BGM_DOLPIC;
 		if (true) {
 			switch (param_2) {
 			case 0:
@@ -207,7 +207,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 				MSStageInfo::cubeFadeRatio = 0.22f;
 				break;
 			case 1:
-				MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+				MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 				MSStageInfo::flags   = 0;
 				MSStageInfo::volOffCategory -= 0x183;
 				break;
@@ -220,7 +220,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			case 8:
 				if (TFlagManager::getInstance()->getFlag(MSF_SHADOW_MARIO_EVENT)
 				    > 0) {
-					MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+					MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 					MSStageInfo::flags   = 6;
 					MSStageInfo::volOffCategory -= 0x83;
 					MSStageInfo::fadeEvent  = 1;
@@ -229,7 +229,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 				}
 				break;
 			case 9:
-				MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+				MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 				MSStageInfo::flags   = 0;
 				MSStageInfo::volOffCategory -= 0x82;
 			}
@@ -239,11 +239,11 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 #if !defined(VERSION_GMSJ01)
 		MSoundSESystem::MSRandPlay::createRandPlayVec(MSD_SE_OBJ_BIRD_BIA_1, 8);
 #endif
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAMMA);
-		MSStageInfo::stageBgm = MSD_BGM_MAMMA;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BIANCO);
+		MSStageInfo::stageBgm = MSD_BGM_BIANCO;
 		switch (param_2) {
 		case 0:
-			MSStageInfo::demoBgm       = MSD_BGM_GAMEOVER;
+			MSStageInfo::demoBgm       = MSD_BGM_CAMERA_KAGE;
 			MSStageInfo::flags         = 10;
 			MSStageInfo::fadeEvent     = 2;
 			MSStageInfo::switchBgm     = 0xfffffff0;
@@ -252,7 +252,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			break;
 
 		case 6:
-			MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+			MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 			MSStageInfo::flags   = 3;
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent           = 1;
@@ -263,10 +263,10 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		}
 		break;
 	case 3:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_GET_SHINE);
-		MSStageInfo::stageBgm = MSD_BGM_GET_SHINE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_RICCO);
+		MSStageInfo::stageBgm = MSD_BGM_RICCO;
 		if (param_2 == 6) {
-			MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+			MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 			MSStageInfo::flags   = 3;
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent           = 1;
@@ -275,40 +275,40 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::distFadeStageToKage = 0;
 		}
 		if (param_2 == 4) {
-			MSStageInfo::switchBgm     = MSD_BGM_MAP_SELECT;
+			MSStageInfo::switchBgm     = MSD_BGM_BOSS;
 			MSStageInfo::fadeEvent     = 3;
-			MSStageInfo::switchBgm2    = MSD_BGM_CHUBOSS_MANTA;
+			MSStageInfo::switchBgm2    = MSD_BGM_BOSSGESO_2DN3RD;
 			MSStageInfo::cubeFadeRatio = 0.28f;
 		}
 		break;
 	case 4:
 		if (param_2 != 2) {
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_PINNAPACO_SEA);
-			MSStageInfo::stageBgm = MSD_BGM_PINNAPACO_SEA;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAMMA);
+			MSStageInfo::stageBgm = MSD_BGM_MAMMA;
 		} else {
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAP_SELECT);
-			MSStageInfo::stageBgm = MSD_BGM_MAP_SELECT;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BOSS);
+			MSStageInfo::stageBgm = MSD_BGM_BOSS;
 		}
 		if (param_2 == 6) {
 			MSStageInfo::switchBgm = 0xfffffff0;
-			MSStageInfo::demoBgm   = MSD_BGM_CAMERA;
+			MSStageInfo::demoBgm   = MSD_BGM_KAGEMARIO;
 			MSStageInfo::flags     = 3;
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent           = 1;
 			MSStageInfo::switchBgm2          = 0xfffffff0;
 			MSStageInfo::distFadeStageToKage = 0;
 		} else if (param_2 == 2) {
-			MSStageInfo::demoBgm = MSD_BGM_MAP_SELECT;
+			MSStageInfo::demoBgm = MSD_BGM_BOSS;
 			MSStageInfo::flags   = 0;
 		}
 		break;
 	case 5:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_PINNAPACO);
-		MSStageInfo::stageBgm = MSD_BGM_PINNAPACO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_PINNAPACO_SEA);
+		MSStageInfo::stageBgm = MSD_BGM_PINNAPACO_SEA;
 		switch (param_2) {
 		case 0:
 			MSStageInfo::flags   = 10;
-			MSStageInfo::demoBgm = MSD_BGM_GAMEOVER;
+			MSStageInfo::demoBgm = MSD_BGM_CAMERA_KAGE;
 			break;
 		case 1:
 			MSStageInfo::volOffCategory -= 4;
@@ -316,18 +316,18 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		}
 		break;
 	case 6:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_RICCO);
-		MSStageInfo::stageBgm = MSD_BGM_RICCO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SHILENA);
+		MSStageInfo::stageBgm = MSD_BGM_SHILENA;
 		break;
 	case 7:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAREVILLAGE);
-		MSStageInfo::stageBgm = MSD_BGM_MAREVILLAGE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
+		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
 		if (param_2 == 3) {
 			MSStageInfo::fadeEvent                 = 1;
 			MSStageInfo::switchBgm                 = 0xfffffff0;
 			MSStageInfo::switchBgm2                = 0xfffffff0;
-			MSStageInfo::stageBgm                  = MSD_BGM_CAMERA;
-			MSStageInfo::stageBgmSilent            = MSD_BGM_MAREVILLAGE;
+			MSStageInfo::stageBgm                  = MSD_BGM_KAGEMARIO;
+			MSStageInfo::stageBgmSilent            = MSD_BGM_DELFINO;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
 			MSStageInfo::distFadeStageToKage       = 0;
 		}
@@ -350,17 +350,17 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 #endif
 		switch (param_2) {
 		case 5:
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MERRY_GO_ROUND);
-			MSStageInfo::stageBgm = MSD_BGM_MERRY_GO_ROUND;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTE_RESCUE);
+			MSStageInfo::stageBgm = MSD_BGM_MONTE_RESCUE;
 			break;
 		default:
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SHILENA);
-			MSStageInfo::stageBgm = MSD_BGM_SHILENA;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTEVILLAGE);
+			MSStageInfo::stageBgm = MSD_BGM_MONTEVILLAGE;
 			break;
 		}
 		if (param_2 == 6) {
 			MSStageInfo::switchBgm = 0xfffffff0;
-			MSStageInfo::demoBgm   = MSD_BGM_CAMERA;
+			MSStageInfo::demoBgm   = MSD_BGM_KAGEMARIO;
 			MSStageInfo::flags     = 6;
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent  = 1;
@@ -386,19 +386,19 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			}
 
 			if (param_2 == 7) {
-				MSStageInfo::stageBgmSilent            = MSD_BGM_SHINE_APPEAR;
+				MSStageInfo::stageBgmSilent            = MSD_BGM_MONTE_LAST;
 				MSStageInfo::stageBgmSilentStartStatus = 2;
 			} else {
-				MSStageInfo::stageBgmSilent            = MSD_BGM_MECHAKUPPA;
+				MSStageInfo::stageBgmSilent            = MSD_BGM_MONTE_ONSEN;
 				MSStageInfo::stageBgmSilentStartStatus = 0;
 			}
 		}
 		break;
 	case 9:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_CORONA);
-		MSStageInfo::stageBgm = MSD_BGM_CORONA;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAREVILLAGE);
+		MSStageInfo::stageBgm = MSD_BGM_MAREVILLAGE;
 		if (param_2 == 6) {
-			MSStageInfo::demoBgm = MSD_BGM_CAMERA;
+			MSStageInfo::demoBgm = MSD_BGM_KAGEMARIO;
 			MSStageInfo::flags   = 3;
 			MSStageInfo::volOffCategory -= 0x83;
 			MSStageInfo::fadeEvent           = 1;
@@ -406,28 +406,28 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::switchBgm2          = 0xfffffff0;
 			MSStageInfo::distFadeStageToKage = 0;
 		} else if (param_2 == 1) {
-			MSStageInfo::switchBgm  = MSD_BGM_MISS;
+			MSStageInfo::switchBgm  = MSD_BGM_CHUBOSS;
 			MSStageInfo::fadeEvent  = 3;
-			MSStageInfo::switchBgm2 = MSD_BGM_MISS;
+			MSStageInfo::switchBgm2 = MSD_BGM_CHUBOSS;
 		}
 		break;
 	case 13:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MARE_SEA);
-		MSStageInfo::stageBgm = MSD_BGM_MARE_SEA;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_PINNAPACO);
+		MSStageInfo::stageBgm = MSD_BGM_PINNAPACO;
 		if (param_2 == 4) {
 			MSStageInfo::fadeEvent                 = 1;
 			MSStageInfo::switchBgm                 = 0xfffffff0;
 			MSStageInfo::switchBgm2                = 0xfffffff0;
-			MSStageInfo::stageBgm                  = MSD_BGM_CAMERA;
-			MSStageInfo::stageBgmSilent            = MSD_BGM_MARE_SEA;
+			MSStageInfo::stageBgm                  = MSD_BGM_KAGEMARIO;
+			MSStageInfo::stageBgmSilent            = MSD_BGM_PINNAPACO;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
 			MSStageInfo::distFadeStageToKage       = 0;
 		} else if (param_2 == 0) {
 			MSStageInfo::fadeEvent                 = 1;
 			MSStageInfo::switchBgm                 = 0xfffffff0;
 			MSStageInfo::switchBgm2                = 0xfffffff0;
-			MSStageInfo::stageBgm                  = MSD_BGM_CAMERA;
-			MSStageInfo::stageBgmSilent            = MSD_BGM_MARE_SEA;
+			MSStageInfo::stageBgm                  = MSD_BGM_KAGEMARIO;
+			MSStageInfo::stageBgmSilent            = MSD_BGM_PINNAPACO;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
 			MSStageInfo::distFadeStageToKage       = 0;
 #if !defined(VERSION_GMSJ01)
@@ -435,7 +435,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 #else
 		} else {
 #endif
-			MSStageInfo::stageBgmSilent            = MSD_BGM_SCENARIO_SELECT;
+			MSStageInfo::stageBgmSilent            = MSD_BGM_MERRY_GO_ROUND;
 			MSStageInfo::cubeFadeRatio             = 0.12f;
 			MSStageInfo::stageBgmSilentStartStatus = 2;
 			MSStageInfo::fadeEvent                 = 2;
@@ -451,61 +451,61 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 			MSStageInfo::stageBgm = 0xfffffff0;
 		break;
 	case 14:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EVENT);
-		MSStageInfo::stageBgm = MSD_BGM_EVENT;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_CASINO);
+		MSStageInfo::stageBgm = MSD_BGM_CASINO;
 		break;
 	case 15:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_CHUBOSS2);
-		MSStageInfo::stageBgm = MSD_BGM_CHUBOSS2;
-		SMSGetMSound()->loadArcSeqData(MSD_BGM_CHUBOSS2, false);
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAIN_TITLE);
+		MSStageInfo::stageBgm = MSD_BGM_MAIN_TITLE;
+		SMSGetMSound()->loadArcSeqData(MSD_BGM_MAIN_TITLE, false);
 		break;
 	case 16:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTEVILLAGE);
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MARE_SEA);
 		bVar2                 = true;
-		MSStageInfo::stageBgm = MSD_BGM_MONTEVILLAGE;
+		MSStageInfo::stageBgm = MSD_BGM_MARE_SEA;
 		break;
 	case 20:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BIANCO);
-		MSStageInfo::stageBgm = MSD_BGM_BIANCO;
-		MSStageInfo::demoBgm  = MSD_BGM_BIANCO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DOLPIC);
+		MSStageInfo::stageBgm = MSD_BGM_DOLPIC;
+		MSStageInfo::demoBgm  = MSD_BGM_DOLPIC;
 		MSStageInfo::flags    = 0;
 		break;
 	case 21:
 	case 22:
 	case 23:
 	case 24:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTE_RESCUE);
-		MSStageInfo::stageBgm = MSD_BGM_MONTE_RESCUE;
-		MSStageInfo::demoBgm  = MSD_BGM_MONTE_RESCUE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SKY_AND_SEA);
+		MSStageInfo::stageBgm = MSD_BGM_SKY_AND_SEA;
+		MSStageInfo::demoBgm  = MSD_BGM_SKY_AND_SEA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 28:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
-		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
-		MSStageInfo::demoBgm  = MSD_BGM_DELFINO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EXTRA);
+		MSStageInfo::stageBgm = MSD_BGM_EXTRA;
+		MSStageInfo::demoBgm  = MSD_BGM_EXTRA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 29:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTE_RESCUE);
-		MSStageInfo::stageBgm = MSD_BGM_MONTE_RESCUE;
-		MSStageInfo::demoBgm  = MSD_BGM_MONTE_RESCUE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SKY_AND_SEA);
+		MSStageInfo::stageBgm = MSD_BGM_SKY_AND_SEA;
+		MSStageInfo::demoBgm  = MSD_BGM_SKY_AND_SEA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 30:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
-		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EXTRA);
+		MSStageInfo::stageBgm = MSD_BGM_EXTRA;
 		break;
 	case 31:
 	case 32:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
-		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
-		MSStageInfo::demoBgm  = MSD_BGM_DELFINO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EXTRA);
+		MSStageInfo::stageBgm = MSD_BGM_EXTRA;
+		MSStageInfo::demoBgm  = MSD_BGM_EXTRA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 33:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTE_RESCUE);
-		MSStageInfo::stageBgm = MSD_BGM_MONTE_RESCUE;
-		MSStageInfo::demoBgm  = MSD_BGM_MONTE_RESCUE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SKY_AND_SEA);
+		MSStageInfo::stageBgm = MSD_BGM_SKY_AND_SEA;
+		MSStageInfo::demoBgm  = MSD_BGM_SKY_AND_SEA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 34:
@@ -514,16 +514,16 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 	case 41:
 	case 42:
 	case 43:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
-		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
-		MSStageInfo::demoBgm  = MSD_BGM_DELFINO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EXTRA);
+		MSStageInfo::stageBgm = MSD_BGM_EXTRA;
+		MSStageInfo::demoBgm  = MSD_BGM_EXTRA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 44:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTE_RESCUE);
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_SKY_AND_SEA);
 		bVar2                 = true;
-		MSStageInfo::stageBgm = MSD_BGM_MONTE_RESCUE;
-		MSStageInfo::demoBgm  = MSD_BGM_MONTE_RESCUE;
+		MSStageInfo::stageBgm = MSD_BGM_SKY_AND_SEA;
+		MSStageInfo::demoBgm  = MSD_BGM_SKY_AND_SEA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 45:
@@ -533,53 +533,53 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 	case 49:
 	case 50:
 	case 51:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_DELFINO);
-		MSStageInfo::stageBgm = MSD_BGM_DELFINO;
-		MSStageInfo::demoBgm  = MSD_BGM_DELFINO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EXTRA);
+		MSStageInfo::stageBgm = MSD_BGM_EXTRA;
+		MSStageInfo::demoBgm  = MSD_BGM_EXTRA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 52:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_KAGEMARIO);
-		MSStageInfo::stageBgm = MSD_BGM_KAGEMARIO;
-		MSStageInfo::demoBgm  = MSD_BGM_KAGEMARIO;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_CORONA);
+		MSStageInfo::stageBgm = MSD_BGM_CORONA;
+		MSStageInfo::demoBgm  = MSD_BGM_CORONA;
 		MSStageInfo::flags    = 0;
 		break;
 	case 55:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAP_SELECT);
-		MSStageInfo::stageBgm = MSD_BGM_MAP_SELECT;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BOSS);
+		MSStageInfo::stageBgm = MSD_BGM_BOSS;
 		break;
 	case 57:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MAP_SELECT);
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BOSS);
 #if !defined(VERSION_GMSJ01)
 		bVar2 = true;
 #endif
-		MSStageInfo::stageBgm = MSD_BGM_MAP_SELECT;
+		MSStageInfo::stageBgm = MSD_BGM_BOSS;
 		break;
 	case 58:
 		switch (param_2) {
 		case 0:
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_TIME_IVENT);
-			MSStageInfo::stageBgm = MSD_BGM_TIME_IVENT;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_EVENT);
+			MSStageInfo::stageBgm = MSD_BGM_EVENT;
 			break;
 		case 1:
-			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_AIRPORT);
-			MSStageInfo::stageBgm = MSD_BGM_AIRPORT;
+			MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MECHAKUPPA);
+			MSStageInfo::stageBgm = MSD_BGM_MECHAKUPPA;
 			break;
 		}
 		break;
 	case 59:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_GET_SHINE);
-		MSStageInfo::stageBgm = MSD_BGM_GET_SHINE;
-		MSBgm::startBGM(MSD_BGM_MAP_SELECT);
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_RICCO);
+		MSStageInfo::stageBgm = MSD_BGM_RICCO;
+		MSBgm::startBGM(MSD_BGM_BOSS);
 		MSStageInfo::fadeEvent  = 2;
 		MSStageInfo::flags      = 3;
 		MSStageInfo::switchBgm  = 0xfffffff0;
 		MSStageInfo::switchBgm2 = 0xfffffff0;
 		break;
 	case 60:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_MONTEMAN_RACE);
-		MSStageInfo::stageBgm = MSD_BGM_MONTEMAN_RACE;
-		MSStageInfo::demoBgm  = MSD_BGM_MONTEMAN_RACE;
+		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_KUPPA);
+		MSStageInfo::stageBgm = MSD_BGM_KUPPA;
+		MSStageInfo::demoBgm  = MSD_BGM_KUPPA;
 		MSStageInfo::flags    = 0;
 		MSStageInfo::volOffCategory -= 0x104;
 	}

@@ -531,7 +531,7 @@ BOOL TBiancoGateKeeper::curBckFinished() const
 void TBiancoGateKeeper::startBGM()
 {
 	MSBgm::setTrackVolume(0, 0.0f, 0xA, 0);
-	MSBgm::startBGM(0x8001000B);
+	MSBgm::startBGM(MSD_BGM_CHUBOSS);
 #if !defined(VERSION_GMSJ01)
 	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, true);
 #endif

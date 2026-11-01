@@ -311,7 +311,7 @@ DEFINE_NERVE_EXECUTE(TNerveMantaAppearDemo, TLiveActor)
 	}
 
 	if (time == 0x2D0)
-		MSBgm::startBGM(0x8001002B);
+		MSBgm::startBGM(MSD_BGM_CHUBOSS_MANTA);
 
 	if (time == 0x690)
 		return TRUE;

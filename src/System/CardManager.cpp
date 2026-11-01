@@ -12,7 +12,7 @@ const char CardFileName[0x20] = "super_mario_sunshine\0\0\0\0\0\0\0\0\0\0\0";
 #if defined(VERSION_GMSJ01_01)
 static const char title[]   = "スーパーマリオサンシャイン";
 static const char comment[] = "%d月%d日のセーブデータです";
-#else
+#elif defined(VERSION_GMSJ01)
 const char* titles[] = {
 	"スーパーマリオサンシャイン", "Super Mario Sunshine",
 	"Super Mario Sunshine",       "Super Mario Sunshine",
@@ -24,6 +24,16 @@ const char* comments[] = {
 	"%d月%d日のセーブデータです", "Last saved on %d/%d", "Last saved on %d/%d",
 	"Last saved on %d/%d",        "Last saved on %d/%d", "Last saved on %d/%d",
 	"Last saved on %d/%d",
+};
+#else
+const char* titles[] = {
+	"Super Mario Sunshine", "Super Mario Sunshine", "Super Mario Sunshine",
+	"Super Mario Sunshine", "Super Mario Sunshine",
+};
+
+const char* comments[] = {
+	"%d/%d Save Data",      "Gespeichert am: %d.%d.", "Dern. sauvegarde le %d/%d",
+	"Datos: %d/%d.",        "Ultimo salvataggio %d/%d",
 };
 #endif
 

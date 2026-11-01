@@ -241,6 +241,13 @@ void TConsoleStr::perform(u32 cue, JDrama::TGraphics* graphics)
 							mGoLetters[i]->getPane()->hide();
 							mGoLetters[i]->getPane()->setAlpha(0xff);
 						}
+#elif defined(VERSION_GMSJ01_01)
+						mGoLetters[0]->getPane()->hide();
+						mGoLetters[0]->getPane()->setAlpha(0xff);
+						mGoLetters[1]->getPane()->hide();
+						mGoLetters[1]->getPane()->setAlpha(0xff);
+						mGoLetters[2]->getPane()->hide();
+						mGoLetters[2]->getPane()->setAlpha(0xff);
 #else
 						mGoLetters[0]->getPane()->hide();
 						mGoLetters[1]->getPane()->hide();
@@ -386,6 +393,13 @@ void TConsoleStr::startAppearReady()
 		mGoLetters[i]->getPane()->hide();
 		mGoLetters[i]->getPane()->setAlpha(0xff);
 	}
+#elif defined(VERSION_GMSJ01_01)
+	mGoLetters[0]->getPane()->hide();
+	mGoLetters[0]->getPane()->setAlpha(0xff);
+	mGoLetters[1]->getPane()->hide();
+	mGoLetters[1]->getPane()->setAlpha(0xff);
+	mGoLetters[2]->getPane()->hide();
+	mGoLetters[2]->getPane()->setAlpha(0xff);
 #else
 	mGoLetters[0]->getPane()->hide();
 	mGoLetters[1]->getPane()->hide();
@@ -409,6 +423,13 @@ void TConsoleStr::startAppearGo()
 		mGoLetters[i]->getPane()->hide();
 		mGoLetters[i]->getPane()->setAlpha(0xff);
 	}
+#elif defined(VERSION_GMSJ01_01)
+	mGoLetters[0]->getPane()->hide();
+	mGoLetters[0]->getPane()->setAlpha(0xff);
+	mGoLetters[1]->getPane()->hide();
+	mGoLetters[1]->getPane()->setAlpha(0xff);
+	mGoLetters[2]->getPane()->hide();
+	mGoLetters[2]->getPane()->setAlpha(0xff);
 #else
 	mGoLetters[0]->getPane()->hide();
 	mGoLetters[1]->getPane()->hide();

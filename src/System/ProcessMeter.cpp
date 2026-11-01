@@ -3,7 +3,7 @@
 TProcessMeter::TProcessMeter(s32 r4)
 {
 	_000 = 0x28;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	_004 = 0x1C2;
 #else
 	_004 = 0x1B8;

@@ -29,7 +29,7 @@ void SMSSetupGCLogoRenderMode(GXRenderModeObj* rmo)
     || defined(VERSION_GMSP01_NX)
 	u32 tvFormat = VIGetTvFormat();
 	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT))
-		tvFormat = VI_PAL;
+		tvFormat = VERSION_SELECT(VI_PAL, GMSJ01_01(VI_NTSC));
 
 	rmo->viTVmode = (VITVMode)VI_TVMODE(tvFormat, VI_INTERLACE);
 #else

@@ -2153,7 +2153,7 @@ DEFINE_NERVE(TNerveBossTelesaDie, TLiveActor)
 				gpCameraShake->startShake(CAM_SHAKE_MODE_UNK20, 1.0f);
 			}
 		} else {
-			MSBgm::stopBGM(MSD_BGM_MAP_SELECT, 10);
+			MSBgm::stopBGM(MSD_BGM_BOSS, 10);
 			gpCameraShake->startShake(CAM_SHAKE_MODE_UNK21, 1.0f);
 			boss->setBckAnm(3);
 			boss->getMActor()->setBrkFromIndex(1);
@@ -2313,7 +2313,7 @@ DEFINE_NERVE(TNerveBossTelesaAppear, TLiveActor)
 
 			if (!boss->unk384) {
 				boss->unk384 = 1;
-				MSBgm::startBGM(MSD_BGM_MAP_SELECT);
+				MSBgm::startBGM(MSD_BGM_BOSS);
 			}
 
 			boss->mSlot->mScaling.set(1.0f, 1.0f, 1.0f);

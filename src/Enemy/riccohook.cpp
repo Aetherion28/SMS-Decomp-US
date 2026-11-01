@@ -3,8 +3,14 @@
 #include <Enemy/Graph.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <M3DUtil/MActorAnm.hpp>
+#if !defined(VERSION_GMSJ01)
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
+
+// rogue includes needed for matching sinit & bss
+#include <MSound/MSSetSound.hpp>
+#include <MSound/MSoundBGM.hpp>
+#endif
 
 // @non-matching -- the issue seems to stem from the JDrama TNameRefGen
 // search/push_back calls.

@@ -1178,6 +1178,9 @@ void TWaterGun::init()
 	mCurrentNozzle          = Spray;
 	mSecondNozzle           = Hover;
 	mNozzleRocket.setSoundId(MSD_SE_PO_ROCKET_TRIGGER);
+#if !defined(VERSION_GMSJ01)
+	mNozzleTurbo.setSoundId(MSD_SE_PO_SNIPER_TRIGGER);
+#endif
 	mNozzleDeform.getBomb()->setSoundId(MSD_SE_PO_SHOTGUN_TRIGGER);
 	mCurrentWater                 = getCurrentNozzle()->mAmountMax.get();
 	mEmittedWaterCount            = 0;

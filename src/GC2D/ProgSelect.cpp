@@ -156,9 +156,14 @@ void TProgSelect::perform(u32 cue, JDrama::TGraphics* graphics)
 		graph.setup2D();
 		J2DPrint printer(gpSystemFont, 0);
 		printer.setUnk50(32);
-		printer.printReturn(unk1C, VERSION_SELECT(580, GMSJ01(300)), 160,
+		printer.printReturn(unk1C,
+		                    VERSION_SELECT(580, GMSJ01(300), GMSE01(360),
+		                                   GMSJ01_01(300)),
+		                    160,
 		                    HBIND_CENTER, VBIND_TOP,
-		                    VERSION_SELECT(35, GMSJ01(175)), 300, 255);
+		                    VERSION_SELECT(35, GMSJ01(175), GMSE01(145),
+		                                   GMSJ01_01(175)),
+		                    300, 255);
 		if (!mHideTextBoxes) {
 			unk120[0]->draw(240, 400);
 			unk120[1]->draw(340, 400);

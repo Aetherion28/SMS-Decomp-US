@@ -73,7 +73,8 @@ int TMarDirector::loadResource()
 	gpMarioParticleManager->mEmitterManager = new JPAEmitterManager(
 	    gpResourceManager, particleNum, emitterNum, emitterNum * 2, nullptr);
 	gpEmitterManager4D2 = new JPAEmitterManager(
-	    nullptr, VERSION_SELECT(270, GMSJ01(200)), 0x20, 0x40, nullptr);
+	    nullptr, VERSION_SELECT(200, GMSP01(270), GMSP01_NX(270)), 0x20, 0x40,
+	    nullptr);
 	loadParticle();
 
 	void* rawArch = SMSLoadArchive("/data/yoshi.arc", nullptr, 0, nullptr);
@@ -412,6 +413,10 @@ int TMarDirector::thpInit()
 			if (DVDConvertPathToEntrynum(palPath) != -1)
 				path = palPath;
 		}
+		if (!THPPlayerOpen(path, FALSE))
+			return 1;
+#elif defined(VERSION_GMSJ01_01)
+		const char* path = "/data/ex128x144_q0.thp";
 		if (!THPPlayerOpen(path, FALSE))
 			return 1;
 #else

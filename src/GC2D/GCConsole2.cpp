@@ -1806,7 +1806,7 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 	unk3F8     = autoClose;
 	unk3E4     = (s32)(len * unk3EC + unk3E8);
 
-	if (unk3E0 == VERSION_SELECT(0x000E002C, GMSJ01(0x000E002F), GMSP01(0x2C)))
+	if (unk3E0 == VERSION_SELECT(0x2C, GMSJ01(0x000E002F), GMSJ01_01(0x000E002C)))
 		unk3E4 = 0x96;
 
 	if (unk3E4 <= 0)
@@ -2474,8 +2474,9 @@ void TGCConsole2::countShine()
 				--unk170;
 				if (unk170 < 0) {
 					unk170 = 0;
-				} else if (SMSGetMSound()->gateCheck(0x405C)) {
-					MSoundSESystem::MSoundSE::startSoundSystemSE(0x405C, 0,
+				} else if (SMSGetMSound()->gateCheck(MSD_SE_DUMMY_COIN_COUNT_LEV)) {
+					MSoundSESystem::MSoundSE::startSoundSystemSE(
+					    MSD_SE_DUMMY_COIN_COUNT_LEV, 0,
 					                                             nullptr, 0);
 				}
 				if (unk170 < 100) {

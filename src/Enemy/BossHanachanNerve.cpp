@@ -90,7 +90,7 @@ DEFINE_NERVE(TNerveBossHanachanSnort, TLiveActor)
 	if (spine->getTime() == 0xC8
 	    && hanachan->checkLiveFlag(LIVE_FLAG_UNK20000)) {
 		hanachan->offLiveFlag(LIVE_FLAG_UNK20000);
-		MSBgm::startBGM(MSD_BGM_BOSSGESO_2DN3RD);
+		MSBgm::startBGM(MSD_BGM_BOSSHANA_2ND3RD);
 		switch (hanachan->getHitPoints()) {
 		case 2:
 			SMSGetMSound()->unk98->changeTempo(0, 1);

@@ -1058,7 +1058,7 @@ void TCardLoad::perform(u32 cue, JDrama::TGraphics* graphics)
 				alpha = 0;
 			mTitleScreenRoot->setAlpha(alpha);
 			if (gpCameraOption->unkE == 0) {
-				MSBgm::startBGM(MSD_BGM_BOSSPAKU_DEMO);
+				MSBgm::startBGM(MSD_BGM_MAP_SELECT);
 				unk1C        = PROGRESS_UNK30;
 				mScreenState = SCREEN_FILE_SELECT;
 			}
@@ -1128,7 +1128,7 @@ void TCardLoad::perform(u32 cue, JDrama::TGraphics* graphics)
 			break;
 
 		case SCREEN_INIT_TITLE:
-			MSBgm::startBGM(MSD_BGM_CHUBOSS2);
+			MSBgm::startBGM(MSD_BGM_MAIN_TITLE);
 			mGamePad->onFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 			gpMarioOriginal->offFlag(MARIO_FLAG_HAS_FLUDD);
 			mScreenState = SCREEN_ENTER_TITLE;
@@ -1272,7 +1272,8 @@ bool TCardLoad::titleDraw()
 
 			case 1:
 				mPressStartAnimTimes[i] += 1;
-				if (mPressStartAnimTimes[i] > 500) {
+				if (mPressStartAnimTimes[i]
+				    > VERSION_SELECT(500, GMSP01(600), GMSP01_NX(600))) {
 					JUTRect bounds
 					    = mPressStartTextLetters[i]->getPane()->getBounds();
 					mPressStartTextLetters[i]->setPaneAlpha(25, 0, 255);
@@ -1289,7 +1290,8 @@ bool TCardLoad::titleDraw()
 
 			case 3:
 				++mPressStartAnimTimes[i];
-				if (mPressStartAnimTimes[i] > 300) {
+				if (mPressStartAnimTimes[i]
+				    > VERSION_SELECT(300, GMSP01(400), GMSP01_NX(400))) {
 					JUTRect local_124
 					    = mPressStartTextLetters[i]->getPane()->getBounds();
 
@@ -1465,7 +1467,7 @@ s8 TCardLoad::waitForChoice(TEProgress param_1, TEProgress param_2, int param_3)
 		}
 
 		if (unkC4 == 4) {
-			unk484[unkB7]->setCenteredSize(20, unk48C[unkB7].getWidth() * 0.5f,
+			unk484[unkB7]->setCenteredSize(40, unk48C[unkB7].getWidth() * 0.5f,
 			                               unk48C[unkB7].getHeight() * 0.5f,
 			                               unk48C[unkB7].getWidth(),
 			                               unk48C[unkB7].getHeight());
@@ -1480,7 +1482,7 @@ s8 TCardLoad::waitForChoice(TEProgress param_1, TEProgress param_2, int param_3)
 			unkAC->setRotation(0, 0, DEG2SHORTANGLE(12));
 			unkAC->setEmitterScale(JGeometry::TVec3<f32>(0.9f, 1.0f, 0.1f));
 		} else if (unkC4 == 44) {
-			unk484[unkB7]->setCenteredSize(20, unk48C[unkB7].getWidth(),
+			unk484[unkB7]->setCenteredSize(40, unk48C[unkB7].getWidth(),
 			                               unk48C[unkB7].getHeight(),
 			                               unk48C[unkB7].getWidth() * 0.5f,
 			                               unk48C[unkB7].getHeight() * 0.5f);
@@ -1996,8 +1998,8 @@ s8 TCardLoad::waitForStart(TEProgress param_1)
 	case WINDOW_OPEN:
 		setMessage(unk538, 0x400, (u16)cMessageID[unk1C]);
 		setMessage(unk53C, 0x400, (u16)cMessageID[unk1C]);
-		setMessage(unk560, 0x400, 12);
-		setMessage(unk564, 0x400, 12);
+		setMessage(unk560, 0x400, VERSION_SELECT(13, GMSJ01(12)));
+		setMessage(unk564, 0x400, VERSION_SELECT(13, GMSJ01(12)));
 #if defined(VERSION_GMSP01_NX)
 		if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE)
 		    != MSLANG_NX_JAPANESE)
@@ -2336,14 +2338,14 @@ s8 TCardLoad::selectBookmark(TEProgress param_1, TEProgress param_2,
 		    mChoseSaveWindowInitialBounds.getHeight(), 0, 0);
 		if (unk1C == PROGRESS_SELECT_COPY_DEST) {
 			unk278[unkB1]->makeBlockRock();
-			setMessage(mChoseSaveText, 30,
+			setMessage(mChoseSaveText, VERSION_SELECT(0xFF, GMSJ01(30)),
 			           VERSION_SELECT(0x1F, GMSJ01(0x1B), GMSE01(0x1E)));
-			setMessage(mChoseSaveTextShadow, 30,
+			setMessage(mChoseSaveTextShadow, VERSION_SELECT(0xFF, GMSJ01(30)),
 			           VERSION_SELECT(0x1F, GMSJ01(0x1B), GMSE01(0x1E)));
 		} else {
-			setMessage(mChoseSaveText, 30,
+			setMessage(mChoseSaveText, VERSION_SELECT(0xFF, GMSJ01(30)),
 			           VERSION_SELECT(0x1E, GMSJ01(0x1A), GMSE01(0x1D)));
-			setMessage(mChoseSaveTextShadow, 30,
+			setMessage(mChoseSaveTextShadow, VERSION_SELECT(0xFF, GMSJ01(30)),
 			           VERSION_SELECT(0x1E, GMSJ01(0x1A), GMSE01(0x1D)));
 		}
 

@@ -86,7 +86,7 @@ public:
 	virtual void load(JSUMemoryInputStream&);
 	virtual void createModelData();
 	virtual TSpineEnemy* createEnemyInstance();
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	virtual void clipEnemies(JDrama::TGraphics*) { }
 #endif
 

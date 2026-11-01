@@ -119,10 +119,15 @@ void JAIBasic::checkEntriedSeq()
 				param = (i | ((soundId & JAISoundID_IndexMask) << 16)) | param;
 
 				unk0->setAutoHeapLoadedFlag(pos, 1);
+#if !defined(VERSION_GMSJ01)
+				sud->mLoadingFlag = true;
+#endif
 				JASystem::Vload::loadFileAsync(
 				    mSeqArchiveHandle + (soundId & JAISoundID_IndexMask), ptr,
 				    0, size, checkDvdLoadArc, param);
+#if defined(VERSION_GMSJ01)
 				sud->mLoadingFlag = true;
+#endif
 			} else {
 				JASystem::Vload::loadFile(
 				    mSeqArchiveHandle

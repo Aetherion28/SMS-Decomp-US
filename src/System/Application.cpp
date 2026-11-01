@@ -238,7 +238,7 @@ void TApplication::initialize()
 	GXInit(JKRAllocFromHeap(nullptr, 0x80000, 0x20), 0x80000);
 	SMS_ResetTexCacheRegion();
 	GXPokeAlphaRead(GX_READ_NONE);
-	void* pvVar3 = new (0x20) u8[0xa5000];
+	void* pvVar3 = new (0x20) u8[VERSION_SELECT(0xa5000, GMSP01(0xa5a00), GMSP01_NX(0xa5a00))];
 	GXRenderModeObj rmode;
 	SMSSetupTitleRenderMode(&rmode);
 	mDisplay = new JDrama::TDisplay(2, pvVar3, pvVar3, rmode);
@@ -435,7 +435,7 @@ void TApplication::initialize_nlogoAfter()
 	JKRMemArchive* this_00 = new JKRMemArchive(arcBufMario, 0, MBF_0);
 	gpCardManager->setIcons(
 	    (ResTIMG*)piVar2->getResource("/card/mario_icon.bti") + 1);
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	gpCardManager->setBanner((ResTIMG*)piVar2->getResource("/card/mariobnr.bti")
 	                         + 1);
 #else

@@ -820,13 +820,13 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		SMSGetApplication()->getFader()->setColor(
 		    JUtility::TColor(0, 0, 0, 0xff));
 		if (TFlagManager::getInstance()->getFlag(MSF_LIFE_COUNT) >= 0) {
-			MSBgm::startBGM(MSD_BGM_BOSS);
+			MSBgm::startBGM(MSD_BGM_MISS);
 			if (checkDemoFlag(DEMO_FLAG_HELL_DEAD))
 				SMSGetApplication()->getFader()->startWipe(2, 0.0f, 2.0f);
 			else
 				SMSGetApplication()->getFader()->startWipe(10, 0.0f, 2.2f);
 		} else {
-			MSBgm::startBGM(MSD_BGM_BOSSHANA_2ND3RD);
+			MSBgm::startBGM(MSD_BGM_GAMEOVER);
 			SMSGetApplication()->getFader()->startWipe(0xD, 0.0f, 2.0f);
 		}
 		break;
@@ -879,7 +879,7 @@ u8 TMarDirector::updateGameMode()
 				TGCConsole2* console = SMSGetMarDirector()->getConsole();
 				console->unk94->startAppearShineGet();
 				console->unk47 = 1;
-				MSBgm::startBGM(MSD_BGM_CHUBOSS);
+				MSBgm::startBGM(MSD_BGM_GET_SHINE);
 				TFlagManager::getInstance()->setBool(
 				    true, MSF_GOT_SHINE_IN_PREV_STAGE);
 				TFlagManager::getInstance()->setShineFlag(unk25C->getEventId());

@@ -728,7 +728,7 @@ void TShine::appearWithTime(int time, int appear_wait_time, int move_up_time,
 	SMSGetMSound()->startSoundActor(MSD_SE_SHINE_APPEAR, &mPosition, 0, nullptr,
 	                                0, 4);
 #if !defined(VERSION_GMSJ01)
-	MSBgm::startBGM(0x8001002D);
+	MSBgm::startBGM(MSD_BGM_SHINE_APPEAR);
 #endif
 
 	mStateTimer = mAppearWaitTime;
@@ -769,7 +769,7 @@ void TShine::appearSimple(int param_1)
 	SMSGetMSound()->startSoundActor(MSD_SE_SHINE_APPEAR, &mPosition, 0, nullptr,
 	                                0, 4);
 #if !defined(VERSION_GMSJ01)
-	MSBgm::startBGM(0x8001002D);
+	MSBgm::startBGM(MSD_BGM_SHINE_APPEAR);
 #endif
 
 	mStateTimer = mAppearWaitTime;
@@ -948,8 +948,9 @@ void TEggYoshi::touchFruit(THitActor* fruit)
 		                      fruit->mPosition.x - mPosition.x);
 		mState = 0xB;
 		unk150 = fruit;
-		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_COLLECT_PRETTY, 0, nullptr,
-		                                   0);
+		SMSGetMSound()->startSoundSystemSE(
+		    VERSION_SELECT(MSD_SE_SY_COLLECT_YOSHI, GMSJ01(MSD_SE_SY_COLLECT_PRETTY)),
+		    0, nullptr, 0);
 	} else if (animIsFinished()) {
 		startAnim(2);
 		unk148->getFrameCtrl(ANM_TYPE_BTP)->setFrame(12.0f);

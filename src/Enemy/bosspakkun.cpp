@@ -864,7 +864,7 @@ BOOL TBossPakkun::checkMarioRiding()
 void TBossPakkun::startBGM()
 {
 	if (unk1CC == 0) {
-		MSBgm::startBGM(MSD_BGM_MAP_SELECT);
+		MSBgm::startBGM(MSD_BGM_BOSS);
 		unk1CC = 1;
 	}
 }
