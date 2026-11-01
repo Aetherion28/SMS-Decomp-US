@@ -6,7 +6,9 @@
   "original_sha256": "13934c863d649b1ddca1ca4d7748f49d28a571685cbee5fb1542545c32869955",
   "rebuilt_sha256": "13934c863d649b1ddca1ca4d7748f49d28a571685cbee5fb1542545c32869955",
   "byte_identical_to_original": true,
-  "regression_check": "ninja changes_all run against the previous commit; no function lost points except where the fork removed upstream dont_inline/fabricated workarounds",
+  "regression_check": "ninja baseline and ninja changes_all against the previous commit; no function lost points",
   "date": "2026-11-01",
-  "platform": "Linux x86_64"
+  "platform": "Linux x86_64",
+  "dtk": "v1.8.4",
+  "objdiff": "v3.8.1"
 }
