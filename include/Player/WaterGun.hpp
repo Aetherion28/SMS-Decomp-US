@@ -112,6 +112,12 @@ public:
 	f32 getPressureMax();
 	void init();
 	void initInLoadAfter();
+#if !defined(VERSION_GMSJ01)
+	// US and later moved this out of the header and into WaterGun.cpp, and gave
+	// it an extra director-mode check, so outside that TU it is a real call.
+	// marioEU.MAP: isEmitting__9TWaterGunFv (func,global) in WaterGun.cpp.
+	bool isEmitting();
+#else
 	bool isEmitting()
 	{
 		if (mCurrentWater == 0)
@@ -129,7 +135,7 @@ public:
 
 		return false;
 	}
-
+#endif
 	BOOL isPressureOn();
 	void movement();
 	void rotateProp(f32);

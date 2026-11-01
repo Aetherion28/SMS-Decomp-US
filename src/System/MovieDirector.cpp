@@ -18,7 +18,7 @@
 #include <GC2D/CardSave.hpp>
 #include <GC2D/ScrnFader.hpp>
 #include <GC2D/hx_wiper.h>
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 #include <JSystem/J2D/J2DOrthoGraph.hpp>
 #include <dolphin/vi.h>
 #endif
@@ -28,7 +28,7 @@
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 #pragma dont_inline on
 TEndingString::TEndingString(const char* name)
     : JDrama::TViewObj(name)
@@ -127,7 +127,7 @@ TMovieDirector::TMovieDirector()
     , unk20(nullptr)
     , unk24(nullptr)
     , unk30(0)
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
     , mEndingString(nullptr)
     , mEndingTimer(0)
 #endif
@@ -231,7 +231,7 @@ int TMovieDirector::rsetup()
 	switch (SMSGetApplication()->getMovie()) {
 	case 16:
 	case 17:
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 		mEndingString = new TEndingString("EndingString");
 		group2d->getChildren().push_back(mEndingString);
 #endif
@@ -373,7 +373,7 @@ int TMovieDirector::direct()
 		unk30.on(0x1);
 
 		gpMSound->initSound();
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 		if (SMSGetApplication()->getMovie() == 16)
 			mEndingString->startFadeIn();
 #endif
@@ -454,7 +454,7 @@ int TMovieDirector::direct()
 		} else if (THPPlayerGetState() == 3) {
 			desiredAppState = decideNextMode(&nextState);
 		}
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 		if (mEndingTimer < 300)
 			++mEndingTimer;
 		if (SMSGetApplication()->getMovie() == 17 && mEndingTimer == 30)

@@ -3,6 +3,8 @@
 #include <Enemy/Graph.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <M3DUtil/MActorAnm.hpp>
+#include <MSound/MSound.hpp>
+#include <MSound/MSoundSE.hpp>
 
 // @non-matching -- the issue seems to stem from the JDrama TNameRefGen
 // search/push_back calls.
@@ -102,9 +104,23 @@ void TRiccoHook::perform(u32 cue, JDrama::TGraphics* graphics)
 {
 	TSpineEnemy::perform(cue, graphics);
 	mHookTake->perform(cue, graphics);
+#if !defined(VERSION_GMSJ01)
+	if (cue & CUE_MOVE) {
+		if (mTimer > 0) {
+			mTimer--;
+		} else if (mInstanceIndex & 1) {
+			SMSGetMSound()->startSoundActor(MSD_SE_OBJ_CRANE_SIDEMOVE1,
+			                                &mPosition, 0, nullptr, 0, 4);
+		} else {
+			SMSGetMSound()->startSoundActor(MSD_SE_OBJ_CRANE_SIDEMOVE2,
+			                                &mPosition, 0, nullptr, 0, 4);
+		}
+	}
+#else
 	if ((cue & CUE_MOVE) && mTimer > 0) {
 		mTimer--;
 	}
+#endif
 }
 
 TRiccoHookManager::TRiccoHookManager(const char* name)
@@ -147,7 +163,7 @@ DEFINE_NERVE(TNerveRHGraphWander, TLiveActor)
 		self->goToDirectedNextGraphNode(polar);
 	}
 
-	if (self->unk104.getPoint().distance(self->getPosition()) < 10.0f) {
+	if (self->getGoalDistance() < 10.0f) {
 		TGraphNode& node = self->unk124->getCurrent();
 
 		if (node.checkFlag(0x800)) {
@@ -165,7 +181,7 @@ DEFINE_NERVE(TNerveRHGraphWander, TLiveActor)
 			return false;
 		}
 
-		JGeometry::TVec3<f32> dPos = self->getUnkF4().getPoint();
+		JGeometry::TVec3<f32> dPos = self->getCurrentTarget().getPoint();
 		dPos.sub(self->getPosition());
 		PSVECNormalize(&dPos, &dPos);
 		dPos.scale(self->getMarchSpeed());

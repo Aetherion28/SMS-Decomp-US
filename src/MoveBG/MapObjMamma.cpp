@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <JSystem/JAudio/JALibrary/JALSystem.hpp>
 #include <M3DUtil/MActorAnm.hpp>
 #include <MSound/MSSetSound.hpp>
@@ -621,6 +622,9 @@ void TLeanMirror::release()
 	MSBgm::stopTrackBGM(1, 10);
 }
 
+#if !defined(VERSION_GMSJ01)
+static s32 startCameraShakeSE(uintptr_t, u32) { return 0; }
+#else
 static s32 startCameraShakeSE(uintptr_t param_1, u32 param_2)
 {
 	if (param_2 == 0) {
@@ -631,6 +635,7 @@ static s32 startCameraShakeSE(uintptr_t param_1, u32 param_2)
 	}
 	return 0;
 }
+#endif
 
 void TLeanMirror::controlGoTarget()
 {
@@ -803,8 +808,20 @@ TLeanMirror::TLeanMirror(const char* name)
 
 void TShiningStone::endDemo()
 {
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
+	if (unk74 < 3) {
+		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
+		if (unk74 == 1)
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    0x32, true);
+		else
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    0x33, true);
+	}
+#else
 	if (unk74 < 3)
 		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
+#endif
 	if (unk7C > 0.0f)
 		unk78->setRate(unk7C);
 }
@@ -1062,7 +1079,7 @@ void TSandBird::control()
 		const TBGCheckData* plane = SMS_GetMarioGroundPlane();
 		if (plane->getActor() != nullptr
 		    && plane->getActor()->isActorType(ACTOR_TYPE_SAND_BIRD_BLOCK)) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE002F,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002F),
 			                                                      false);
 			mStateTimer = 2400;
 			unk150      = 1;
@@ -1070,7 +1087,7 @@ void TSandBird::control()
 	}
 
 	if (!unk151 && unk150 && !isStateTimerEngaged()) {
-		SMSGetMarDirector()->getConsole()->startDisappearBalloon(0xE002F,
+		SMSGetMarDirector()->getConsole()->startDisappearBalloon(BALLOON_MSG(0xE002F),
 		                                                         false);
 		unk151 = 1;
 	}
@@ -1108,6 +1125,10 @@ TSandBird::TSandBird(const char* name)
 }
 
 void TWatermelon::control() { }
+
+#if !defined(VERSION_GMSJ01)
+u32 TWatermelonStatic::touchWater(THitActor*) { return 1; }
+#endif
 
 void TGoalWatermelon::touchActor(THitActor* actor)
 {

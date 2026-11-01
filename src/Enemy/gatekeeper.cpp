@@ -1,3 +1,5 @@
+#include <System/BalloonMsg.hpp>
+#include <System/MSoundMainSide.hpp>
 #include <Enemy/GateKeeper.hpp>
 #include <JSystem/JMath.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
@@ -530,9 +532,23 @@ void TBiancoGateKeeper::startBGM()
 {
 	MSBgm::setTrackVolume(0, 0.0f, 0xA, 0);
 	MSBgm::startBGM(0x8001000B);
+#if !defined(VERSION_GMSJ01)
+	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, true);
+#endif
 }
 
+#if !defined(VERSION_GMSJ01)
+void TBiancoGateKeeper::stopBGM()
+{
+	MSMainProc::setGateKeeperBGMPlayFlag(mVariant, false);
+	if (MSMainProc::getGateKeeperBGMStopFlag())
+		MSBgm::stopTrackBGM(1, 0xA);
+	else
+		MSBgm::setTrackVolume(1, 0.0f, 1, 0);
+}
+#else
 void TBiancoGateKeeper::stopBGM() { MSBgm::stopTrackBGM(1, 0xA); }
+#endif
 
 void TBiancoGateKeeper::startAppearDemo()
 {
@@ -746,7 +762,7 @@ void TBiancoGateKeeper::perform(u32 cue, JDrama::TGraphics* graphics)
 		if (mHintTimer > 160) {
 			mHintTimer = 0;
 			mHintShown = TRUE;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE002E,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002E),
 			                                                      true);
 		}
 	}
@@ -814,7 +830,7 @@ DEFINE_NERVE(TNerveBGKAppear, TLiveActor)
 		if (self->unk28A < 0xFF)
 			self->unk28A++;
 		if (self->unk28A == 2)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0047,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0047),
 			                                                      true);
 	}
 
@@ -934,7 +950,7 @@ DEFINE_NERVE(TNerveBGKWait2, TLiveActor)
 			self->unk288++;
 			if (self->unk288 == 2 && self->unk28A == 1
 			    && SMSGetMarDirector()->getCurrentStage() == 0)
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0000,
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0000),
 				                                                      true);
 			if (self->unk288 > self->getSaveParams()->mSLLoop2Dive.get()) {
 				self->changeBck(0xC);

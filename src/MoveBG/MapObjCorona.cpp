@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include "MoveBG/MapObjCorona.hpp"
 #include "MoveBG/MapObjBase.hpp"
 #include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
@@ -537,6 +538,9 @@ Mtx* TBathtub::getRootJointMtx() const
 
 void TBathtub::perform(u32 cue, JDrama::TGraphics* graphics)
 {
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+	onLiveFlag(LIVE_FLAG_CALC_INT_FRAME);
+#endif
 	TMapObjBase::perform(cue, graphics);
 	if (cue & CUE_MOVE) {
 		MTXCopy(getShineMtx(), unk29C->getModel()->getBaseTRMtx());
@@ -549,24 +553,24 @@ void TBathtub::perform(u32 cue, JDrama::TGraphics* graphics)
 		switch (getNumGripsDead()) {
 		case 0:
 			if (ticks >= 7200)
-				showMessage(0xE001F);
+				showMessage(BALLOON_MSG(0xE001F));
 			else if (ticks >= 3600)
-				showMessage(0xE001E);
+				showMessage(BALLOON_MSG(0xE001E));
 			break;
 		case 1:
-			showMessage(0xE0020);
+			showMessage(BALLOON_MSG(0xE0020));
 			break;
 		case 2:
-			showMessage(0xE0021);
+			showMessage(BALLOON_MSG(0xE0021));
 			break;
 		case 3:
-			showMessage(0xE0022);
+			showMessage(BALLOON_MSG(0xE0022));
 			break;
 		case 4:
-			showMessage(0xE0030);
+			showMessage(BALLOON_MSG(0xE0030));
 			break;
 		case 5:
-			showMessage(0xE0023);
+			showMessage(BALLOON_MSG(0xE0023));
 			break;
 		}
 	}
@@ -753,7 +757,7 @@ void TBathtub::startDemo()
 		return;
 
 	MSBgm::stopTrackBGMs(7, 10);
-	showMessage(0xE0023);
+	showMessage(BALLOON_MSG(0xE0023));
 	unk290 = 10;
 
 	for (int i = 0; i < 5; ++i)
@@ -960,7 +964,7 @@ bool TBathtub::getNextGrip(const JGeometry::TVec3<f32>& pos,
 // Unused
 void TBathtub::showMessage(u32 message)
 {
-	u32 flag = 1 << (message - 0xE001E);
+	u32 flag = 1 << (message - BALLOON_MSG(0xE001E));
 	if (!(unk2A0 & flag))
 		SMSGetMarDirector()->getConsole()->startAppearBalloon(message, true);
 	unk2A0 |= flag;

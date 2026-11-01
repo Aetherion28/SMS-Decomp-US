@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossWanwan.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/EffectObj.hpp>
@@ -123,7 +124,7 @@ void TBWLeashNode::calcTemperature()
 		return;
 
 	int prevIndex = mIndex - 1;
-	f32 diff = mLeash->mNodes[prevIndex]->mTemperature - mTemperature;
+	f32 diff      = mLeash->mNodes[prevIndex]->mTemperature - mTemperature;
 	f32 step;
 	if (diff < 0.0f) {
 		if (diff < -0.1f)
@@ -146,16 +147,17 @@ void TBWLeashNode::calcTemperature()
 
 void TBWLeashNode::calcMatrix()
 {
-	TRope* rope = mLeash->mRope;
-	MtxPtr mtx  = mMActor->getModel()->getBaseTRMtx();
+	TRope* rope        = mLeash->mRope;
+	TRopePoint* points = rope->mPoints;
+	MtxPtr mtx         = mMActor->getModel()->getBaseTRMtx();
 
-	JGeometry::TVec3<f32> pos = rope->mPoints[mIndex].unkC;
+	JGeometry::TVec3<f32> pos = points[mIndex].unkC;
 	JGeometry::TVec3<f32> front;
 	if (mIndex < rope->mNumPoints - 1) {
-		front = rope->mPoints[mIndex + 1].unkC;
+		front = points[mIndex + 1].unkC;
 		front -= pos;
 	} else {
-		front = rope->mPoints[mIndex - 1].unkC;
+		front = points[mIndex - 1].unkC;
 		front -= pos;
 		front.negate();
 	}
@@ -316,7 +318,7 @@ void TBWLeash::perform(u32 cue, JDrama::TGraphics* graphics)
 
 			f32 target
 			    = MsWrap(MsGetRotFromZaxisY(toHead) + 180.0f, 0.0f, 360.0f);
-			f32 diff   = MsAngleDiff(target, mOwner->mRotation.y);
+			f32 diff = MsAngleDiff(target, mOwner->mRotation.y);
 			f32 turn;
 			if (diff > 0.0f)
 				turn = MsMin(diff, 1.5f * mOwner->mTurnSpeed);
@@ -366,8 +368,7 @@ TBWPicket::TBWPicket(TBossWanwan* owner, const char* name)
 	group->getChildren().push_back(this);
 
 	offHitFilter(HIT_FILTER_NO_COLLISION);
-	mMActor
-	    = mOwner->getActorKeeper()->createMActor("bwanwan_picket.bmd", 0);
+	mMActor = mOwner->getActorKeeper()->createMActor("bwanwan_picket.bmd", 0);
 }
 
 BOOL TBWPicket::receiveMessage(THitActor* sender, u32 message)
@@ -561,10 +562,9 @@ void TBWBinder::bind(TLiveActor* actor)
 		groundY += 1.0f;
 		if (bw->mPosition.y > next.y && !ground->isEnemyThrough()) {
 			const TBGCheckData* ground2;
-			f32 groundY2
-			    = gpMap->checkGround(next.x,
-			                         bw->mPosition.y + bw->getHeadHeight(),
-			                         next.z, &ground2);
+			f32 groundY2 = gpMap->checkGround(
+			    next.x, bw->mPosition.y + bw->getHeadHeight(), next.z,
+			    &ground2);
 			groundY2 += 1.0f;
 			if (groundY2 > groundY) {
 				groundY = groundY2;
@@ -675,7 +675,8 @@ void TBWBinder::bind(TLiveActor* actor)
 		JGeometry::TVec3<f32> b;
 		curNode.getPoint(&a);
 		prevNode.getPoint(&b);
-		JGeometry::TVec3<f32> foot = MsPerpendicFootToLineR(b, a, bw->mPosition);
+		JGeometry::TVec3<f32> foot
+		    = MsPerpendicFootToLineR(b, a, bw->mPosition);
 		a -= b;
 		foot -= bw->mPosition;
 		f32 dist = VECMag(&foot);
@@ -788,11 +789,11 @@ void TBossWanwan::init(TLiveManager* manager)
 	mPosition = BW_HEAD_START;
 	reset();
 
-	mLeash               = new TBWLeash(this, 15, "ボスワンワン鎖");
-	mPicket              = new TBWPicket(this, "ボスワンワンつかみ");
-	mPicket->mPosition   = BW_PICKET_START;
-	unk17C               = 1;
-	unk184               = 0;
+	mLeash             = new TBWLeash(this, 15, "ボスワンワン鎖");
+	mPicket            = new TBWPicket(this, "ボスワンワンつかみ");
+	mPicket->mPosition = BW_PICKET_START;
+	unk17C             = 1;
+	unk184             = 0;
 
 	goToRandomNextGraphNode();
 
@@ -879,17 +880,17 @@ BOOL TBossWanwan::receiveMessage(THitActor* sender, u32 message)
 
 		gpMarioParticleManager->emit(0xE7, &sender->mPosition, 0, nullptr);
 		if (mHitPoints == 0) {
-			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_COOL_MORE, &mPosition,
-			                          0, nullptr, 0, 4);
+			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_COOL_MORE,
+			                                &mPosition, 0, nullptr, 0, 4);
 		} else if (mHitPoints == 1) {
 			gpMarioParticleManager->emitAndBindToMtxPtr(
 			    BWANWAN_JPA_MS_BWAN_DOWNYUGE, getModel()->getAnmMtx(1), 0,
 			    nullptr);
-			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_TO_COOL, &mPosition, 0,
-			                          nullptr, 0, 4);
+			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_TO_COOL,
+			                                &mPosition, 0, nullptr, 0, 4);
 		} else {
-			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_COOL, &mPosition, 0,
-			                          nullptr, 0, 4);
+			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_COOL, &mPosition,
+			                                0, nullptr, 0, 4);
 		}
 
 		decHitPoints();
@@ -907,8 +908,8 @@ BOOL TBossWanwan::receiveMessage(THitActor* sender, u32 message)
 
 		gpMarioParticleManager->emitAndBindToMtxPtr(
 		    BWANWAN_JPA_MS_BWAN_DOWNYUGE, getModel()->getAnmMtx(1), 0, nullptr);
-		SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_TO_COOL, &mPosition, 0, nullptr,
-		                          0, 4);
+		SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_TO_COOL, &mPosition, 0,
+		                                nullptr, 0, 4);
 	}
 
 	return TSpineEnemy::receiveMessage(sender, message);
@@ -920,10 +921,10 @@ void TBossWanwan::takeBath()
 	unk168 = 0.0f;
 	unk18C = 1;
 
-	mPosition                    = BW_BATH_POS;
-	JGeometry::TVec3<f32> pos    = mPosition;
+	mPosition                 = BW_BATH_POS;
+	JGeometry::TVec3<f32> pos = mPosition;
 	pos.y += 500.0f;
-	JGeometry::TVec3<f32> scale  = mScaling;
+	JGeometry::TVec3<f32> scale = mScaling;
 	scale *= 1.1f;
 	mMapCollisionManager->setUpActiveCollisionTRS(pos, mRotation, scale);
 
@@ -953,8 +954,8 @@ void TBossWanwan::changeBck(int index)
 	mMtxCalc->joinAnm(index);
 	getMActor()->setBckFrameCtrl(index);
 	J3DFrameCtrl* ctrl = getMActor()->getFrameCtrl(0);
-	unk178              = 10.0f / (f32)ctrl->getEnd();
-	const char* bas     = bwanwan_bastable[index];
+	unk178             = 10.0f / (f32)ctrl->getEnd();
+	const char* bas    = bwanwan_bastable[index];
 	setAnmSound(bas);
 }
 
@@ -976,8 +977,7 @@ BOOL TBossWanwan::isMarioInSight() { return FALSE; }
 
 BOOL TBossWanwan::isHeadPulled()
 {
-	return unk15C.squared() < getBWParams()->mSLPullLimit.get() ? FALSE
-	                                                              : TRUE;
+	return unk15C.squared() < getBWParams()->mSLPullLimit.get() ? FALSE : TRUE;
 }
 
 void TBossWanwan::calcRootMatrix()
@@ -1014,12 +1014,14 @@ void TBossWanwan::rollNextGraphNode()
 	int cur              = tracer->mCurrIdx;
 	TGraphWeb* graph     = tracer->getGraph();
 
-	if (prev >= 0 && graph->getGraphNode(prev).getRailNode()->mConnectionNum >= 2
+	if (prev >= 0
+	    && graph->getGraphNode(prev).getRailNode()->mConnectionNum >= 2
 	    && gpMarDirector->getMoveTickCount() >= 14400)
-		showMessage(0xE001C);
+		showMessage(BALLOON_MSG(0xE001C));
 
-	unk124->moveTo(graph->getEscapeDirLimited(
-	    cur, prev, fromPolar(mRotation.y, 1.0f), mPosition, 100.0f, 0xffffffff));
+	unk124->moveTo(graph->getEscapeDirLimited(cur, prev,
+	                                          fromPolar(mRotation.y, 1.0f),
+	                                          mPosition, 100.0f, 0xffffffff));
 	setGoalPathFromGraph();
 	unk128 = 0;
 	unk12C = 0.0f;
@@ -1027,7 +1029,7 @@ void TBossWanwan::rollNextGraphNode()
 
 void TBossWanwan::slideToCurPathNode(f32 speed, f32 turn_speed)
 {
-	JGeometry::TVec3<f32> toGoal = getUnkF4().getPoint();
+	JGeometry::TVec3<f32> toGoal = getCurrentTarget().getPoint();
 	toGoal -= mPosition;
 	f32 dist = VECMag(&toGoal);
 
@@ -1078,7 +1080,8 @@ void TBossWanwan::emitEffects()
 	if (mMActor->checkCurBckFromIndex(4) || mMActor->checkCurBckFromIndex(5)) {
 		if (mMActor->checkBckPass(8.0f))
 			landed = TRUE;
-	} else if (mMActor->checkCurBckFromIndex(2) && mMActor->checkBckPass(38.0f)) {
+	} else if (mMActor->checkCurBckFromIndex(2)
+	           && mMActor->checkBckPass(38.0f)) {
 		landed = TRUE;
 	}
 
@@ -1089,16 +1092,18 @@ void TBossWanwan::emitEffects()
 		                             0, nullptr);
 		if (mHitPoints == 0) {
 			SMSGetMSound()->startSoundActor(MSD_SE_M_BOSW_CHAIN_CAL_F,
-			                          &mLeash->mRope->mPoints[0].unkC, 0,
-			                          nullptr, 0, 4);
+			                                &mLeash->mRope->mPoints[0].unkC, 0,
+			                                nullptr, 0, 4);
 			SMSGetMSound()->startSoundActor(MSD_SE_M_BOSW_CHAIN_CAL_R,
-			                          &mPicket->mPosition, 0, nullptr, 0, 4);
+			                                &mPicket->mPosition, 0, nullptr, 0,
+			                                4);
 		} else {
 			SMSGetMSound()->startSoundActor(MSD_SE_M_BOSW_CHAIN_ANG_F,
-			                          &mLeash->mRope->mPoints[0].unkC, 0,
-			                          nullptr, 0, 4);
-			SMSGetMSound()->startSoundActor(MSD_SE_M_BOSW_CHAIN_ANG_R, &mPicket->mPosition,
-			                          0, nullptr, 0, 4);
+			                                &mLeash->mRope->mPoints[0].unkC, 0,
+			                                nullptr, 0, 4);
+			SMSGetMSound()->startSoundActor(MSD_SE_M_BOSW_CHAIN_ANG_R,
+			                                &mPicket->mPosition, 0, nullptr, 0,
+			                                4);
 		}
 	}
 
@@ -1110,7 +1115,8 @@ void TBossWanwan::emitEffects()
 	           || mMActor->checkCurBckFromIndex(5)) {
 		if (mMActor->checkBckPass(6.0f) || mMActor->checkBckPass(12.0f))
 			sparks = TRUE;
-	} else if (mMActor->checkCurBckFromIndex(2) && mMActor->checkBckPass(4.0f)) {
+	} else if (mMActor->checkCurBckFromIndex(2)
+	           && mMActor->checkBckPass(4.0f)) {
 		sparks = TRUE;
 	}
 
@@ -1157,7 +1163,7 @@ void TBossWanwan::emitEffects()
 
 void TBossWanwan::showMessage(u32 message)
 {
-	u32 bit = 1 << (message - 0xE001A);
+	u32 bit = 1 << (message - BALLOON_MSG(0xE001A));
 	if (!(unk198 & bit))
 		gpMarDirector->getConsole()->startAppearBalloon(message, true);
 	unk198 |= bit;
@@ -1187,8 +1193,7 @@ void TBossWanwan::perform(u32 cue, JDrama::TGraphics* graphics)
 
 	if (cue & CUE_CALC_ANIM) {
 		J3DFrameCtrl* ctrl = mMActor->getFrameCtrl(5);
-		f32 heat
-		    = (f32)mHitPoints / (f32)getBWParams()->mSLBWHitPointMax.get();
+		f32 heat = (f32)mHitPoints / (f32)getBWParams()->mSLBWHitPointMax.get();
 		ctrl->setFrame(heat * (ctrl->getEnd() - 1));
 		ctrl->setRate(0.0f);
 		if (mHitPoints == 0
@@ -1209,12 +1214,12 @@ void TBossWanwan::perform(u32 cue, JDrama::TGraphics* graphics)
 		if (unk19C < 0)
 			unk19C = 1;
 		if (unk19C > 600)
-			showMessage(0xE001A);
+			showMessage(BALLOON_MSG(0xE001A));
 	}
 
 	if ((cue & CUE_MOVE) && unk1A0 == 0
 	    && gpMarDirector->getMoveTickCount() >= 28800)
-		showMessage(0xE001D);
+		showMessage(BALLOON_MSG(0xE001D));
 
 	if ((cue & CUE_MOVE) && !mSpine->isNerve(&TNerveBWDie::theNerve())
 	    && !mSpine->isNerve(&TNerveBWJumpToBath::theNerve())) {
@@ -1248,13 +1253,12 @@ void TBossWanwan::perform(u32 cue, JDrama::TGraphics* graphics)
 		}
 	}
 
-	if ((cue & CUE_MOVE)
-	    && mSpine->isNerve(&TNerveBWGraphWander::theNerve())
+	if ((cue & CUE_MOVE) && mSpine->isNerve(&TNerveBWGraphWander::theNerve())
 	    && mPicket->isTaken()) {
 		f32 pull = unk15C.length();
-		SMSGetMSound()->startSoundActorWithInfo(MSD_SE_BS_WANWAN_M_DRAG,
-		                                  &mLeash->mRope->mPoints[6].unkC,
-		                                  nullptr, pull, 0, 0, nullptr, 0, 4);
+		SMSGetMSound()->startSoundActorWithInfo(
+		    MSD_SE_BS_WANWAN_M_DRAG, &mLeash->mRope->mPoints[6].unkC, nullptr,
+		    pull, 0, 0, nullptr, 0, 4);
 	}
 
 	TSpineEnemy::perform(cue, graphics);
@@ -1349,8 +1353,7 @@ DEFINE_NERVE(TNerveBWGraphWander, TLiveActor)
 		ctrl->setRate(SMSGetAnmFrameRate());
 	}
 
-	if (self->unk17C == 0 && self->mPicket->isTaken()
-	    && self->isHeadPulled()) {
+	if (self->unk17C == 0 && self->mPicket->isTaken() && self->isHeadPulled()) {
 		// Mario is dragging the chomp by its chain.
 		TGraphTracer* tracer = self->unk124;
 		TGraphWeb* graph     = tracer->getGraph();
@@ -1386,7 +1389,7 @@ DEFINE_NERVE(TNerveBWGraphWander, TLiveActor)
 	}
 
 	self->unk16C = 0;
-	f32 heat = (f32)self->mHitPoints
+	f32 heat     = (f32)self->mHitPoints
 	           / (f32)self->getBWParams()->mSLBWHitPointMax.get();
 	if (self->mPicket->isTaken()) {
 		// Mario holding the picket can hold the chomp back by leaning away.
@@ -1448,8 +1451,8 @@ DEFINE_NERVE(TNerveBWBark, TLiveActor)
 		if (self->unk194 == 0) {
 			self->releasePicket();
 			SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_ESCAPE1,
-			                          &self->mPicket->mPosition, 0, nullptr, 0,
-			                          4);
+			                                &self->mPicket->mPosition, 0,
+			                                nullptr, 0, 4);
 		}
 	}
 
@@ -1459,7 +1462,7 @@ DEFINE_NERVE(TNerveBWBark, TLiveActor)
 
 	if (self->getMActor()->curAnmEndsNext(0, nullptr)) {
 		spine->pushAfterCurrent(&TNerveBWGraphWander::theNerve());
-		self->showMessage(0xE001B);
+		self->showMessage(BALLOON_MSG(0xE001B));
 		return true;
 	}
 
@@ -1471,7 +1474,7 @@ DEFINE_NERVE(TNerveBWJump, TLiveActor)
 	TBossWanwan* self = (TBossWanwan*)spine->getBody();
 
 	if (spine->getTime() == 0) {
-		const JGeometry::TVec3<f32>& goal = self->getUnk104().getPoint();
+		const JGeometry::TVec3<f32>& goal = self->getGoal().getPoint();
 		f32 speed                         = self->unk124->unkC;
 		JGeometry::TVec3<f32> vel
 		    = self->calcVelocityToJumpToY(goal, speed, self->getGravityY());
@@ -1545,9 +1548,9 @@ DEFINE_NERVE(TNerveBWJumpToBath, TLiveActor)
 	TBossWanwan* self = (TBossWanwan*)spine->getBody();
 
 	if (spine->getTime() == 0) {
-		JGeometry::TVec3<f32> vel
-		    = self->calcVelocityToJumpToY(BW_BATH_POS, 10.0f, self->getGravityY());
-		self->setGoalPath(TPathNode(BW_BATH_POS));
+		JGeometry::TVec3<f32> vel = self->calcVelocityToJumpToY(
+		    BW_BATH_POS, 10.0f, self->getGravityY());
+		self->setGoal(BW_BATH_POS);
 		self->mVelocity = vel;
 		self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 		self->unk16C = 0;
@@ -1555,8 +1558,9 @@ DEFINE_NERVE(TNerveBWJumpToBath, TLiveActor)
 
 	if (spine->getTime() > 120 && self->unk195 == 0
 	    && self->mPosition.y < 10.0f + BW_BATH_POS.y) {
-		TEffectColumWater* splash = (TEffectColumWater*)gpConductor->makeOneEnemyAppear(
-		    self->mPosition, "エフェクト水柱マネージャー", 1);
+		TEffectColumWater* splash
+		    = (TEffectColumWater*)gpConductor->makeOneEnemyAppear(
+		        self->mPosition, "エフェクト水柱マネージャー", 1);
 		if (splash != nullptr) {
 			JGeometry::TVec3<f32> scale(5.0f, 5.0f, 5.0f);
 			JGeometry::TVec3<f32> pos(self->mPosition.x,
@@ -1565,8 +1569,8 @@ DEFINE_NERVE(TNerveBWJumpToBath, TLiveActor)
 			splash->generate(pos, scale);
 			self->unk195 = 1;
 		}
-		SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_DIVE, &self->mPosition, 0,
-		                          nullptr, 0, 4);
+		SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_DIVE, &self->mPosition,
+		                                0, nullptr, 0, 4);
 	}
 
 	JGeometry::TVec3<f32> diff = BW_BATH_POS;
@@ -1608,8 +1612,9 @@ DEFINE_NERVE(TNerveBWDie, TLiveActor)
 	}
 
 	if (spine->getTime() == 0) {
-		SMSGetMarDirector()->fireStartDemoCamera("bwanwan_down_camera", nullptr, -1,
-		                                   0.0f, true, nullptr, 0, nullptr, 0);
+		SMSGetMarDirector()->fireStartDemoCamera("bwanwan_down_camera", nullptr,
+		                                         -1, 0.0f, true, nullptr, 0,
+		                                         nullptr, 0);
 		self->takeBath();
 		self->changeBck(1);
 		mactor->setBtpFromIndex(0);
@@ -1618,11 +1623,9 @@ DEFINE_NERVE(TNerveBWDie, TLiveActor)
 
 	if (spine->getTime() > 60 && self->unk18D == 0
 	    && gpMarDirector->getGameMode() != 3) {
-		gpItemManager->makeShineAppearWithDemo("シャイン（ボス用）",
-		                                       "ボスシャインカメラ",
-		                                       self->mPosition.x,
-		                                       self->mPosition.y,
-		                                       self->mPosition.z);
+		gpItemManager->makeShineAppearWithDemo(
+		    "シャイン（ボス用）", "ボスシャインカメラ", self->mPosition.x,
+		    self->mPosition.y, self->mPosition.z);
 		self->unk18D = 1;
 	}
 
@@ -1639,7 +1642,7 @@ DEFINE_NERVE(TNerveBWJumpAway, TLiveActor)
 	if (spine->getTime() == 0) {
 		JGeometry::TVec3<f32> vel = self->calcVelocityToJumpToY(
 		    BW_HEAD_START, 40.0f, self->getGravityY());
-		self->setGoalPath(TPathNode(BW_HEAD_START));
+		self->setGoal(BW_HEAD_START);
 		self->mVelocity = vel;
 		self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 		self->unk16C = 0;
@@ -1674,7 +1677,8 @@ DEFINE_NERVE(TNerveBWShake, TLiveActor)
 	if (mactor->curAnmEndsNext(0, nullptr)) {
 		self->releasePicket();
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_WANWAN_ESCAPE2,
-		                          &self->mPicket->mPosition, 0, nullptr, 0, 4);
+		                                &self->mPicket->mPosition, 0, nullptr,
+		                                0, 4);
 		return true;
 	}
 
@@ -1689,7 +1693,7 @@ DEFINE_NERVE(TNerveBWFall, TLiveActor)
 		const JGeometry::TVec3<f32>& goal = self->mPicket->mPosition;
 		JGeometry::TVec3<f32> vel
 		    = self->calcVelocityToJumpToY(goal, 5.0f, self->getGravityY());
-		self->setGoalPath(TPathNode(self->mPicket->mPosition));
+		self->setGoal(self->mPicket->mPosition);
 		self->mVelocity = vel;
 		self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 		self->unk16C = 0;

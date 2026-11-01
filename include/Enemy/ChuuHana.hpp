@@ -173,9 +173,19 @@ public:
 	virtual void initSetEnemies();
 
 public:
+#if !defined(VERSION_GMSJ01)
+	/* 0x60 */ s32 unk60;
+	/* 0x64 */ u8 unk64;
+	/* 0x65 */ u8 unk65;
+	/* 0x66 */ u8 unk66;
+	/* 0x68 */ s32 unk68;
+	/* 0x6C */ s32 unk6C;
+	/* 0x70 */ s32 unk70;
+#else
 	/* 0x60 */ u8 unk60;
 	/* 0x61 */ u8 unk61;
 	/* 0x62 */ u8 unk62;
+#endif
 };
 
 #endif // ENEMY_CHUUHANA_HPP

@@ -197,9 +197,21 @@ void TMapStaticObj::calcUnique(JPABaseEmitter* emitter)
 void TMapStaticObj::perform(u32 cue, JDrama::TGraphics* graphics)
 {
 	if (cue & CUE_CALC_ANIM) {
+#if !defined(VERSION_GMSJ01)
+		if (mSoundId != -1) {
+			u32 randPlayId = mSoundRandPlayId;
+			if (randPlayId == -1)
+				SMSGetMSound()->startSoundActor(mSoundId, &mPosition, 0,
+				                                nullptr, 0, 4);
+			else if (SMSGetMSound()->gateCheck(mSoundId))
+				MSoundSESystem::MSRandPlay::startSeRandPlay(mSoundId,
+				                                            randPlayId);
+		}
+#else
 		if (mSoundId != -1)
 			SMSGetMSound()->startSoundActor(mSoundId, &mPosition, 0, nullptr, 0,
 			                                4);
+#endif
 
 		JPABaseEmitter* emitter = nullptr;
 		if (mActorData->mParticleType == 1)
@@ -288,6 +300,38 @@ void TMapStaticObj::initUnique()
 		getModel()->viewCalc();
 		getModel()->entry();
 	}
+#if !defined(VERSION_GMSJ01)
+	else if (strcmp(mActorName, "SoundObjRiver") == 0) {
+		if (gpMarDirector->getCurrentStage() == 13)
+			mSoundId = MSD_SE_OBJ_FOUNTAIN;
+	} else if (strcmp(mActorName, "MareFalls") == 0) {
+		switch (gpMarDirector->getCurrentStage()) {
+		case 8:
+			switch (gpMarDirector->getCurrentScenario()) {
+			case 0:
+			case 2:
+			case 4:
+			case 6:
+				mSoundId         = MSD_SE_OBJ_MONTE_NIGHT_A1;
+				mSoundRandPlayId = 0;
+				break;
+			default:
+				mSoundId         = MSD_SE_OBJ_MONTE_DAY_A1;
+				mSoundRandPlayId = 0;
+				break;
+			}
+			break;
+		case 2:
+			mSoundId         = MSD_SE_OBJ_BIRD_BIA_1;
+			mSoundRandPlayId = 0;
+			break;
+		}
+	}
+
+	if (mSoundRandPlayId == 0)
+		mSoundRandPlayId
+		    = MSoundSESystem::MSRandPlay::registerTrans(mSoundId, &mPosition);
+#endif
 }
 
 void TMapStaticObj::initMapCollision(const char* name)
@@ -408,6 +452,9 @@ TMapStaticObj::TMapStaticObj(const char* name)
     , mMActor(nullptr)
     , mCollisionManager(nullptr)
     , mSoundId(-1)
+#if !defined(VERSION_GMSJ01)
+    , mSoundRandPlayId(0)
+#endif
 {
 }
 

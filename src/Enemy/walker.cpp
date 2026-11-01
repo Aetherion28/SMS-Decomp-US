@@ -226,16 +226,14 @@ void TWalker::bind(TLiveActor* param_1)
 			f32 dVar18
 			    = calcFarthestVertex(pTVar14, enemy->mPosition, local_94);
 			f32 fVar4 = (enemy->getWallRadius()) * 2.0f + dVar18;
-			if (enemy->unk114.empty()) {
-				TPathNode node(enemy->mPosition
-				               - normal * enemy->getWallRadius()
-				               + local_94 * fVar4);
-				enemy->unk114.push(enemy->unkF4);
-				enemy->unkF4 = node;
+			if (enemy->mGoalPath.empty()) {
+				enemy->pushGoalPathNode(enemy->mPosition
+				                        - normal * enemy->getWallRadius()
+				                        + local_94 * fVar4);
 			} else {
-				enemy->unkF4 = TPathNode(enemy->mPosition
-				                         - normal * enemy->getWallRadius()
-				                         + local_94 * fVar4);
+				enemy->mCurrentTarget = TPathNode(
+				    enemy->mPosition - normal * enemy->getWallRadius()
+				    + local_94 * fVar4);
 			}
 		}
 	}

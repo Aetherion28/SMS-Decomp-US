@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossManta.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/Graph.hpp>
@@ -852,7 +853,7 @@ void TBossMantaManager::TMantaMessageState::update()
 	switch (unk4) {
 	case 0:
 		if (((TBossManta*)unk0->getObj(0))->isSpawnState()) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE000C,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000C),
 			                                                      true);
 			unk4++;
 		}
@@ -865,7 +866,7 @@ void TBossMantaManager::TMantaMessageState::update()
 				aliveCount++;
 		}
 		if (aliveCount > 50) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE000D,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000D),
 			                                                      true);
 			unk4++;
 		}
@@ -873,7 +874,7 @@ void TBossMantaManager::TMantaMessageState::update()
 	}
 	case 2:
 		if (unk0->unk88.mState == 2) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE000E,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000E),
 			                                                      true);
 			unk4++;
 		}

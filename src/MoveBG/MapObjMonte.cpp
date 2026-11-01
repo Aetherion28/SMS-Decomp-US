@@ -80,6 +80,10 @@ void THangingBridgeBoard::drawOneRope(
 
 	f32 bottomY = param_1.y;
 	f32 topY    = param_1.y + THangingBridge::mRopeHeight;
+#if !defined(VERSION_GMSJ01)
+	if (SMSGetMarDirector()->getCurrentStage() == 13)
+		bottomY -= 60.0f;
+#endif
 
 	f32 topTexCoordY    = mTexPosRate * (topY - param_1.y);
 	f32 bottomTexCoordY = mTexPosRate * (bottomY - param_1.y);
@@ -424,6 +428,11 @@ void THangingBridge::perform(u32 cue, JDrama::TGraphics* param_2)
 		initDraw();
 		for (int i = 0; i < unk10; i++)
 			unk14[i]->drawRopes();
+#if !defined(VERSION_GMSJ01)
+		if (SMSGetMarDirector()->getCurrentStage() == 13)
+			drawRopeBetweenBoards(-60.0f, mPointNumBetweenBoards);
+		else
+#endif
 		drawRopeBetweenBoards(0.0f, mPointNumBetweenBoards);
 		drawRopeBetweenBoards(mRopeHeight, 1);
 	}
@@ -519,10 +528,19 @@ void THangingBridge::loadAfter()
 	}
 	if (SMSGetMarDirector()->getCurrentStage() == 8)
 		initMonte();
+#if !defined(VERSION_GMSJ01)
+	if (SMSGetMarDirector()->getCurrentStage() == 13) {
+		unk18.set(1436.32f, 3201.477f - mRopeHeight, -9417.205f);
+		unk24.set(3656.32f, 2631.477f - mRopeHeight, -9417.205f);
+	} else if (SMSGetMarDirector()->getCurrentStage() == 8) {
+		unk24.z -= 120.0f;
+	}
+#else
 	if (SMSGetMarDirector()->getCurrentStage() == 13) {
 		unk18.set(1350.0f, 2980.0f, -9410.0f);
 		unk24.set(3650.0f, 2455.0f, -9410.0f);
 	}
+#endif
 	for (int i = 0; i < unk10; ++i) {
 		if (i > 0)
 			unk14[i]->unk194 = unk14[i - 1];
@@ -782,8 +800,16 @@ u32 TFluff::touchWater(THitActor* param_1)
 void TFluff::move()
 {
 	mPosition.y -= unk13C;
-	if (mPosition.y < 0.0f)
+	if (mPosition.y < 0.0f) {
 		mPosition.y = 5000.0f;
+#if !defined(VERSION_GMSJ01)
+		if (mHeldObject != nullptr) {
+			mHeldObject->receiveMessage(this, HIT_MESSAGE_DETACH);
+			mHeldObject->mHolder = nullptr;
+			mHeldObject          = nullptr;
+		}
+#endif
+	}
 	unk154 += unk150 * gpMapObjManager->unkD0.x;
 	unk15C += unk150 * gpMapObjManager->unkD0.z;
 	unk154 += mVelocity.x;
@@ -807,6 +833,9 @@ void TFluff::kill()
 {
 	if (mHeldObject != nullptr) {
 		mHeldObject->receiveMessage(this, HIT_MESSAGE_DETACH);
+#if !defined(VERSION_GMSJ01)
+		mHeldObject->mHolder = nullptr;
+#endif
 		mHeldObject = nullptr;
 	}
 	mState = STATE_UNK3;

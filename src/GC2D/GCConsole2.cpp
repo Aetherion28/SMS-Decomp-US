@@ -1806,7 +1806,7 @@ bool TGCConsole2::startAppearBalloon(u32 messageID, bool autoClose)
 	unk3F8     = autoClose;
 	unk3E4     = (s32)(len * unk3EC + unk3E8);
 
-	if (unk3E0 == VERSION_SELECT(0x000E002C, GMSJ01(0x000E002F)))
+	if (unk3E0 == VERSION_SELECT(0x000E002C, GMSJ01(0x000E002F), GMSP01(0x2C)))
 		unk3E4 = 0x96;
 
 	if (unk3E4 <= 0)

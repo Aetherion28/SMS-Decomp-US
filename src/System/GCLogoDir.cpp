@@ -322,6 +322,95 @@ bool TGCLogoDir::direct_nlogo()
 	}
 
 	return ended;
+#elif defined(VERSION_GMSJ01_01)
+	bool ended    = false;
+	int nextState = mState;
+	switch (mState) {
+	case STATE_WAIT_FADE_IN: {
+		bool progressive = false;
+		if (VIGetTvFormat() == VI_NTSC && VIGetDTVStatus() == 1) {
+			if (OSGetProgressiveMode() == 1) {
+				progressive = true;
+			} else if (mBHoldTimer / SMSGetVSyncTimesPerSec() > 1.0f) {
+				progressive = true;
+			} else if (mGamePad->mButton.mButton & JUTGamePad::B) {
+				mBHoldTimer += 1;
+			} else {
+				mBHoldTimer = 0;
+			}
+		}
+
+		if (SMSGetApplication()->getFader()->isFullyFadedIn()) {
+			nextState = progressive ? STATE_ASK_PROGRESSIVE : STATE_SHOW_LOGO;
+
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_MV_CHAO, 0, nullptr, 0);
+			mLogoShowTimer = 0;
+		}
+		break;
+	}
+
+	case STATE_SHOW_LOGO: {
+		bool progressive = false;
+		if (VIGetTvFormat() == VI_NTSC && VIGetDTVStatus() == 1) {
+			if (OSGetProgressiveMode() == 1) {
+				progressive = true;
+			} else if (mBHoldTimer / SMSGetVSyncTimesPerSec() > 1.0f) {
+				progressive = true;
+			} else if (mGamePad->mButton.mButton & JUTGamePad::B) {
+				mBHoldTimer += 1;
+			} else {
+				mBHoldTimer = 0;
+			}
+		}
+
+		if (progressive) {
+			mLogoShowTimer = 0;
+			nextState      = STATE_ASK_PROGRESSIVE;
+		} else {
+			mLogoShowTimer += 1;
+			if (mLogoShowTimer / mRefreshRate >= 0.8f) {
+				nextState = STATE_FADE_OUT;
+				OSSetProgressiveMode(0);
+			}
+		}
+		break;
+	}
+
+	case STATE_ASK_PROGRESSIVE:
+		if (mProgSelect->mHideTextBoxes) {
+			mLogoShowTimer = 0;
+			nextState      = STATE_SHOW_PROG_RESULT;
+		}
+		break;
+
+	case STATE_SHOW_PROG_RESULT:
+		mLogoShowTimer += 1;
+		if (mLogoShowTimer / mRefreshRate >= 2.0f)
+			nextState = STATE_FADE_OUT;
+		break;
+
+	case STATE_FADE_OUT:
+		if (SMSGetApplication()->getFader()->isFullyFadedOut())
+			ended = true;
+		break;
+	}
+
+	if (mState != STATE_FADE_OUT && mGamePad->isSomethingPushed())
+		nextState = STATE_FADE_OUT;
+
+	if (nextState != mState) {
+		switch (nextState) {
+		case STATE_ASK_PROGRESSIVE:
+			mProgSelect->unkC = 0;
+			break;
+		case STATE_FADE_OUT:
+			SMSGetApplication()->getFader()->startWipe(15, 0.4f, 0.0f);
+			break;
+		}
+		mState = nextState;
+	}
+
+	return ended;
 #else
 	bool ended    = false;
 	int nextState = mState;

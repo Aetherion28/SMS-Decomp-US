@@ -198,7 +198,7 @@ void TSmallEnemy::init(TLiveManager* param_1)
 	if (!unk124->getGraph() || unk124->getGraph()->isDummy())
 		unk124->init(gpConductor->getGraphByName("main"));
 
-	setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+	setGoal((THitActor*)gpMarioAddress);
 	initAnmSound();
 }
 
@@ -700,6 +700,10 @@ bool TSmallEnemy::changeMove()
 				mJuiceBlock->mPosition.x -= local_80.x;
 				mJuiceBlock->mPosition.z -= local_80.z;
 			}
+#if !defined(VERSION_GMSJ01)
+			if (mJuiceBlock->checkLiveFlag(LIVE_FLAG_DEAD))
+				return true;
+#endif
 		}
 	}
 
@@ -1084,6 +1088,9 @@ DEFINE_NERVE(TNerveSmallEnemyChange, TLiveActor)
 		gpMarioParticleManager->emitAndBindToPosPtr(0xCD, &self->getPosition(),
 		                                            0, nullptr);
 	}
+#if !defined(VERSION_GMSJ01)
+	self->getMActor()->setFrameRate(0.0f, ANM_TYPE_BCK);
+#endif
 	self->scalingChangeActor();
 	if (self->changeMove() || spine->getTime() > changeTime) {
 		self->changeOut();

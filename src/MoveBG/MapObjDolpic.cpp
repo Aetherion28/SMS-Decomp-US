@@ -448,9 +448,11 @@ void TDemoCannon::startDemo()
 {
 	unk14C = 1;
 
+#if !(!defined(VERSION_GMSJ01))
 	MSound* sound = gpMSound;
 	s16 hp        = SMS_GetMarioHP();
 	sound->startMarioVoice(30911, hp, 0);
+#endif
 
 	mMActor->setBck("democannon_dpt");
 	unk138->getMActor()->setBck("democannon_dom");
@@ -499,6 +501,16 @@ void TDemoCannon::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (frameCtrl->getFrame() > 175.0f) {
 		MtxPtr mtx = unk13C->getMActor()->getModel()->getAnmMtx(0);
 		gpMarioParticleManager->emitAndBindToMtxPtr(358, mtx, 1, this);
+#if !defined(VERSION_GMSJ01)
+		frameCtrl = unk13C->getMActor()->getFrameCtrl(ANM_TYPE_BCK);
+		if (frameCtrl->checkPass(204.0f)) {
+			SMSGetMSound()->startMarioVoice(MSD_SE_MV25A_JUMP_HUGE_01,
+			                                SMS_GetMarioHP(), 0);
+			JAISound* voice = (JAISound*)gpMSound->checkMarioVoicePlaying(0);
+			if (voice != nullptr)
+				voice->setVolume(0.0f, 60, 0);
+		}
+#endif
 	}
 }
 

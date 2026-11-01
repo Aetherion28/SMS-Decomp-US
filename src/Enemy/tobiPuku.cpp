@@ -477,7 +477,7 @@ void TTobiPuku::swimEffect()
 bool TTobiPuku::isReachedToGoalXZ()
 {
 	JGeometry::TVec3<f32> tmp;
-	tmp = getUnk104().getPoint();
+	tmp = getGoal().getPoint();
 	tmp -= mPosition;
 	tmp.y = 0.0f;
 
@@ -1113,7 +1113,7 @@ DEFINE_NERVE(TNerveTobiPukuReturnLaunch, TLiveActor)
 {
 	TTobiPuku* self = (TTobiPuku*)spine->getBody();
 	if (spine->getTime() == 0) {
-		self->setGoalPath(TPathNode(self->unk1DC->mPosition));
+		self->setGoal(self->unk1DC->mPosition);
 		self->setSwimAnm();
 		self->unk1E0 = self->mPosition.y;
 	}

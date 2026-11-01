@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <GC2D/HelpActor.hpp>
 #include <GC2D/GCConsole2.hpp>
 #include <System/MarDirector.hpp>
@@ -27,7 +28,7 @@ void THelpActor::load(JSUMemoryInputStream& stream)
 	initHitActor(ACTOR_TYPE_HELP_ACTOR, 1, HIT_CATEGORY_PLAYER,
 	             mScaling.x * 100.0f, mScaling.y * 100.0f, 1.0f, 1.0f);
 	unk68
-	    = local_10 + VERSION_SELECT(0x33, GMSJ01(0xE0030), GMSJ01_01(0xE0033));
+	    = local_10 + VERSION_SELECT(0x33, GMSJ01(BALLOON_MSG(0xE0030)), GMSJ01_01(0xE0033));
 }
 
 void THelpActor::loadAfter()

@@ -197,6 +197,9 @@ public:
 
 	J3DMtxCalc* getMtxCalc() const { return unk8; }
 
+	// fabricated: PAL's TYoshi::entry() reads this field directly.
+	int getLightId() const { return mLightId; }
+
 private:
 	/* 0x00 */ MActorAnmData* mAnmData;
 	/* 0x04 */ J3DModel* mModel;

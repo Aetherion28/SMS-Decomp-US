@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <NPC/NpcBase.hpp>
 #include <Strategic/Spine.hpp>
 #include <System/MarDirector.hpp>
@@ -244,7 +245,7 @@ void TBaseNPC::behaveToBeTaken_(THitActor* param_1)
 	offLiveFlag(LIVE_FLAG_UNK10 | LIVE_FLAG_UNK20000 | LIVE_FLAG_UNK400000);
 	if (mActorType == ACTOR_TYPE_NPC_PEACH) {
 		peachParasolOut_();
-		mBalloonCtrl->setNextMessage(0xE004F, 0x2EE);
+		mBalloonCtrl->setNextMessage(BALLOON_MSG(0xE004F), 0x2EE);
 	}
 
 	mSpine->setNext(&TNerveNPCWaitContinue::theNerve());

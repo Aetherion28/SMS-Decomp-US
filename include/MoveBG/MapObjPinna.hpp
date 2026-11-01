@@ -190,7 +190,7 @@ public:
 class TAmiKing : public TMapObjBase {
 public:
 	virtual void loadAfter();
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	virtual void calc();
 #else
 	virtual void calcRootMatrix();

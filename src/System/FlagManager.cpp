@@ -557,6 +557,9 @@ void TFlagManager::correctOptFlag()
 	}
 
 	setBool(!getBool(MSF_SAVED_SUBTITLES_OFF), MSF_SUBTITLES);
+#elif defined(VERSION_GMSE01)
+	setFlag(MSF_LANGUAGE, getFlag(MSF_SAVED_LANGUAGE));
+	setBool(getBool(MSF_SAVED_SUBTITLES_OFF), MSF_SUBTITLES);
 #else
 	setFlag(MSF_LANGUAGE, 0x100);
 #endif
@@ -597,6 +600,9 @@ void TFlagManager::saveOption(JSUMemoryOutputStream& out)
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	setFlag(MSF_SAVED_LANGUAGE, getFlag(MSF_LANGUAGE) + 1);
 	setBool(!getBool(MSF_SUBTITLES), MSF_SAVED_SUBTITLES_OFF);
+#elif defined(VERSION_GMSE01)
+	setFlag(MSF_SAVED_LANGUAGE, getFlag(MSF_LANGUAGE));
+	setBool(getBool(MSF_SUBTITLES), MSF_SAVED_SUBTITLES_OFF);
 #else
 	setFlag(MSF_SAVED_LANGUAGE, 0);
 #endif

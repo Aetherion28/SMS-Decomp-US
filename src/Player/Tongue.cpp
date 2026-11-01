@@ -152,7 +152,7 @@ THitActor* TYoshiTongue::findTarget(bool allowExtra, bool checkForward)
 	THitActor* best = nullptr;
 	f32 bestDist    = 10000.0f;
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	for (s32 i = 0; i < mColCount; ++i) {
 		s32 type = mCollisions[i]->mActorType;
 		if (type == ACTOR_TYPE_SEAL || type == ACTOR_TYPE_BASKET_REVERSE) {
@@ -190,7 +190,7 @@ THitActor* TYoshiTongue::findTarget(bool allowExtra, bool checkForward)
 			if (type == ACTOR_TYPE_WOOD_BARREL)
 				ok = 1;
 			if (type & HIT_CATEGORY_ENEMY ? true : false) {
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 				switch (type) {
 				case ACTOR_TYPE_SEAL:
 				case ACTOR_TYPE_EFFECT_ENEMY:

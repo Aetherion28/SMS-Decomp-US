@@ -9,6 +9,10 @@
 static u8 sDetach[2];
 const char CardFileName[0x20] = "super_mario_sunshine\0\0\0\0\0\0\0\0\0\0\0";
 
+#if defined(VERSION_GMSJ01_01)
+static const char title[]   = "スーパーマリオサンシャイン";
+static const char comment[] = "%d月%d日のセーブデータです";
+#else
 const char* titles[] = {
 	"スーパーマリオサンシャイン", "Super Mario Sunshine",
 	"Super Mario Sunshine",       "Super Mario Sunshine",
@@ -21,6 +25,7 @@ const char* comments[] = {
 	"Last saved on %d/%d",        "Last saved on %d/%d", "Last saved on %d/%d",
 	"Last saved on %d/%d",
 };
+#endif
 
 static u32 CalcCheckSum(const void* data, u32 size)
 {
@@ -497,11 +502,22 @@ s32 TCardManager::setCardStat_(CARDFileInfo* file)
 
 void TCardManager::buildHeader_(HeaderData* header)
 {
+#if defined(VERSION_GMSJ01_01)
+	snprintf(header->mTitle, 0x20, title);
+	OSCalendarTime auStack_54;
+	OSTicksToCalendarTime(OSGetTime(), &auStack_54);
+	snprintf(header->mComment, 0x20, comment, auStack_54.mon + 1,
+	         auStack_54.mday);
+#else
+#if !defined(VERSION_GMSJ01)
+	u32 iVar8 = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
+#else
 	int iVar8 = 0;
 	if (TFlagManager::getInstance()->getFlag(MSF_LANGUAGE) != 0x100) {
 		iVar8 = TFlagManager::getInstance()->getFlag(MSF_LANGUAGE);
 		++iVar8;
 	}
+#endif
 
 	snprintf(header->mTitle, 0x20, titles[iVar8]);
 	OSCalendarTime auStack_54;
@@ -513,6 +529,7 @@ void TCardManager::buildHeader_(HeaderData* header)
 		snprintf(header->mComment, 0x20, comments[iVar8], auStack_54.mday,
 		         auStack_54.mon + 1);
 	}
+#endif
 	memcpy(header->mBanner, mBanner, sizeof(header->mBanner));
 	memcpy(header->mIcons, mIcons, sizeof(header->mIcons));
 }

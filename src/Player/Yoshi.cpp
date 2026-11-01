@@ -8,6 +8,10 @@
 #include <MarioUtil/ModelUtil.hpp>
 #include <MarioUtil/RumbleMgr.hpp>
 #include <MarioUtil/ShadowUtil.hpp>
+#if !defined(VERSION_GMSJ01)
+// US and later: TYoshi::entry() switches the light draw buffer.
+#include <MarioUtil/LightUtil.hpp>
+#endif
 #include <MarioUtil/RandomUtil.hpp>
 #include <M3DUtil/MActor.hpp>
 #include <M3DUtil/M3UModelMario.hpp>
@@ -207,9 +211,17 @@ void TYoshi::init(TMario* param_1)
 	for (int i = 0; i < 2; ++i)
 		mMirrorModels[i]->getModelData()->onFlag1OnAllShapes();
 
+#if !defined(VERSION_GMSJ01)
+	mBodyAnmSound = new MAnmSoundMario(SMSGetMSound());
+#else
 	mBodyAnmSound = new MAnmSound(SMSGetMSound());
+#endif
 	mBodyAnmSound->initAnmSound(nullptr, 1, 0.0f);
+#if !defined(VERSION_GMSJ01)
+	mTongueAnmSound = new MAnmSoundMario(SMSGetMSound());
+#else
 	mTongueAnmSound = new MAnmSound(SMSGetMSound());
+#endif
 	mTongueAnmSound->initAnmSound(nullptr, 1, 0.0f);
 
 	{
@@ -251,11 +263,19 @@ void TYoshi::initInLoadAfter()
 	mTongue->initInLoadAfter();
 
 	TMirrorActor* mirrorMain = new TMirrorActor("ヨッシーin鏡");
+#if !defined(VERSION_GMSJ01)
+	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
+#else
 	mirrorMain->init(mActor->getModel(), TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
+#endif
 
 	for (int i = 0; i < 2; ++i) {
 		TMirrorActor* mirror = new TMirrorActor("ヨッシー手in鏡");
+#if !defined(VERSION_GMSJ01)
+		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_UNK20);
+#else
 		mirror->init(mMirrorModels[i], TMirrorActor::MIRROR_ACTOR_FLAG_MARIO);
+#endif
 	}
 
 	mActor->getModel()->getModelData()->getJointNodePointer(21)->setCallBack(
@@ -481,6 +501,11 @@ void TYoshi::getOff(bool param_1)
 	SMS_RideMoveCalcLocalPos(unk94, mTranslation);
 	SMSGetMSound()->unk88 = 1;
 	MSBgm::setStageBgmYoshiPercussion(false);
+#if !defined(VERSION_GMSJ01)
+	// US and later: getting off also puts the tongue back to idle, so it cannot
+	// stay out after dismounting.
+	mTongue->mState = TYoshiTongue::STATE_IDLE;
+#endif
 }
 
 BOOL TYoshi::thinkJumpEnd(u16 cur_idx, u16* new_idx)
@@ -626,8 +651,13 @@ void TYoshi::thinkUpper()
 
 	J3DJoint* joint
 	    = mActor->getModel()->getModelData()->getJointNodePointer(18);
+#if !defined(VERSION_GMSJ01)
+	if (mTongue->mState != TYoshiTongue::STATE_IDLE
+	    || mMario->mWaterGun->isEmitting()) {
+#else
 	if (mTongue->mState != TYoshiTongue::STATE_IDLE
 	    || mMario->getWaterGun()->isEmitting()) {
+#endif
 		if (joint->getMtxCalc() != unk54) {
 			unk5C.setFrame(unk5C.getStart());
 			unk5C.setRate(1.0f);
@@ -832,10 +862,32 @@ void TYoshi::movement()
 		SMS_RideMoveByGroundActor(unk94, &mTranslation, &rot);
 		mEggRotSpeed = DEG2SHORTANGLE(rot);
 
+#if !defined(VERSION_GMSJ01)
+		// US and later: keep probing downwards through planes Mario can pass
+		// through, so the egg lands on real ground instead of on a
+		// pass-through floor. Capped at five probes.
+		// TODO: the target calls isMarioThrough()/isWaterSurface() here,
+		// while we inline both, which is the only thing left in this
+		// function. Both are weak header inlines in PAL too (marioEU.MAP),
+		// there is no PAL-only helper symbol in Yoshi.cpp, and splitting the
+		// || into two ifs changes nothing, so this looks like the same
+		// unexplained MWCC inline-budget behaviour noted in src/Camera.
+		const TBGCheckData* ground = nullptr;
+		f32 groundY = gpMap->checkGround(mTranslation.x,
+		                                 200.0f + mTranslation.y,
+		                                 mTranslation.z, &ground);
+		for (int i = 0; i < 5; i++) {
+			if (!ground->isMarioThrough() || ground->isWaterSurface())
+				break;
+			groundY = gpMap->checkGround(mTranslation.x, groundY - 1.0f,
+			                             mTranslation.z, &ground);
+		}
+#else
 		const TBGCheckData* ground;
 		JGeometry::TVec3<f32> trans = mTranslation;
 		f32 groundY
 		    = gpMap->checkGround(trans.x, 200.0f + trans.y, trans.z, &ground);
+#endif
 		mActor->setLightData(ground, mTranslation);
 		unk2C -= mMario->mJumpParams.mGravity.get();
 		mTranslation.y += unk2C;
@@ -920,6 +972,15 @@ void TYoshi::movement()
 		const TBGCheckData* ground;
 		f32 groundY = gpMap->checkGround(
 		    mTranslation.x, 200.0f + mTranslation.y, mTranslation.z, &ground);
+#if !defined(VERSION_GMSJ01)
+		// US and later: same downward probe as in the egg case above.
+		for (int i = 0; i < 5; i++) {
+			if (!ground->isMarioThrough() || ground->isWaterSurface())
+				break;
+			groundY = gpMap->checkGround(mTranslation.x, groundY - 1.0f,
+			                             mTranslation.z, &ground);
+		}
+#endif
 		mActor->setLightData(ground, mTranslation);
 
 		if (mState == STATE_UNMOUNTED && groundY > mTranslation.y) {
@@ -1067,6 +1128,15 @@ void TYoshi::entry()
 	if (mState == STATE_EGG)
 		bVar1 = false;
 
+#if !defined(VERSION_GMSJ01)
+	// US and later: during a camera demo or a conversation Yoshi is always drawn,
+	// so the hatching blink above is overridden. Same predicate, and the same
+	// spelling, as PAL's TWaterGun::isEmitting().
+	if (gpMarDirector->isInnerDemoModeNow() || gpMarDirector->isTalkingDemoModeNow()
+	    || gpMarDirector->isTalkModeNow())
+		bVar1 = true;
+#endif
+
 	if (unkC < 600)
 		mType = 0;
 
@@ -1118,9 +1188,18 @@ void TYoshi::entry()
 	}
 
 	mActor->entry();
+#if !defined(VERSION_GMSJ01)
+	// US and later: Yoshi's models and tongue are entered with the light draw
+	// buffer switched to MActor's own light, then it is put back.
+	gpLightManager->getLightSet(1)->changeLightDrawBuffer(
+	    mActor->getLightId());
+#endif
 	mMirrorModels[0]->entry();
 	mMirrorModels[1]->entry();
 	mTongue->entry();
+#if !defined(VERSION_GMSJ01)
+	gpLightManager->getLightSet(1)->resetLightDrawBuffer();
+#endif
 
 	TCircleShadowRequest shadowRequest;
 	shadowRequest.mPosition = mTranslation;

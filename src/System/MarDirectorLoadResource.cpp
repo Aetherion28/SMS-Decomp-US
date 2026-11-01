@@ -422,10 +422,11 @@ int TMarDirector::thpInit()
 		THPPlayerSetBuffer(new (0x20) u8[sz]);
 		if (!THPPlayerPrepare(0, 1, 0))
 			return 1;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 		s32 start = OSGetTick();
 		while (true) {
-			if (0.5f <= (f32)(s32)(OSGetTick() - start) / (f32)OS_TIMER_CLOCK)
+			f32 elapsed = (f32)(s32)(OSGetTick() - start) / (f32)OS_TIMER_CLOCK;
+			if (0.5f <= elapsed)
 				break;
 			OSYieldThread();
 		}

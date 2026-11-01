@@ -238,6 +238,10 @@ void TYumbo::updateCollision()
 
 void TYumbo::updateEffect()
 {
+#if !defined(VERSION_GMSJ01)
+	if (mSpine->getLatestNerve() == &TNerveSmallEnemyChange::theNerve())
+		return;
+#endif
 	if (isFreeze()) {
 		JPABaseEmitter* emitter = gpMarioParticleManager->emitAndBindToPosPtr(
 		    PARTICLE_MS_POI_KIZETSU, &mPosition, 1, this);

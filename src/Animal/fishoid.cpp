@@ -1,3 +1,4 @@
+#include <System/MarDirector.hpp>
 #include <Animal/fishoid.hpp>
 #include <Animal/boid.hpp>
 #include <Camera/Camera.hpp>
@@ -101,7 +102,10 @@ void TRealoidActor::checkHitActors()
 	for (; it != end; ++it) {
 		switch ((*it)->getActorType()) {
 		case ACTOR_TYPE_MARIO:
-			SMS_SendMessageToMario(this, HIT_MESSAGE_ATTACK);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+			if (!SMSGetMarDirector()->isTalkOrDemoModeNow())
+#endif
+				SMS_SendMessageToMario(this, HIT_MESSAGE_ATTACK);
 			break;
 		}
 	}

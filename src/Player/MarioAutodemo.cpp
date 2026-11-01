@@ -467,7 +467,11 @@ BOOL TMario::electricDamage()
 		           mDmgParamsGraffitoElec.mMinSpeed.get(),
 		           mDmgParamsGraffitoElec.mMotor.get(), 0.0f, 0x3C);
 
+#if !defined(VERSION_GMSJ01)
+		return changePlayerStatus(MARIO_STATUS_ROCKET_LANDING, 0, true);
+#else
 		return changePlayerStatus(MARIO_STATUS_WAIT, 0, true);
+#endif
 	}
 	return false;
 }

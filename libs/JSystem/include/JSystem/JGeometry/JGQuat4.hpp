@@ -37,16 +37,16 @@ public:
 
 	void conjugate() { this->xyz().negate(); }
 
-	// The products are passed straight to set(): with temporaries the
-	// scheduler orders the fmadds chains differently (BeeHive, Kazekun).
 	void mul(const TQuat4& other)
 	{
 		// clang-format off
-		this->set(this->x * other.w + this->w * other.x + this->y * other.z - this->z * other.y,
-		          this->y * other.w + this->w * other.y + this->z * other.x - this->x * other.z,
-		          this->z * other.w + this->w * other.z + this->x * other.y - this->y * other.x,
-		          this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z);
+		T _x = this->x * other.w + this->w * other.x + this->y * other.z - this->z * other.y;
+		T _y = this->y * other.w + this->w * other.y + this->z * other.x - this->x * other.z;
+		T _z = this->z * other.w + this->w * other.z + this->x * other.y - this->y * other.x;
+		T _w = this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z;
 		// clang-format on
+
+		this->set(_x, _y, _z, _w);
 	}
 
 	void mul(const TQuat4& a, const TQuat4& b)
@@ -148,17 +148,16 @@ public:
 	// Assumes unit quaternion. These were renamed to "transform" in SMG.
 	void rotate(const TVec3<T>& v, TVec3<T>& rDest) const
 	{
-		// clang-format off
 		TQuat4 q;
-		q.x =  this->y * v.z - this->z * v.y + this->w * v.x;
+		q.x = this->y * v.z - this->z * v.y + this->w * v.x;
 		q.y = -this->x * v.z + this->z * v.x + this->w * v.y;
-		q.z =  this->x * v.y - this->y * v.x + this->w * v.z;
+		q.z = this->x * v.y - this->y * v.x + this->w * v.z;
 		q.w = -this->x * v.x - this->y * v.y - this->z * v.z;
 
-		rDest.set( q.x *  this->w + q.y * -this->z - q.z * -this->y + q.w * -this->x,
-		          -q.x * -this->z + q.y *  this->w + q.z * -this->x + q.w * -this->y,
-		           q.x * -this->y - q.y * -this->x + q.z *  this->w + q.w * -this->z);
-		// clang-format on
+		rDest.set(
+		    q.x * this->w + q.y * -this->z - q.z * -this->y + q.w * -this->x,
+		    -q.x * -this->z + q.y * this->w + q.z * -this->x + q.w * -this->y,
+		    q.x * -this->y - q.y * -this->x + q.z * this->w + q.w * -this->z);
 	}
 
 	void rotate(TVec3<T>& rDest) const { rotate(rDest, rDest); }

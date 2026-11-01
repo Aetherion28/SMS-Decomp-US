@@ -468,7 +468,7 @@ void TPopo::behaveToFindMario()
 	if (SMS_CheckMarioFlag(MARIO_FLAG_HAS_FLUDD) && manager->unk60
 	    && (int)SMS_GetMarioWaterGun()->getCurrentNozzleType() == 0
 	    && !gpMarioOriginal->onYoshi()) {
-		setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		setGoal((THitActor*)gpMarioAddress);
 		mSpine->pushAfterCurrent(&TNerveWalkerGraphWander::theNerve());
 		mSpine->pushAfterCurrent(&TNervePopoAttack::theNerve());
 	} else {
@@ -479,9 +479,9 @@ void TPopo::behaveToFindMario()
 void TPopo::walkBehavior(int param_1, f32 param_2)
 {
 	if (!isAirborne()) {
-		JGeometry::TVec3<f32> goal = unk104.getPoint();
-		goal.set(unk104.getPoint().x - mPosition.x, 0.0f,
-		         unk104.getPoint().z - mPosition.z);
+		JGeometry::TVec3<f32> goal = mGoal.getPoint();
+		goal.set(mGoal.getPoint().x - mPosition.x, 0.0f,
+		         mGoal.getPoint().z - mPosition.z);
 		if (goal.x == 0.0f && goal.y == 0.0f && goal.z == 0.0f)
 			goal.x += 1.0f;
 		MsVECNormalize(&goal, &goal);
@@ -512,7 +512,7 @@ void TPopo::walkBehavior(int param_1, f32 param_2)
 		mPosition.y += 2.0f;
 		onLiveFlag(LIVE_FLAG_AIRBORNE);
 		if (mSpine->getCurrentNerve() == &TNerveWalkerGraphWander::theNerve()) {
-			setGoalPath(TPathNode(goal));
+			setGoal(goal);
 			setBckAnm(5);
 		}
 	} else {
@@ -640,6 +640,9 @@ void TPopo::kill()
 {
 	releaseNozzle();
 	TSmallEnemy::kill();
+#if !defined(VERSION_GMSJ01)
+	unk23C->onHitFilter(HIT_FILTER_NO_COLLISION);
+#endif
 }
 
 void TPopo::forceKill()
@@ -877,7 +880,7 @@ DEFINE_NERVE(TNervePopoAttack, TLiveActor)
 {
 	TPopo* self = (TPopo*)spine->getBody();
 	if (spine->getTime() == 0)
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	if (!self->isAirborne()) {
 		if (((TPopoManager*)self->mManager)->unk60 == 0)
 			return true;
@@ -936,6 +939,10 @@ DEFINE_NERVE(TNervePopoExplosion, TLiveActor)
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
 		self->onLiveFlag(LIVE_FLAG_UNK8);
 		self->explosionEffect();
+#if !defined(VERSION_GMSJ01)
+		SMSGetMSound()->startSoundActor(0x297F, &self->mPosition, 0, nullptr,
+		                                0, 4);
+#endif
 	}
 	if (spine->getTime() > self->unk194->mSLExplosionEmitTime.get()) {
 		self->onLiveFlag(LIVE_FLAG_DEAD);
@@ -959,7 +966,7 @@ DEFINE_NERVE(TNervePopoWait, TLiveActor)
 	if (spine->getTime() == 0) {
 		self->onLiveFlag(LIVE_FLAG_UNK10);
 		self->setBckAnm(6);
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	}
 
 	self->walkToCurPathNode(0.0f, self->getTurnSpeed(), 0.0f);

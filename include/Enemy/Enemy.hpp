@@ -46,7 +46,7 @@ public:
 	virtual f32 getPhaseShift() const { return 0.0f; }
 	virtual BOOL isReachedToGoal() const
 	{
-		return (unk104.getPoint() - mPosition).length() < 100.0f ? TRUE : FALSE;
+		return getGoalDistance() < 100.0f ? TRUE : FALSE;
 	}
 
 	void calcEnemyRootMatrix();
@@ -85,41 +85,50 @@ public:
 	f32 getWallRadius() const { return mBodyScale * mWallRadius; }
 	f32 getBodyRadius() const { return mBodyScale * mBodyRadius; }
 	f32 getBodyScale() const { return mBodyScale; }
+	void setTurnSpeed(f32 speed) { mTurnSpeed = speed; }
+
 	u8 getMaxHitPoints() const
 	{
 		return getSaveParam() ? getSaveParam()->mSLHitPointMax.get() : 1;
 	}
 	void resetHitPoints() { mHitPoints = getMaxHitPoints(); }
-
-	void setTurnSpeed(f32 speed) { mTurnSpeed = speed; }
-
-	void setGoalPath(const TPathNode& point)
-	{
-		unkF4  = point;
-		unk104 = point;
-
-		unk114.clear();
-	}
-	void switchNextGoalPath()
-	{
-		if (!unk114.empty())
-			unkF4 = unk114.pop();
-	}
-
 	void decHitPoints()
 	{
 		if (mHitPoints > 0)
 			mHitPoints -= 1;
 	}
 
-	const TPathNode& getUnkF4() const { return unkF4; }
-	const TPathNode& getUnk104() const { return unk104; }
+	void setGoal(const TPathNode& goal)
+	{
+		mCurrentTarget = goal;
+		mGoal          = goal;
+		mGoalPath.clear();
+	}
+	void pushGoalPathNode(const TPathNode& goal)
+	{
+		mGoalPath.push(mCurrentTarget);
+		mCurrentTarget = goal;
+	}
+	void switchNextGoalPathNode()
+	{
+		if (!mGoalPath.empty())
+			mCurrentTarget = mGoalPath.pop();
+	}
+	const TPathNode& getCurrentTarget() const { return mCurrentTarget; }
+	const TPathNode& getGoal() const { return mGoal; }
+	f32 getGoalDistance() const
+	{
+		JGeometry::TVec3<f32> delta = mGoal.getPoint();
+		delta -= mPosition;
+		return delta.length();
+	}
+
 	TGraphTracer* getTracer() { return unk124; }
 
 public:
-	/* 0xF4 */ TPathNode unkF4;
-	/* 0x104 */ TPathNode unk104;
-	/* 0x114 */ TSolidStack<TPathNode> unk114;
+	/* 0xF4 */ TPathNode mCurrentTarget;
+	/* 0x104 */ TPathNode mGoal;
+	/* 0x114 */ TSolidStack<TPathNode> mGoalPath;
 	/* 0x124 */ TGraphTracer* unk124;
 	/* 0x128 */ s16 unk128;
 	/* 0x12C */ f32 unk12C;

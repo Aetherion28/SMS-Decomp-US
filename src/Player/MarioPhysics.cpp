@@ -97,8 +97,12 @@ void TMario::keepDistance(const THitActor& actor, f32 param_2)
 // target).
 void TMario::checkDescent()
 {
+	bool active   = false;
 	f32 descentSp = mHangingParams.mDescentSp.get();
-	if (canHang() != TRUE)
+	if (mHeldObject == nullptr && !onYoshi())
+		active = true;
+
+	if (active != true)
 		return;
 
 	if (!(mForwardVel < descentSp))
@@ -387,11 +391,11 @@ int TMario::checkGroundAtJumping(const Vec& target, int param_2)
 				if (checkFlag(MARIO_FLAG_VISIBLE))
 					onFlag(MARIO_FLAG_UNK200);
 
-				if ((param_2 & 0x2) && canHang() != FALSE && mRoofPlane->isFence())
+				if ((param_2 & 0x2) && canHang() != FALSE
+				    && mRoofPlane->isFence())
 					roofCode = 4;
 				else
 					roofCode = 0;
-
 			}
 		}
 	}

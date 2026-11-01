@@ -21,9 +21,9 @@
 
 namespace {
 
-const char cMatName[]        = "_mat_1";
-const GXColorS10 cRedColor   = { 0xD2, 0x14, 0x0F, 0x00 };
-const GXColorS10 cBlueColor  = { 0x0F, 0x14, 0xD2, 0x00 };
+const char cMatName[]       = "_mat_1";
+const GXColorS10 cRedColor  = { 0xD2, 0x14, 0x0F, 0x00 };
+const GXColorS10 cBlueColor = { 0x0F, 0x14, 0xD2, 0x00 };
 
 // Debug output that was compiled out of the release build.
 void SMSReportVec(const char*, const JGeometry::TVec3<f32>&) { }
@@ -104,8 +104,8 @@ void TWireTrap::initWire()
 	setMoveMode(mMoveMode);
 
 	// Start moving the way the trap faces in the scene file.
-	mMoveDir = 0.0f <= polarXZ(mRotation.y, 1.0f).dot(getWireDir()) ? 1.0f
-	                                                                 : -1.0f;
+	mMoveDir
+	    = 0.0f <= polarXZ(mRotation.y, 1.0f).dot(getWireDir()) ? 1.0f : -1.0f;
 	mAppearScale = 1.0f;
 }
 
@@ -224,9 +224,10 @@ void TWireTrap::calcRootMatrix()
 	JGeometry::TQuat4<f32> spin;
 	spin.setRotate(JGeometry::TVec3<f32>(0.0f, 0.0f, 1.0f),
 	               0.017453294f * mRotation.z);
-	rot.mul(spin);
+	JGeometry::TQuat4<f32> result;
+	result.mul(rot, spin);
 
-	mtx.setQuat(rot);
+	mtx.setQuat(result);
 	mtx.setTrans(mPosition);
 	getModel()->setBaseTRMtx(mtx);
 
@@ -253,9 +254,9 @@ void TWireTrap::moveObject()
 JGeometry::TVec3<f32> TWireTrap::calcMomentum()
 {
 	JGeometry::TVec3<f32> momentum = getWireDir();
-	momentum *= mMoveDir
-	            * (mWaterTimer > 0 ? 1.0f + mWaterPow * mWaterTimer / 30.0f
-	                               : 1.0f);
+	momentum
+	    *= mMoveDir
+	       * (mWaterTimer > 0 ? 1.0f + mWaterPow * mWaterTimer / 30.0f : 1.0f);
 	momentum *= mMoveSpeed;
 
 	return momentum;
@@ -351,7 +352,7 @@ void TWireTrap::checkHitActors()
 
 		case ACTOR_TYPE_WIRE_TRAP:
 			if (actor != this) {
-				TWireTrap* other = (TWireTrap*)actor;
+				TWireTrap* other                     = (TWireTrap*)actor;
 				JGeometry::TVec3<f32> momentum       = calcMomentum();
 				JGeometry::TVec3<f32> other_momentum = other->calcMomentum();
 				behaveHitWireTrap(other, momentum, other_momentum);
@@ -399,10 +400,7 @@ const JGeometry::TVec3<f32>& TWireTrap::getWireDir() const
 	return getWireBinder()->getDir();
 }
 
-bool TWireTrap::isReflect() const
-{
-	return mMoveMode == WIRE_TRAP_MODE_RETURN;
-}
+bool TWireTrap::isReflect() const { return mMoveMode == WIRE_TRAP_MODE_RETURN; }
 
 const TNerveBase<TLiveActor>* TWireTrap::getNerveFromMode(int mode)
 {

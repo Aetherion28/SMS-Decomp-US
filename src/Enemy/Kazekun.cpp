@@ -265,7 +265,7 @@ bool TKazekun::doAttackPose(bool start)
 void TKazekun::doAttack(bool start)
 {
 	if (start) {
-		JGeometry::TVec3<f32> dir = getUnk104().getPoint();
+		JGeometry::TVec3<f32> dir = getGoal().getPoint();
 		dir -= mPosition;
 		dir.setLength(((TKazekunParams*)getSaveParam())->mAttackSpeed.get());
 		mVelocity = dir;
@@ -416,7 +416,7 @@ DEFINE_NERVE(TNerveKazekunPreAttack, TLiveActor)
 	if (((TKazekunParams*)self->getSaveParam())->mPoseTime.get()
 	        * ((TKazekunParams*)self->getSaveParam())->mDicideTiming.get()
 	    < spine->getTime()) {
-		self->setGoalPath(TPathNode(SMS_GetMarioPos()));
+		self->setGoal(SMS_GetMarioPos());
 	}
 
 	self->doAttackPose(false);

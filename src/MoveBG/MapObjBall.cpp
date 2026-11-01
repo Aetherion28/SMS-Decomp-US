@@ -154,6 +154,7 @@ void TMapObjBall::touchGround(JGeometry::TVec3<f32>* ground)
 			mVelocity.x *= mMapObjData->mPhysical->mData->unk10;
 			mVelocity.z *= mMapObjData->mPhysical->mData->unk10;
 
+#if !(!defined(VERSION_GMSJ01))
 			if (isActorType(ACTOR_TYPE_WATERMELON)
 			    && (abs(mVelocity.x) > mMapObjData->mPhysical->mData->unkC
 			        || abs(mVelocity.z)
@@ -161,6 +162,7 @@ void TMapObjBall::touchGround(JGeometry::TVec3<f32>* ground)
 				SMSGetMSound()->startSoundActor(MSD_SE_MA_SLIP, &mPosition, 0,
 				                                nullptr, 0, 4);
 			}
+#endif
 		}
 	}
 }
@@ -720,6 +722,10 @@ void TResetFruit::thrown()
 
 void TResetFruit::hold(TTakeActor* actor)
 {
+#if !defined(VERSION_GMSJ01)
+	if (getVelocity().length() > 10.0f)
+		return;
+#endif
 	TMapObjBall::hold(actor);
 	mVelocity.zero();
 	onLiveFlag(LIVE_FLAG_UNK10);

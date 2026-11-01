@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/TinKoopa.hpp>
 #include <Enemy/CoasterKiller.hpp>
 #include <Enemy/Conductor.hpp>
@@ -837,7 +838,7 @@ void TTinKoopa::hitParts()
 	if (mBreakCount == 4)
 		return;
 
-	startTinKoopaMessage(0xE0024);
+	startTinKoopaMessage(BALLOON_MSG(0xE0024));
 	--mPartsHp;
 	if (mPartsHp <= 0)
 		mSpine->pushNerve(&TNerveTinKoopaBreak::theNerve());
@@ -895,7 +896,7 @@ void TTinKoopa::checkTinKoopaMessage()
 
 void TTinKoopa::checkTinKoopaKillerApproachingMessage()
 {
-	u32 msgId = 0xE0009;
+	u32 msgId = BALLOON_MSG(0xE0009);
 	for (int i = 0; i < unk1F0->getActiveObjNum(); ++i) {
 		TCoasterKiller* killer = (TCoasterKiller*)unk1F0->getObj(i);
 		if (killer->checkLiveFlag(LIVE_FLAG_DEAD))
@@ -913,7 +914,7 @@ void TTinKoopa::checkTinKoopaFirstRocketMessage()
 	if (mTruckActor) {
 		J3DFrameCtrl* ctrl = mTruckActor->getFrameCtrl(0);
 		if (mLap == 0 && ctrl->checkPass(300.0f))
-			startTinKoopaMessage(0xE000A);
+			startTinKoopaMessage(BALLOON_MSG(0xE000A));
 	}
 }
 
@@ -931,12 +932,12 @@ void TTinKoopa::checkTinKoopaFirstFlameMessage()
 	J3DFrameCtrl* ctrl = mTruckActor->getFrameCtrl(0);
 	if (mBreakCount == 0) {
 		if (ctrl->checkPass(2600.0f)) {
-			startTinKoopaMessage(0xE000B);
+			startTinKoopaMessage(BALLOON_MSG(0xE000B));
 			mFirstFlameMessageShown = true;
 		}
 	} else {
 		if (ctrl->checkPass(3100.0f)) {
-			startTinKoopaMessage(0xE000B);
+			startTinKoopaMessage(BALLOON_MSG(0xE000B));
 			mFirstFlameMessageShown = true;
 		}
 	}

@@ -281,9 +281,17 @@ f32 TRocket::getGravityY() const
 
 bool TRocket::isCollidMove(THitActor* param_1)
 {
+#if !defined(VERSION_GMSJ01)
+	if (mSpine->getCurrentNerve() == &TNerveRocketFly::theNerve()
+	    && (param_1->isHitCategory(HIT_CATEGORY_BOSS)
+	        || param_1->isActorType(ACTOR_TYPE_ENEMY_UNK1F))
+	    && param_1->receiveMessage(this, HIT_MESSAGE_TRAMPLE))
+		kill();
+#else
 	if (mSpine->getCurrentNerve() == &TNerveRocketFly::theNerve()
 	    && param_1->receiveMessage(this, HIT_MESSAGE_TRAMPLE))
 		kill();
+#endif
 	return false;
 }
 

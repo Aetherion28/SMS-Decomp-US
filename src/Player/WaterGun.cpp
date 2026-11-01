@@ -504,6 +504,12 @@ void TNozzleTrigger::init()
 
 void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 {
+#if !defined(VERSION_GMSJ01)
+	// US and later: the air-charge sound below is gated on the pressure having
+	// actually risen this frame, so the entry value is kept.
+	f32 oldPressure = mInsidePressure;
+#endif
+
 	if (!mFludd->hasWater()) {
 		mSprayState     = TNozzleTrigger::SPRAY_STATE_INACTIVE;
 		mSprayTimer     = 0;
@@ -555,6 +561,7 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 				SMSRumbleMgr->start(20, mFludd->getMario()->getUnk564(),
 				                    (f32*)nullptr);
 		}
+#if !(!defined(VERSION_GMSJ01))
 		if (mRumbleOnCharge != true
 		    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
 		    && controllerWork.mAnalogR > 0.0f) {
@@ -562,11 +569,24 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 			                                mFludd->getEmitPos(0), 0, nullptr,
 			                                0, 4);
 		}
+#endif
 	}
 	mInsidePressure -= mInsidePressureDec.get();
 	if (mInsidePressure < 0.0f) {
 		mInsidePressure = 0.0f;
 	}
+
+#if !defined(VERSION_GMSJ01)
+	// US and later: moved after the decrement, so the sound plays when this
+	// frame's pressure ended up higher than it started.
+	if (canSpray == true && mRumbleOnCharge != true
+	    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
+	    && controllerWork.mAnalogR > 0.0f && oldPressure < mInsidePressure) {
+		SMSGetMSound()->startSoundActor(MSD_SE_SY_NEWP_AIR_TAME,
+		                                mFludd->getEmitPos(0), 0, nullptr, 0,
+		                                4);
+	}
+#endif
 
 	if (mInsidePressure > mInsidePressureMax.get()) {
 		mInsidePressure = mInsidePressureMax.get();
@@ -1648,6 +1668,35 @@ void TWaterGun::perform(u32 cue, JDrama::TGraphics* graphics)
 		getCurrentNozzle()->getMActor()->perform(cue, graphics);
 	}
 }
+
+#if !defined(VERSION_GMSJ01)
+// US and later: in JP 1.0 this is an inline in WaterGun.hpp (emitted as a weak
+// copy in MarioRun.cpp). Later releases define it here as a global and add the
+// director-mode check, so FLUDD counts as not emitting during demos and
+// conversations.
+bool TWaterGun::isEmitting()
+{
+	if (mCurrentWater == 0)
+		return false;
+
+	if (gpMarDirector->isInnerDemoModeNow() || gpMarDirector->isTalkingDemoModeNow()
+	    || gpMarDirector->isTalkModeNow())
+		return false;
+
+	if (getCurrentNozzle()->getNozzleKind() == 1) {
+		TNozzleTrigger* triggerNozzle = (TNozzleTrigger*)getCurrentNozzle();
+		if (triggerNozzle->getSprayState()
+		    == TNozzleTrigger::SPRAY_STATE_ACTIVE)
+			return true;
+		return false;
+	}
+
+	if (getCurrentNozzle()->getUnk378() > 0.0f)
+		return true;
+
+	return false;
+}
+#endif
 
 TNozzleBase* TWaterGun::getCurrentNozzle() const
 {

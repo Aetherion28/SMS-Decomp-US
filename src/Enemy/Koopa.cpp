@@ -266,7 +266,11 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaTumble, TLiveActor)
 
 	if (spine->getTime() == 190) {
 		gpCameraShake->startShake(CAM_SHAKE_MODE_UNK27, 1.0f);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		TBathtub* bathtub = getBathtub();
+#else
 		static TBathtub* bathtub = getBathtub();
+#endif
 		gpMarioParticleManager->emitAndBindToMtx(
 		    SCENE_KOOPA_JPA_MS_KP_HIPDROP, *bathtub->getRootJointMtx(), 0,
 		    this);
@@ -418,7 +422,11 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaGetDown, TLiveActor)
 
 	default: {
 		koopa->changeAnm(KOOPA_ANM_DOWN, 0, koopa->getParam()->downSpeed.get());
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		TBathtub* bathtub = getBathtub();
+#else
 		static TBathtub* bathtub = getBathtub();
+#endif
 		gpMarioParticleManager->emitAndBindToMtx(
 		    SCENE_KOOPA_JPA_MS_KP_HIPDROP, *bathtub->getRootJointMtx(), 0,
 		    this);

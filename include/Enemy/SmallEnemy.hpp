@@ -145,10 +145,21 @@ public:
 	virtual void forceKill();
 	virtual void setMActorAndKeeper();
 	virtual void initAttacker(THitActor*) { unk184 = 1; }
+#if !defined(VERSION_GMSJ01)
+	virtual bool isHitValid(u32 message)
+	{
+		if (mLiveFlag & LIVE_FLAG_HIDDEN)
+			return false;
+		if (message == HIT_MESSAGE_UNKB)
+			onLiveFlag(LIVE_FLAG_HIDDEN);
+		return true;
+	}
+#else
 	virtual bool isHitValid(u32)
 	{
 		return checkLiveFlag(LIVE_FLAG_HIDDEN) ? false : true;
 	}
+#endif
 	virtual bool isCollidMove(THitActor*);
 	virtual BOOL isInhibitedForceMove() { return FALSE; }
 	virtual void endHitWaterJump() { }

@@ -14,6 +14,10 @@
 #include <Camera/CameraMarioData.hpp>
 
 // rogue includes needed for matching sinit & bss
+#if !defined(VERSION_GMSJ01)
+#include <MSound/MSound.hpp>
+#include <MSound/MSoundSE.hpp>
+#endif
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 #include <M3DUtil/MActorAnm.hpp>
@@ -579,8 +583,14 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 		return;
 	}
 
-	if (isFixOrDefiniteCameraSpecifyMode(param_1))
+	if (isFixOrDefiniteCameraSpecifyMode(param_1)) {
+#if !defined(VERSION_GMSJ01)
+		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
+			                                   0);
+#endif
 		return;
+	}
 
 	if (unk64 & CAMERA_FLAG_NOTICE_ACTIVE)
 		execNoticeOnOffProc_(NOTICE_MODE_UNK1);
@@ -596,6 +606,11 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 			doLButtonCameraOff_(true);
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_CAM_L))
 			execFrontRotate_();
+#if !defined(VERSION_GMSJ01)
+		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
+			                                   0);
+#endif
 	} else {
 		if (isLButtonCameraSpecifyMode(mMode)) {
 			if (SMS_GetMarioStatus() & MARIO_STATUS_FLAG_UNK20000) {
@@ -643,6 +658,11 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 	int currentMap = SMSGetMarDirector()->getCurrentStage();
 
 	int newMode;
+#if !defined(VERSION_GMSJ01)
+	if (param_1 == CAMERA_MODE_FOLLOW_D) {
+		newMode = param_1;
+	} else
+#endif
 	if (gpMarioOriginal->checkFlag(MARIO_FLAG_HELMET_FLW_CAMERA)) {
 		newMode = CAMERA_MODE_DIVING;
 	} else if (SMS_CheckMarioFlag(2)) {

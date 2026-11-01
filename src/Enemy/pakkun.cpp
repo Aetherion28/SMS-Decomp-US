@@ -260,7 +260,7 @@ void TPakkun::load(JSUMemoryInputStream& stream)
 	TSmallEnemy::load(stream);
 	reset();
 	TPathNode marioNode((THitActor*)gpMarioAddress);
-	setGoalPath(marioNode);
+	setGoal(marioNode);
 }
 
 void TPakkun::init(TLiveManager* manager)
@@ -272,7 +272,7 @@ void TPakkun::init(TLiveManager* manager)
 	mSpine->initWith(&TNervePakkunGenerate::theNerve());
 
 	TPathNode marioNode((THitActor*)gpMarioAddress);
-	setGoalPath(marioNode);
+	setGoal(marioNode);
 
 	if (mInstanceIndex == 0) {
 		for (u8 i = 0; i < getModel()->getModelData()->getJointNum(); ++i) {
@@ -388,7 +388,7 @@ void TPakkun::onShootLiner(JGeometry::TVec3<f32>& direction)
 	JGeometry::TVec3<f32> goal = mPosition;
 	goal.x += 200.0f * direction.x;
 	goal.z += 200.0f * direction.z;
-	setGoalPath(TPathNode(goal));
+	setGoal(goal);
 	unk198 = 0;
 
 	if (direction.x == 0.0f && direction.y == 0.0f && direction.z == 0.0f)
@@ -405,7 +405,7 @@ void TPakkun::onShootLiner(JGeometry::TVec3<f32>& direction)
 // UNUSED
 void TPakkun::onShootCurve(JGeometry::TVec3<f32>& goal)
 {
-	setGoalPath(TPathNode(goal));
+	setGoal(goal);
 	f32 speed   = unk1A0->mSLSeedSpeedC.get();
 	f32 gravity = unk1A0->mSLSeedGravityC.get();
 	JGeometry::TVec3<f32> velocity
@@ -854,7 +854,7 @@ DEFINE_NERVE(TNervePakkunStay, TLiveActor)
 	    && self->checkCurAnmEnd(ANM_TYPE_BCK)
 	    && (spine->getTime() >= readyTime || spine->getTime() >= waitTime
 	        || self->unk1B1)) {
-		f32 goalDistance = self->unk104.getPoint().distance(self->mPosition);
+		f32 goalDistance = self->getGoalDistance();
 		f32 shootRange   = self->unk1A0->mSLShootRange.get();
 		f32 distanceRate = 1.0f;
 		if (self->unk199) {
@@ -889,7 +889,7 @@ DEFINE_NERVE(TNervePakkunStay, TLiveActor)
 					self->onShootLiner(direction);
 				} else {
 					self->unk1B0               = 0;
-					JGeometry::TVec3<f32> goal = self->unk104.getPoint();
+					JGeometry::TVec3<f32> goal = self->getGoal().getPoint();
 					self->onShootCurve(goal);
 				}
 				return true;
@@ -899,7 +899,7 @@ DEFINE_NERVE(TNervePakkunStay, TLiveActor)
 			spine->pushAfterCurrent(&TNervePakkunShoot::theNerve());
 
 			int angle                  = (int)MsRandF(0.0f, 36000.0f);
-			JGeometry::TVec3<f32> goal = self->unk104.getPoint();
+			JGeometry::TVec3<f32> goal = self->getGoal().getPoint();
 			if (goal.distance(self->mPosition)
 			    > self->unk1A0->mSLLimitMove.get()) {
 				goal.x = SMS_GetMarioPos().x - self->mPosition.x;
@@ -928,7 +928,7 @@ DEFINE_NERVE(TNervePakkunStay, TLiveActor)
 	if (self->unk199 && !self->isFindMario(1.0f)) {
 		f32 giveUpLength
 		    = ((TSmallEnemyParams*)self->getSaveParam())->getSLGiveUpLength();
-		if (self->unk104.getPoint().distance(self->mPosition) > giveUpLength) {
+		if (self->getGoalDistance() > giveUpLength) {
 			spine->pushAfterCurrent(&TNerveStayPakkunHide::theNerve());
 			return true;
 		}
@@ -990,7 +990,7 @@ DEFINE_NERVE(TNervePakkunShoot, TLiveActor)
 	self->walkToCurPathNode(0.0f, self->getTurnSpeed(), 0.0f);
 	if (self->checkCurAnmEnd(ANM_TYPE_BCK)) {
 		TPathNode marioNode((THitActor*)gpMarioAddress);
-		self->setGoalPath(marioNode);
+		self->setGoal(marioNode);
 		return true;
 	}
 

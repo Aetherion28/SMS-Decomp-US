@@ -181,7 +181,7 @@ BOOL TAnimalBird::receiveMessage(THitActor* sender, u32 message)
 
 	if (message == HIT_MESSAGE_UNKB) {
 		mHolder = nullptr;
-		if (!isChanged()) {
+		if (isChangeToItem()) {
 			mSpine->reset();
 			mSpine->setNext(&TNerveAnimalBirdChangeToCoin::theNerve());
 		} else {
@@ -192,7 +192,7 @@ BOOL TAnimalBird::receiveMessage(THitActor* sender, u32 message)
 
 	if (message == HIT_MESSAGE_TRAMPLE
 	    && sender->isActorType(ACTOR_TYPE_POPO)) {
-		if (!isChanged()) {
+		if (isChangeToItem()) {
 			mSpine->reset();
 			mSpine->setNext(&TNerveAnimalBirdChangeToCoin::theNerve());
 		} else {
@@ -270,7 +270,7 @@ void TAnimalBird::checkFalling()
 
 void TAnimalBird::checkChangeToItem()
 {
-	if (!isChangeToItem() && mHitPoints == 0) {
+	if (isChangeToItem() && getHitPoints() == 0) {
 		mSpine->reset();
 		mSpine->setNext(&TNerveAnimalBirdChangeToCoin::theNerve());
 	}
@@ -321,10 +321,7 @@ bool TAnimalBird::isFindMario() const
 	                 unk174 * getSaveParam2()->mSearchAware.get());
 }
 
-bool TAnimalBird::isChangeToItem() const
-{
-	return mSpine->isNerve(&TNerveAnimalBirdChangeToCoin::theNerve());
-}
+bool TAnimalBird::isChangeToItem() const { return !isChanged(); }
 
 bool TAnimalBird::isGroundShaken() const { return false; }
 
@@ -351,27 +348,29 @@ bool TAnimalBird::isFlying() const
 
 void TAnimalBird::doDropCoin()
 {
-	onLiveFlag(LIVE_FLAG_DEAD);
 	if (unk150->isActorType(ACTOR_TYPE_SHINE)) {
 		unk150->JSGSetTranslation(mPosition);
 		((TShine*)unk150)->appearWithDemo("鳥シャインカメラ");
 	} else {
-		TMapObjBase* obj = unk150->isActorType(ACTOR_TYPE_COIN)
-		                       ? gpItemManager->makeObjAppear(ACTOR_TYPE_COIN)
-		                       : unk150;
-		if (obj != nullptr) {
-			obj->appear();
-			obj->JSGSetTranslation(mPosition);
-			obj->mVelocity.set(0.0f, -10.0f, 0.0f);
-			obj->offLiveFlag(LIVE_FLAG_UNK10);
-			obj->onLiveFlag(LIVE_FLAG_AIRBORNE);
+		TMapObjBase* coin;
+		if (unk150->isActorType(ACTOR_TYPE_COIN))
+			coin = gpItemManager->makeObjAppear(ACTOR_TYPE_COIN);
+		else
+			coin = unk150;
+
+		if (coin) {
+			coin->appear();
+			coin->JSGSetTranslation(mPosition);
+			coin->mVelocity.set(0.0f, -10.0f, 0.0f);
+			coin->offLiveFlag(LIVE_FLAG_UNK10);
+			coin->onLiveFlag(LIVE_FLAG_AIRBORNE);
 		}
 	}
 }
 
 void TAnimalBird::doFlyToCurPathNode()
 {
-	JGeometry::TVec3<f32> diff = getUnkF4().getPoint();
+	JGeometry::TVec3<f32> diff = getCurrentTarget().getPoint();
 	diff -= mPosition;
 
 	f32 dist = diff.length();
@@ -449,14 +448,14 @@ bool TAnimalBird::doLanding(bool init)
 void TAnimalBird::doGotoRandomNextGraphNode()
 {
 	goToRandomNextGraphNode();
-	JGeometry::TVec3<f32> point = getUnk104().getPoint();
+	JGeometry::TVec3<f32> point = getGoal().getPoint();
 	point.x += 200.0f * (MsRandF() - 0.5f);
 	point.y += 200.0f * (MsRandF() - 0.5f);
 	point.z += 200.0f * (MsRandF() - 0.5f);
-	setGoalPath(TPathNode(point));
+	setGoal(TPathNode(point));
 }
 
-void TAnimalBird::setGoalToComeback() { setGoalPath(TPathNode(unk158)); }
+void TAnimalBird::setGoalToComeback() { setGoal(TPathNode(unk158)); }
 
 void TAnimalBird::setParamsOnFloating()
 {
@@ -660,7 +659,7 @@ DEFINE_NERVE(TNerveAnimalBirdGraphWander, TLiveActor)
 
 	if (spine->getTime() == 0 || self->isReachedToGoal()) {
 		self->doGotoRandomNextGraphNode();
-		if (self->mPosition.y <= self->getUnkF4().getPoint().y)
+		if (self->mPosition.y <= self->getCurrentTarget().getPoint().y)
 			self->setBckAnm(1);
 		else
 			self->setBckAnm(3);
@@ -680,9 +679,10 @@ DEFINE_NERVE(TNerveAnimalBirdGraphWander, TLiveActor)
 DEFINE_NERVE(TNerveAnimalBirdChangeToCoin, TLiveActor)
 {
 	TAnimalBird* self = (TAnimalBird*)spine->getBody();
-	if (spine->getTime() == 0)
+	if (spine->getTime() == 0) {
+		self->onLiveFlag(LIVE_FLAG_DEAD);
 		self->doDropCoin();
-
+	}
 	return true;
 }
 

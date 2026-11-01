@@ -63,11 +63,13 @@ JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 	if (strcmp(name, "KoopaManager") == 0)
 		return new TKoopaManager("クッパマネージャー");
 
+#if !(!defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01))
 	if (strcmp(name, "HinoKuri2") == 0)
 		return new THinokuri2;
 
 	if (strcmp(name, "HinoKuri2Manager") == 0)
 		return new THinokuri2Manager;
+#endif
 
 	if (strcmp(name, "BossGesso") == 0)
 		return new TBossGesso;
@@ -99,6 +101,8 @@ JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 	if (strcmp(name, "KoopaJrSubmarine") == 0)
 		return new TKoopaJrSubmarine;
 
+#if !(!defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01))
+	// JP 1.1 and later have no LimitKoopa units (no strings or calls in the binary)
 	if (strcmp(name, "LimitKoopaJrManager") == 0)
 		return new TLimitKoopaJrManager;
 
@@ -110,6 +114,7 @@ JDrama::TNameRef* TMarNameRefGen::getNameRef_BossEnemy(const char* name) const
 
 	if (strcmp(name, "LimitKoopa") == 0)
 		return new TLimitKoopa("クッパ");
+#endif
 
 	if (strcmp(name, "BathtubKillerManager") == 0)
 		return new TBathtubKillerManager;

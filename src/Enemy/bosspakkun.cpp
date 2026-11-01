@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossPakkun.hpp>
 #include <Enemy/AreaCylinder.hpp>
 #include <Enemy/Conductor.hpp>
@@ -744,7 +745,11 @@ TBossPakkun::TBossPakkun(const char* name)
     , unk1B8(0)
     , unk1BC(0)
     , unk1C0(0)
+#if !defined(VERSION_GMSJ01)
+    , unk1C4(1)
+#else
     , unk1C4(0)
+#endif
     , unk1CC(0)
 {
 	offLiveFlag(LIVE_FLAG_ENABLE_CLIPPING);
@@ -896,7 +901,7 @@ void TBossPakkun::rumblePad(int type, const JGeometry::TVec3<f32>& position)
 
 void TBossPakkun::showMessage(u32 message)
 {
-	u32 index = message - 0xe0000;
+	u32 index = message - BALLOON_MSG(0xE0000);
 	u32 mask;
 	if (index == 1)
 		mask = 0;
@@ -1099,7 +1104,7 @@ void TBossPakkun::flyToCurPathNode(f32 flySpeed, f32 turnSpeed)
 {
 	turnToCurPathNode(turnSpeed);
 
-	JGeometry::TVec3<f32> velocityStep = getUnkF4().getPoint();
+	JGeometry::TVec3<f32> velocityStep = getCurrentTarget().getPoint();
 	velocityStep -= mPosition;
 	PSVECNormalize(&velocityStep, &velocityStep);
 	velocityStep *= flySpeed;
@@ -1116,7 +1121,13 @@ const char** TBossPakkun::getBasNameTable() const
 void TBossPakkun::setGroundCollision()
 {
 	const TNerveBase<TLiveActor>* dieNerve = &TNerveBPDie::theNerve();
+#if !defined(VERSION_GMSJ01)
+	if (!mSpine->isNerve(dieNerve)
+	    && !mSpine->isNerve(&TNerveBPTumbleOut::theNerve())
+	    && mMapCollisionManager != nullptr) {
+#else
 	if (!mSpine->isNerve(dieNerve) && mMapCollisionManager != nullptr) {
+#endif
 		TPosition3f collisionMtx;
 		collisionMtx.set(getModel()->getAnmMtx(2));
 		mMapCollisionManager->moveActiveCollisionMtx(collisionMtx);
@@ -1408,9 +1419,7 @@ DEFINE_NERVE(TNerveBPWait, TLiveActor)
 
 		spine->pushAfterCurrent(&TNerveBPWait::theNerve());
 		spine->pushAfterCurrent(&TNerveBPVomit::theNerve());
-		TPathNode goal(SMS_GetMarioPos());
-		boss->unk114.push(boss->unkF4);
-		boss->unkF4 = goal;
+		boss->pushGoalPathNode(SMS_GetMarioPos());
 		spine->pushAfterCurrent(&TNerveBPPivot::theNerve());
 		return true;
 	}
@@ -1454,9 +1463,7 @@ DEFINE_NERVE(TNerveBPWait, TLiveActor)
 		goalPosition.x += 10000.0f * (randomX - 0.5f);
 		f32 randomZ = rand() * (1.0f / 32768.0f);
 		goalPosition.z += 10000.0f * (randomZ - 0.5f);
-		TPathNode goal(goalPosition);
-		boss->unk114.push(boss->unkF4);
-		boss->unkF4 = goal;
+		boss->pushGoalPathNode(goalPosition);
 		spine->pushAfterCurrent(&TNerveBPPivot::theNerve());
 		return true;
 	}
@@ -1520,7 +1527,7 @@ DEFINE_NERVE(TNerveBPVomit, TLiveActor)
 			if (!boss->is2ndFightNow()) {
 				if (!(boss->unk1C0 & 1))
 					SMSGetMarDirector()->getConsole()->startAppearBalloon(
-					    0xE0000, true);
+					    BALLOON_MSG(0xE0000), true);
 				boss->unk1C0 |= 1;
 			}
 			return true;
@@ -1569,7 +1576,7 @@ DEFINE_NERVE(TNerveBPPivot, TLiveActor)
 		pivotSpeed = boss->getBossPakkunParams()->mSLPivotSpeed.get();
 
 	if (boss->turnToCurPathNode(pivotSpeed)) {
-		boss->switchNextGoalPath();
+		boss->switchNextGoalPathNode();
 		return true;
 	}
 	return false;
@@ -1666,12 +1673,21 @@ DEFINE_NERVE(TNerveBPTumbleOut, TLiveActor)
 		if (actor->checkCurBckFromIndex(14)) {
 			boss->changeBck(22);
 			if (!boss->is2ndFightNow()) {
+#if !defined(VERSION_GMSJ01)
+				boss->unk1C4 -= 1;
+				if (boss->unk1C4 <= 0) {
+					SMSGetMarDirector()->getConsole()->startAppearBalloon(
+					    BALLOON_MSG(0xe0001), true);
+					boss->unk1C4 = 3;
+				}
+#else
 				boss->unk1C4 += 1;
 				if (boss->unk1C4 >= 3) {
 					SMSGetMarDirector()->getConsole()->startAppearBalloon(
 					    0xe0001, true);
 					boss->unk1C4 = 0;
 				}
+#endif
 			}
 		} else {
 			spine->pushAfterCurrent(&TNerveBPWait::theNerve());
@@ -1819,7 +1835,7 @@ DEFINE_NERVE(TNerveBPTakeOff, TLiveActor)
 
 	if (actor->checkCurBckFromIndex(11)) {
 		boss->mPosition.y += 5.0f;
-		JGeometry::TVec3<f32> goal = boss->getUnk104().getPoint();
+		JGeometry::TVec3<f32> goal = boss->getGoal().getPoint();
 		if (goal.y < boss->mPosition.y) {
 			boss->mPosition.y = goal.y;
 			if (boss->getTracer()->getGraph() != nullptr)
@@ -1841,7 +1857,7 @@ DEFINE_NERVE(TNerveBPFly, TLiveActor)
 		boss->startBGM();
 	}
 
-	JGeometry::TVec3<f32> toNext = boss->getUnk104().getPoint();
+	JGeometry::TVec3<f32> toNext = boss->getGoal().getPoint();
 	toNext -= boss->mPosition;
 	toNext.y = 0.0f;
 	if (PSVECMag(&toNext) < 100.0f) {
@@ -1867,7 +1883,7 @@ DEFINE_NERVE(TNerveBPTouchDown, TLiveActor)
 
 	if (actor->checkCurBckFromIndex(11)) {
 		boss->mPosition.y -= 5.0f;
-		JGeometry::TVec3<f32> goal = boss->getUnk104().getPoint();
+		JGeometry::TVec3<f32> goal = boss->getGoal().getPoint();
 		if (goal.y > boss->mPosition.y) {
 			boss->mPosition.y = goal.y;
 			boss->changeBck(18);
@@ -1903,7 +1919,7 @@ DEFINE_NERVE(TNerveBPFlyPivot, TLiveActor)
 		boss->changeBck(11);
 	if (boss->turnToCurPathNode(
 	        boss->getBossPakkunParams()->mSLPivotSpeed.get())) {
-		boss->switchNextGoalPath();
+		boss->switchNextGoalPathNode();
 		return true;
 	}
 	return false;
@@ -1922,11 +1938,7 @@ DEFINE_NERVE(TNerveBPHover, TLiveActor)
 	    && boss->getDistToMarioSquared() < range * range) {
 		spine->pushAfterCurrent(&TNerveBPHover::theNerve());
 		spine->pushAfterCurrent(&TNerveBPFlyCannon::theNerve());
-
-		TPathNode goal(SMS_GetMarioPos());
-		boss->unk114.push(boss->unkF4);
-		boss->unkF4 = goal;
-
+		boss->pushGoalPathNode(SMS_GetMarioPos());
 		spine->pushAfterCurrent(&TNerveBPFlyPivot::theNerve());
 		return true;
 	}

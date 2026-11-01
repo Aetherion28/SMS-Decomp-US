@@ -274,7 +274,11 @@ void TSlotDrum::moveObject()
 	for (int i = 0; i < unk148; ++i) {
 		if (unk138[i] != 0.0f) {
 			unk188[i] += fabsf(unk138[i]);
+#if !defined(VERSION_GMSJ01)
+			if (unk188[i] >= 360.0f / (f32)unk168) {
+#else
 			if (unk188[i] > 360.0f / (f32)unk168) {
+#endif
 				unk188[i] = 0.0f;
 				switch (i) {
 				case 0:
@@ -309,6 +313,28 @@ void TSlotDrum::moveObject()
 					unk13C[i] += 360.0f;
 				if ((int)fabsf(unk13C[i]) % unk168 == 0) {
 					unk138[i] = 0.0f;
+#if !defined(VERSION_GMSJ01)
+					if (unk188[i] != 0.0f) {
+						switch (i) {
+						case 0:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_L, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						case 1:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_C, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						case 2:
+							SMSGetMSound()->startSoundActor(
+							    MSD_SE_OBJ_SLOT_INC_R, &mPosition, 0, nullptr,
+							    0, 4);
+							break;
+						}
+						unk188[i] = 0.0f;
+					}
+#endif
 					if (unk13C[i] < (f32)unk168) {
 						unk170[i].r = 255;
 						unk170[i].g = 255;
@@ -580,7 +606,12 @@ int TItemSlotDrum::getForcastResult(int idx)
 {
 	f32 angle = unk13C[idx];
 	f32 speed = unk138[idx];
+#if !defined(VERSION_GMSJ01)
+	int i = 0;
+	do {
+#else
 	for (;;) {
+#endif
 		if (fabsf(speed) > unk160) {
 			angle += speed;
 			if (speed > 0.0f)
@@ -597,11 +628,20 @@ int TItemSlotDrum::getForcastResult(int idx)
 				angle -= 360.0f;
 			if (angle <= 0.0f)
 				angle += 360.0f;
+#if !defined(VERSION_GMSJ01)
+			if ((int)fabsf(angle) % unk168 == 0) {
+				angle = (int)(angle / unk168) * unk168;
+				break;
+			}
+		}
+	} while (++i <= 10000);
+#else
 			if ((int)fabsf(angle) % unk168 == 0)
 				break;
 		}
 	}
 	angle = (int)(angle / unk168) * unk168;
+#endif
 	return getResultFromAng(angle);
 }
 
@@ -845,8 +885,15 @@ void TDonchou::calcRootMatrix()
 	if (unk144 != nullptr && unk144->unk194 && unk148->unk194)
 		unk13C = 1;
 	if (unk13C != 0) {
-		unk14C++;
+#if !defined(VERSION_GMSJ01)
+		if (!SMSGetMarDirector()->isTalkModeNow())
+#endif
+			unk14C++;
+#if !defined(VERSION_GMSJ01)
+		if (unk14C > 20) {
+#else
 		if (unk14C > 100) {
+#endif
 			if (mMActor->checkCurAnm("donchou", ANM_TYPE_BCK)) {
 				if (mMActor->curAnmEndsNext(ANM_TYPE_BCK, nullptr))
 					unk138->remove();
@@ -860,6 +907,11 @@ void TDonchou::calcRootMatrix()
 				J3DFrameCtrl* fc = mMActor->getFrameCtrl(ANM_TYPE_BCK);
 				fc->setRate(0.5f * fc->getRate());
 			}
+#if !defined(VERSION_GMSJ01)
+		} else if (!SMSGetMarDirector()->isTalkModeNow()) {
+			gpMarioOriginal->mGamePad->onNeutralMarioKey();
+			gpMarioOriginal->mGamePad->mDisabledFrames = 5;
+#endif
 		}
 	}
 }

@@ -350,19 +350,21 @@ void TBeeHive::controlSound()
 	if (mActiveBeeNum == 0)
 		return;
 
-	JGeometry::TVec3<f32> sum(0.0f, 0.0f, 0.0f);
 	int count = 0;
+	JGeometry::TVec3<f32> sum(0.0f, 0.0f, 0.0f);
 	for (int i = 0; i < mActiveBeeNum; ++i) {
 		TRealoidActor* bee = getRealoid(i);
 		if (!(bee->checkFlag(TRealoidActor::FLAG_UNK2_OR_UNK4))) {
 			++count;
-			sum += bee->mPosition;
+			sum.x += bee->mPosition.x;
+			sum.y += bee->mPosition.y;
+			sum.z += bee->mPosition.z;
 		}
 	}
 
 	if (count != 0) {
 		sum.scale(1.0f / count);
-		mBeeSoundPos.set(sum);
+		mBeeSoundPos.set(sum.x, sum.y, sum.z);
 		SMSGetMSound()->startBeeSe(&mBeeSoundPos, count);
 	}
 }

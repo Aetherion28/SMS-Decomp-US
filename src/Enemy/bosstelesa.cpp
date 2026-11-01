@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossTelesa.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/HamuKuri.hpp>
@@ -322,7 +323,7 @@ DEFINE_NERVE_EXECUTE(TNerveBubbleLive, TLiveActor)
 			bubble->setBckAnm(8);
 		} else {
 			bubble->setBckAnm(10);
-			bubble->setGoalPath((THitActor*)gpMarioAddress);
+			bubble->setGoal((THitActor*)gpMarioAddress);
 		}
 
 		J3DFrameCtrl* frameCtrl = bubble->mMActor->getFrameCtrl(0);
@@ -739,7 +740,12 @@ int TTelesaSlot::getForcastResult(int idx)
 	f32 ang = unk13C[idx];
 	f32 cur = unk138[idx];
 
+#if !defined(VERSION_GMSJ01)
+	int i = 0;
+	do {
+#else
 	for (;;) {
+#endif
 		if (fabsf(cur) > unk160) {
 			ang += cur;
 			if (cur > 0.0f)
@@ -757,12 +763,23 @@ int TTelesaSlot::getForcastResult(int idx)
 				ang -= 360.0f;
 			if (ang <= 0.0f)
 				ang += 360.0f;
+#if !defined(VERSION_GMSJ01)
+			if ((int)fabsf(ang) % unk168 == 0) {
+				ang = unk168 * (int)(ang / (f32)unk168);
+				break;
+			}
+		}
+	} while (++i <= 10000);
+
+	return getResultFromAng(ang);
+#else
 			if ((int)fabsf(ang) % unk168 == 0)
 				break;
 		}
 	}
 
 	return getResultFromAng(unk168 * (int)(ang / (f32)unk168));
+#endif
 }
 
 int TTelesaSlot::getResultFromAng(f32 ang)
@@ -845,7 +862,7 @@ void TBossTelesa::init(TLiveManager* manager)
 	             HIT_CATEGORY_PLAYER | HIT_CATEGORY_ENEMY | HIT_CATEGORY_BOSS,
 	             mBodyRadius, mHeadHeight, mBodyRadius, mHeadHeight);
 	mGroundPlane = TMap::getIllegalCheckData();
-	setGoalPath((THitActor*)gpMarioAddress);
+	setGoal((THitActor*)gpMarioAddress);
 	initAnmSound();
 	unk15C     = static_cast<TBossTelesaSaveLoadParams*>(getSaveParam());
 	mActorType = ACTOR_TYPE_BOSS_TELESA;
@@ -1450,12 +1467,12 @@ void TBossTelesa::checkHitObject(THitActor* actor)
 	if (!mIsSpicy && actor->mActorType != ACTOR_TYPE_RED_PEPPER) {
 		if (unk35A) {
 			unk35A = 0;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE000F,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000F),
 			                                                      true);
 		}
 		mFruitHitCount++;
 		if (mFruitHitCount > 2)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0010,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0010),
 			                                                      true);
 	} else {
 		mFruitHitCount = 0;
@@ -1491,7 +1508,7 @@ void TBossTelesa::setSpicy(TLiveActor* actor)
 
 	if (unk35B) {
 		unk35B = 0;
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0011, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0011), true);
 	}
 
 	actor->kill();
@@ -1553,19 +1570,16 @@ bool TBossTelesa::rouletteFall()
 	if (mRoulettes[0]->mPosition.y > mRoulettes[1]->mPosition.y) {
 		mRoulettes[0]->mPosition.y -= 1.0f;
 		mRoulettes[0]->mMActor->setBck("rulet00");
-	} else {
-		mRoulettes[0]->mPosition.y = mRoulettes[1]->mPosition.y;
-		return TRUE;
-	}
 
-	if (mRoulettes[0]->mPosition.y > mRoulettes[1]->mPosition.y + 3.0f) {
-		if (SMS_SendMessageToMario(this, HIT_MESSAGE_TAKE))
-			mHeldObject = (TTakeActor*)SMS_GetMarioHitActor();
-	} else {
-		if (SMS_SendMessageToMario(this, HIT_MESSAGE_DETACH)) {
-			SMSGetMSound()->startSoundActor(MSD_SE_BS_TELESA_RLT_SET,
-			                                &mPosition, 0, nullptr, 0, 4);
-			mHeldObject = nullptr;
+		if (mRoulettes[0]->mPosition.y > mRoulettes[1]->mPosition.y + 3.0f) {
+			if (SMS_SendMessageToMario(this, HIT_MESSAGE_TAKE))
+				mHeldObject = (TTakeActor*)SMS_GetMarioHitActor();
+		} else {
+			if (SMS_SendMessageToMario(this, HIT_MESSAGE_DETACH)) {
+				SMSGetMSound()->startSoundActor(MSD_SE_BS_TELESA_RLT_SET,
+				                                &mPosition, 0, nullptr, 0, 4);
+				mHeldObject = nullptr;
+			}
 		}
 
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_TELESA_V_LAUGH1B, &mPosition,
@@ -2050,10 +2064,6 @@ void TBossTelesa::rollRouletteCircle()
 // UNUSED
 bool TBossTelesa::isForceRestart() { return false; }
 
-// TODO: same as forceAllItemKill: the original is called out of line from
-// TBossTelesaKillSmallEnemy::checkHit, so it had 16+ statements (ours has
-// 15) and an 8 byte larger frame.
-#pragma dont_inline on
 void TBossTelesa::forceHide()
 {
 	if (mSpine->getCurrentNerve() == &TNerveBossTelesaDie::theNerve())
@@ -2077,8 +2087,10 @@ void TBossTelesa::forceHide()
 	mSpine->reset();
 	mSpine->setNext(&TNerveBossTelesaHide::theNerve());
 }
-#pragma dont_inline off
 
+// TODO: the original is not inlined into forceHide; the pragma stands in for
+// the missing source.
+#pragma dont_inline on
 void TBossTelesa::forceAllItemKill()
 {
 	for (int i = 0; i < mSpitObjNum; ++i) {
@@ -2098,6 +2110,7 @@ void TBossTelesa::forceAllItemKill()
 		                             &mSpitObjs[i]->mPosition, 0, nullptr);
 	}
 }
+#pragma dont_inline off
 
 void TBossTelesa::fanfale()
 {
@@ -2268,10 +2281,10 @@ DEFINE_NERVE(TNerveBossTelesaHideWait, TLiveActor)
 		boss->onLiveFlag(LIVE_FLAG_HIDDEN);
 		boss->mIsSpicy = 0;
 
-		u8 maxHp = boss->getMaxHitPoints();
-		boss->unk34C.a = MsClamp<u8>(
-		    TBossTelesa::mNormalAlpha + (maxHp - boss->mHitPoints) * 30, 0,
-		    0xFE);
+		u8 maxHp       = boss->getMaxHitPoints();
+		boss->unk34C.a = MsClamp<u8>(TBossTelesa::mNormalAlpha
+		                                 + (maxHp - boss->mHitPoints) * 30,
+		                             0, 0xFE);
 
 		boss->mSlot->mScaling.set(0.0f, 0.0f, 0.0f);
 		boss->getMActor()->setBrkFromIndex(2);
@@ -2458,10 +2471,10 @@ DEFINE_NERVE(TNerveBossTelesaFreeze, TLiveActor)
 		if (boss->checkCurAnmEnd(0)) {
 			boss->mIsSpicy = 0;
 
-			u8 maxHp = boss->getMaxHitPoints();
-			boss->unk34C.a = MsClamp<u8>(
-			    TBossTelesa::mNormalAlpha + (maxHp - boss->mHitPoints) * 30, 0,
-			    0xFE);
+			u8 maxHp       = boss->getMaxHitPoints();
+			boss->unk34C.a = MsClamp<u8>(TBossTelesa::mNormalAlpha
+			                                 + (maxHp - boss->mHitPoints) * 30,
+			                             0, 0xFE);
 			return TRUE;
 		}
 	} else {

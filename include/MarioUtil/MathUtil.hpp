@@ -52,8 +52,12 @@ inline f32 MsAtan2(f32 x, f32 y) { return matan(x, y) * (360.0f / 65536.0f); }
 
 inline f32 MsGetRotFromZaxisY(const JGeometry::TVec3<f32>& axis)
 {
-	if (axis.z == 0.0f)
-		return axis.x >= 0.0f ? 90.0f : -90.0f;
+	if (axis.z == 0.0f) {
+		if (axis.x >= 0.0f)
+			return 90.0f;
+		else
+			return -90.0f;
+	}
 
 	if (axis.z >= 0.0f) {
 		return MsAtan2(axis.z, axis.x);

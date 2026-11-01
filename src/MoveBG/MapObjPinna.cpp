@@ -35,7 +35,7 @@
 
 static s32 switchSnd;
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 static f32 rotate_frame_rate = 1.0f;
 #endif
 
@@ -54,8 +54,11 @@ s32 TFerrisWheel::becomeCalmlyCallback(uintptr_t param_1, u32 param_2)
 	return 0;
 }
 
-#define VERSION_FRAME_RATE                                                     \
-	(VERSION_SELECT(SMSGetAnmFrameRate(), GMSP01(rotate_frame_rate)))
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+#define VERSION_FRAME_RATE rotate_frame_rate
+#else
+#define VERSION_FRAME_RATE SMSGetAnmFrameRate()
+#endif
 
 void TFerrisWheel::control()
 {
@@ -71,8 +74,13 @@ void TFerrisWheel::control()
 		sound->startSoundActor(MSD_SE_OBJ_MAHRE_GATE_LIGHT, &mPosition, 0,
 		                       &sound->unk80, 0, 4);
 	}
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+	f32 frame = unk140 + getMActor()->getFrameCtrl(ANM_TYPE_BCK)->getFrame();
+	getMActor()->getFrameCtrl(ANM_TYPE_BCK)->setFrame(frame);
+#else
 	J3DFrameCtrl* frameCtrl = getMActor()->getFrameCtrl(ANM_TYPE_BCK);
 	frameCtrl->setFrame(frameCtrl->getFrame() + unk140);
+#endif
 	for (int i = 0; i < unk138; ++i) {
 		TMapObjBase* gondola = unk13C[i];
 		MtxPtr mtx           = getModel()->getAnmMtx(i + 1);
@@ -92,7 +100,7 @@ void TFerrisWheel::initMapObj()
 		unk13C[i] = TMapObjBaseManager::newAndRegisterObj("FerrisGondola");
 		unk13C[i]->appear();
 	}
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 	if ((SMSGetMarDirector()->getCurrentStage() == 13
 	     && SMSGetMarDirector()->getCurrentScenario() == 2)
 	    || (SMSGetMarDirector()->getCurrentStage() == 5
@@ -738,13 +746,13 @@ void TAmiKing::moveObject()
 	}
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 void TAmiKing::calc()
 #else
 void TAmiKing::calcRootMatrix()
 #endif
 {
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	TMapObjBase::calcRootMatrix();
 #endif
 	gpMarioParticleManager->emitAndBindToMtxPtr(

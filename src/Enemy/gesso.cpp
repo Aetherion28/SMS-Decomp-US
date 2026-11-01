@@ -694,7 +694,7 @@ void TGesso::behaveToFindMario()
 		mSpine->pushAfterCurrent(&TNerveWalkerEscape::theNerve());
 		mSpine->pushAfterCurrent(&TNerveSmallEnemyJump::theNerve());
 	} else {
-		setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		setGoal((THitActor*)gpMarioAddress);
 		mSpine->pushAfterCurrent(&TNerveWalkerGraphWander::theNerve());
 		mSpine->pushAfterCurrent(&TNerveWalkerAttack::theNerve());
 		if (unk1B4 == 0) {
@@ -1027,7 +1027,7 @@ DEFINE_NERVE(TNerveGessoFreeze, TLiveActor)
 			self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 			self->setVelocity(self->unk1DC);
 		}
-	} else if (self->unkF4.unk0 == (THitActor*)gpMarioAddress) {
+	} else if (self->mCurrentTarget.unk0 == (THitActor*)gpMarioAddress) {
 		self->walkToCurPathNode(0.0f, self->getTurnSpeed(), 0.0f);
 	}
 
@@ -1083,7 +1083,7 @@ DEFINE_NERVE(TNerveGessoFall, TLiveActor)
 	TGesso* self = (TGesso*)spine->getBody();
 
 	if (spine->getTime() == 0) {
-		self->setGoalPath(TPathNode(SMS_GetMarioPos()));
+		self->setGoal(SMS_GetMarioPos());
 
 		if (self->isWandering()) {
 			JGeometry::TVec3<f32> local_80

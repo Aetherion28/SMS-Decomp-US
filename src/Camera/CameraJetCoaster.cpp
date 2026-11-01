@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Camera/CameraJetCoaster.hpp>
 #include <Camera/camerasave.hpp>
 #include <Camera/CameraKindParam.hpp>
@@ -46,7 +47,7 @@ inline void CPolarSubCamera::drawJetCoasterBalloonMessage_()
 		TFlagManager::getInstance()->setBool(
 		    true, MSF_POPPED_ALL_BALLOONS_IN_PREV_STAGE);
 		unk2B8->unk38 = 300;
-		balloonCode   = 0xE002D;
+		balloonCode   = BALLOON_MSG(0xE002D);
 	} else {
 		switch (SMSGetMarDirector()->getMoveTickCount()) {
 		case 0x3C:
@@ -54,16 +55,16 @@ inline void CPolarSubCamera::drawJetCoasterBalloonMessage_()
 			                                                         objCount);
 			break;
 		case 0x1DB:
-			balloonCode = 0xE0029;
+			balloonCode = BALLOON_MSG(0xE0029);
 			break;
 		case 0x1D4C:
-			balloonCode = 0xE002A;
+			balloonCode = BALLOON_MSG(0xE002A);
 			break;
 		case 0x3A98:
 			if ((u32)(objCount - flagCount) >= 7U)
-				balloonCode = 0xE002B;
+				balloonCode = BALLOON_MSG(0xE002B);
 			else
-				balloonCode = 0xE002C;
+				balloonCode = BALLOON_MSG(0xE002C);
 			break;
 		case 0x57E4:
 			gpMarioOriginal->loserExec();

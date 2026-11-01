@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossGesso.hpp>
 #include <Enemy/BossGessoTentacle.hpp>
 #include <Enemy/BossGessoPolDrop.hpp>
@@ -27,6 +28,9 @@
 #include <System/MarDirector.hpp>
 #include <System/Particles.hpp>
 #include <System/MSoundMainSide.hpp>
+#if !defined(VERSION_GMSJ01)
+#include <Camera/CubeManagerBase.hpp>
+#endif
 #include <Strategic/Spine.hpp>
 #include <Strategic/ObjModel.hpp>
 #include <Strategic/Strategy.hpp>
@@ -191,7 +195,10 @@ BOOL TBGBeakHit::receiveMessage(THitActor* sender, u32 message)
 			mHolder = actor;
 
 			if (mOwner->unk190.color.a != 0)
-				mOwner->showMessage(0xE0028);
+				mOwner->showMessage(BALLOON_MSG(0xE0028));
+#if !defined(VERSION_GMSJ01)
+			mOwner->unk1A0 = 1;
+#endif
 
 			return true;
 		}
@@ -699,13 +706,13 @@ f32 TBossGesso::lenFromToeToMario()
 void TBossGesso::showMessage(u32 message)
 {
 	u32 idx;
-	if (message == 0xE0028)
+	if (message == BALLOON_MSG(0xE0028))
 		idx = 3;
 	else
-		idx = message - 0xE0003;
+		idx = message - BALLOON_MSG(0xE0003);
 
 	u32 flag;
-	if (message == 0xE0003)
+	if (message == BALLOON_MSG(0xE0003))
 		flag = 0;
 	else
 		flag = 1 << idx;
@@ -720,14 +727,18 @@ void TBossGesso::showMessage(u32 message)
 // Mario has stayed near Gooper Blooper for 20 seconds.
 void TBossGesso::checkTakeMsg()
 {
+#if !defined(VERSION_GMSJ01)
+	if (!unk1A0 && !is2ndFightNow()) {
+#else
 	if (!unk1A0 && !is2ndFightNow() && mAttackMode == 6) {
+#endif
 		JGeometry::TVec3<f32> toMario = SMS_GetMarioPos();
 		toMario -= mPosition;
 
 		if (toMario.squared() < 4000000.0f) {
 			unk19C++;
 			if (unk19C >= 1200) {
-				showMessage(0xE0004);
+				showMessage(BALLOON_MSG(0xE0004));
 				unk1A0 = 1;
 			}
 		}
@@ -793,8 +804,8 @@ void TBossGesso::changeAttackMode(int new_mode)
 
 	case ASTATE_GUARD:
 		for (int i = 0; i < 2; ++i) {
-			static int idx[] = { 1, 3 };
-			TBGTentacle* tentacle  = mTentacles[idx[i]];
+			static int idx[]      = { 1, 3 };
+			TBGTentacle* tentacle = mTentacles[idx[i]];
 			if (!tentacle->isThing())
 				tentacle->changeStateAndFixNodes(10);
 		}
@@ -842,6 +853,9 @@ void TBossGesso::gotTentacleDamage()
 	mSpine->reset();
 	mSpine->setNext(&TNerveBGTentacleDamage::theNerve());
 	mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
+#if !defined(VERSION_GMSJ01)
+	unk1A0 = 1;
+#endif
 }
 
 void TBossGesso::gotEyeDamage()
@@ -870,6 +884,9 @@ void TBossGesso::gotBeakDamage()
 		mSpine->setNext(&TNerveBGBeakDamage::theNerve());
 		mSpine->pushAfterCurrent(&TNerveBGWait::theNerve());
 	}
+#if !defined(VERSION_GMSJ01)
+	unk1A0 = 1;
+#endif
 }
 
 void TBossGesso::changeAllTentacleState(int param_1)
@@ -985,8 +1002,7 @@ void TBossGesso::doAttackSingle()
 		static const int idxarray[] = { 1, 3 };
 		TBGTentacle* tentacle       = mTentacles[idxarray[i]];
 
-		if (inSight()
-		    && tentacle->mState == 0) {
+		if (inSight() && tentacle->mState == 0) {
 			JGeometry::TVec3<f32> delta = SMS_GetMarioPos();
 			delta -= tentacle->getFirstNode()->getPosition();
 
@@ -1091,8 +1107,7 @@ void TBossGesso::doAttackDouble()
 	f32 doubleAttackLen2 = getSaveParams()->mSLDoubleAttackLen.value;
 	doubleAttackLen2 *= doubleAttackLen2;
 
-	if (inSight()
-	    && delta.squared() < doubleAttackLen2) {
+	if (inSight() && delta.squared() < doubleAttackLen2) {
 
 		for (int i = 0; i < 2; ++i) {
 			static const int idxarray[] = { 0, 2 };
@@ -1147,8 +1162,7 @@ void TBossGesso::doAttackUnison()
 	f32 unisonAttackLen2 = getSaveParams()->mSLUnisonAttackLen.value;
 	unisonAttackLen2 *= unisonAttackLen2;
 
-	if (inSight()
-	    && gpMarioOriginal->isTouchGround4cm()
+	if (inSight() && gpMarioOriginal->isTouchGround4cm()
 	    && delta.squared() < unisonAttackLen2) {
 
 		BOOL bVar3 = true;
@@ -1204,7 +1218,6 @@ void TBossGesso::doAttackShoot()
 		return;
 	}
 }
-
 
 // TODO: inline seems sus here, probably needed cuz inSight is wrong
 void TBossGesso::doAttackGuard()
@@ -1510,14 +1523,13 @@ void TBossGesso::perform(u32 cue, JDrama::TGraphics* graphics)
 			SMSGetMSound()->startSoundActorWithInfo(
 			    MSD_SE_BS_GESO_ROLL, &mPosition, nullptr, lenFromToeToMario(),
 			    0, 0, nullptr, 0, 4);
-
 		}
 	}
 
 	if (cue & CUE_MOVE) {
 		if (mBeak->getHolder() != nullptr && unk190.color.a == 0) {
 			if (!mTentacles[1]->isThing() || !mTentacles[3]->isThing())
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0003,
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0003),
 				                                                      true);
 		}
 	}
@@ -1530,7 +1542,7 @@ TBossGessoManager::TBossGessoManager(const char* name)
 
 void TBossGessoManager::createModelData()
 {
-	static TModelDataLoadEntry entry[] = {
+	static const TModelDataLoadEntry entry[] = {
 		{ "bgeso_body.bmd",
 		  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
 		      | (16 << J3DMLF_TevStageNumShift),
@@ -1614,7 +1626,7 @@ DEFINE_NERVE(TNerveBGWait, TLiveActor)
 			self->changeBck(25);
 		}
 
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 
 		self->getMActor()->setBtpFromIndex(2);
 		self->getMActor()->getFrameCtrl(ANM_TYPE_BTP)->setFrame(0.0f);
@@ -1675,6 +1687,16 @@ DEFINE_NERVE(TNerveBGEyeDamage, TLiveActor)
 
 	return false;
 }
+
+#if !defined(VERSION_GMSJ01)
+// fabricated
+inline Vec getCubeCheckPos(const Vec& pos)
+{
+	Vec result = pos;
+	result.y += 75.0f;
+	return result;
+}
+#endif
 
 DEFINE_NERVE(TNerveBGBeakDamage, TLiveActor)
 {
@@ -1764,8 +1786,19 @@ DEFINE_NERVE(TNerveBGBeakDamage, TLiveActor)
 
 		spine->pushAfterCurrent(&TNerveBGPollute::theNerve());
 		if (SMSGetMarDirector()->getCurrentStage() == 3
-		    || SMSGetMarDirector()->getCurrentStage() == 59)
+		    || SMSGetMarDirector()->getCurrentStage() == 59) {
 			MSBgm::startBGM(MSD_BGM_CHUBOSS_MANTA);
+#if !defined(VERSION_GMSJ01)
+			if (gpCubeSoundChange != nullptr
+			    && gpCubeSoundChange->getInCubeNo(
+			           getCubeCheckPos(SMS_GetMarioPos()))
+			           == -1)
+				MSBgm::setTrackVolume(1, 0.0f, 0, 0);
+			else if (SMSGetMarDirector()->getCurrentStage() == 59
+			         && MSStageCubeFade::smInstance != nullptr)
+				MSStageCubeFade::smInstance->setBgmVolumeForce();
+#endif
+		}
 
 		return true;
 	}
@@ -1931,7 +1964,7 @@ DEFINE_NERVE(TNerveBGDie, TLiveActor)
 		JGeometry::TVec3<f32> local_24(self->mPosition.x, -5000.0f,
 		                               self->mPosition.z + 7000.0f);
 
-		self->setGoalPath(TPathNode(local_24));
+		self->setGoal(local_24);
 
 		self->mVelocity
 		    = self->calcVelocityToJumpToY(local_24, 50.0f, self->getGravityY());

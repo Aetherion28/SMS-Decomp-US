@@ -13,6 +13,7 @@ public:
 		MIRROR_ACTOR_FLAG_MARIO     = 0x4,
 		MIRROR_ACTOR_FLAG_SDL_MODEL = 0x8,
 		MIRROR_ACTOR_FLAG_UNK10     = 0x10,
+		MIRROR_ACTOR_FLAG_UNK20     = 0x20,
 	};
 
 	bool isInMirror() const;

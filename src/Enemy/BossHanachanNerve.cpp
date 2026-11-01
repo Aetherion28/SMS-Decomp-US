@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossHanachan.hpp>
 #include <Enemy/BossHanachanChangeSaveParams.hpp>
 #include <GC2D/GCConsole2.hpp>
@@ -37,7 +38,7 @@ DEFINE_NERVE(TNerveBossHanachanTumble, TLiveActor)
 	hanachan->execSlip();
 	if (hanachan->getMarchSpeed() == 0.0f
 	    && hanachan->isTumbleCompletelyAllBody()) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0007, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0007), true);
 		spine->pushAfterCurrent(&TNerveBossHanachanDown::theNerve());
 		return true;
 	}

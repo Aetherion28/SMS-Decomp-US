@@ -2,6 +2,11 @@
 #include <JSystem/JUtility/JUTGamePad.hpp>
 #include <math.h>
 
+#ifdef SMS_ORACLE
+// playable build only (tools/playable/oracle.cpp)
+void SMSOracle_onPadRead(PADStatus*);
+#endif
+
 static u32 channel_mask[4]
     = { PAD_CHAN0_BIT, PAD_CHAN1_BIT, PAD_CHAN2_BIT, PAD_CHAN3_BIT };
 
@@ -76,6 +81,10 @@ void JUTGamePad::read()
 {
 	PADRead(mPadStatus);
 	PADClamp(mPadStatus);
+#ifdef SMS_ORACLE
+	// playable build only (tools/playable/oracle.cpp): pad replay
+	SMSOracle_onPadRead(mPadStatus);
+#endif
 	u32 reset_mask = 0;
 	for (int i = 0; i < 4; i++) {
 		u32 bittest = PAD_CHAN0_BIT >> i;

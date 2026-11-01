@@ -127,6 +127,9 @@ BOOL TMario::doRunningAnimation()
 	if (sp < 4.0f)
 		sp = 4.0f;
 
+#if !defined(VERSION_GMSJ01)
+	int guard = 0;
+#endif
 	while (loop) {
 		switch (mAnimationId) {
 		default:
@@ -188,6 +191,10 @@ BOOL TMario::doRunningAnimation()
 			}
 			break;
 		}
+#if !defined(VERSION_GMSJ01)
+		if (++guard > 4)
+			break;
+#endif
 	}
 	return 1;
 }
@@ -978,6 +985,11 @@ BOOL TMario::surfing()
 			BOOL ret = changePlayerStatus(MARIO_STATUS_JUMP_BACK_DOWN, 0, true);
 			mForwardVel = 0.8f * -mForwardVel;
 			mVel.y      = 50.0f;
+#if !defined(VERSION_GMSJ01)
+			// US and later: surfing into a wall plays the damage sound.
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr,
+			                                   0);
+#endif
 			return ret;
 		}
 		setPlayerVelocity(0.0f);

@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossEel.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Camera/Camera.hpp>
@@ -1198,6 +1199,9 @@ void TBossEelHeartCoin::perform(u32 cue, JDrama::TGraphics* graphics)
 			mPosition.set(jointMtx[0][3], jointMtx[1][3], jointMtx[2][3]);
 		}
 		mPosition.y = jointMtx[1][3];
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		mPosition.y = -23300.0f;
+#endif
 
 		TPosition3f heartMtx(mPosition.x, mPosition.y, mPosition.z);
 		getMActor()->getModel()->setBaseTRMtx(heartMtx);
@@ -1207,8 +1211,12 @@ void TBossEelHeartCoin::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (calcAnim) {
 		for (s32 i = 0; i < 20; ++i) {
 			MtxPtr coinMtx = getMActor()->getModel()->getAnmMtx(i + 2);
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+			mCoins[i]->mPosition.set(coinMtx[0][3], -23300.0f, coinMtx[2][3]);
+#else
 			mCoins[i]->mPosition.set(coinMtx[0][3], coinMtx[1][3],
 			                         coinMtx[2][3]);
+#endif
 		}
 	}
 }
@@ -1354,6 +1362,9 @@ void TBossEelAwaCollision::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (cue & CUE_CALC_ANIM) {
 		mPosition.x = mCollisionMtx[0][3];
 		mPosition.y = mCollisionMtx[1][3] + 11000.0f;
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
+		mPosition.y = -24300.0f;
+#endif
 		mPosition.z = mCollisionMtx[2][3];
 	}
 	THitActor::perform(cue, graphics);
@@ -2011,7 +2022,7 @@ static s32 hoseiDiveCameraCallback(uintptr_t actorAddress, u32 state)
 void TBossEel::startMoguCamera()
 {
 	if (!mMoguCameraActive) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0015, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0015), true);
 		SMSGetMarDirector()->fireStartDemoCamera(
 		    "meoto_mogu_camera", &mPosition, -1, 0.0f, false,
 		    &hoseiDiveCameraCallback, reinterpret_cast<uintptr_t>(this),
@@ -2029,7 +2040,7 @@ DEFINE_NERVE(TNerveBossEelWaitAppear, TLiveActor)
 		eel->setBckAnm(10);
 
 	if (spine->getTime() == 2500)
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0012, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0012), true);
 
 	JGeometry::TVec3<f32> marioPosition = SMS_GetMarioPos();
 	marioPosition.y += 75.0f;
@@ -2131,8 +2142,13 @@ DEFINE_NERVE_EXECUTE(TNerveBossEelAppear, TLiveActor)
 {
 	TBossEel* eel = static_cast<TBossEel*>(spine->getBody());
 	if (spine->getTime() == 0) {
+#if !defined(VERSION_GMSJ01)
+		SMSGetMSound()->startSoundActor(0x8922, &eel->mPosition, 0, nullptr, 0,
+		                                4);
+#else
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_UNG_UP, &eel->mPosition, 0,
 		                                nullptr, 0, 4);
+#endif
 		eel->mBarrierCollision->offHitFilter(HIT_FILTER_NO_COLLISION);
 		eel->setBckAnm(15);
 		eel->mInDemo = true;
@@ -2164,7 +2180,7 @@ DEFINE_NERVE_EXECUTE(TNerveBossEelAppear, TLiveActor)
 		eel->mBarrierCollision->onHitFilter(HIT_FILTER_NO_COLLISION);
 		if (eel->mCollisionEnabled) {
 			eel->mCollisionEnabled = false;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0013,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0013),
 			                                                      true);
 		}
 		return true;
@@ -2327,7 +2343,7 @@ DEFINE_NERVE(TNerveBossEelDie, TLiveActor)
 	if (spine->getTime() == 0) {
 		SMSGetMSound()->startSoundActor(MSD_SE_BS_UNG_VOICE_LAST,
 		                                &eel->mPosition, 0, nullptr, 0, 4);
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0014, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0014), true);
 		MSBgm::stopTrackBGMs(7, 10);
 		gpCameraShake->startShake(CAM_SHAKE_MODE_UNK1E, 1.0f);
 		eel->setBckAnm(3);

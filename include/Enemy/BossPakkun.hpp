@@ -7,6 +7,7 @@
 #include <M3DUtil/M3UJoint.hpp>
 #include <Strategic/Nerve.hpp>
 #include <Strategic/Spine.hpp>
+#include <System/BalloonMsg.hpp>
 
 class MActor;
 class TAreaCylinderManager;
@@ -166,7 +167,7 @@ public:
 		if (is2ndFightNow()) {
 			const TNerveBase<TLiveActor>* flyNerve = &TNerveBPFly::theNerve();
 			if (mSpine->isNerve(flyNerve))
-				showMessage(0xe0002);
+				showMessage(BALLOON_MSG(0xE0002));
 		}
 	}
 

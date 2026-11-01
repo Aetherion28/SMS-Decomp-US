@@ -219,7 +219,7 @@ void TAnimalBase::perform(u32 cue, JDrama::TGraphics* graphics)
 
 void TAnimalBase::resetRandomCurPathNode()
 {
-	TPathNode curNode = unkF4;
+	TPathNode curNode = mCurrentTarget;
 	if (curNode.unk0 != nullptr)
 		return;
 
@@ -233,7 +233,7 @@ void TAnimalBase::resetRandomCurPathNode()
 		pos.y -= 250.0f * MsRandF();
 	}
 
-	setGoalPath(pos);
+	setGoal(pos);
 }
 
 void TAnimalBase::getRotationFlyToDir(JGeometry::TVec3<f32>* current_rot,
@@ -288,7 +288,7 @@ void TAnimalBase::execWalk(bool moving)
 	f32 turnSpeed  = mTurnSpeed;
 	f32 marchSpeed = mMarchSpeed;
 
-	JGeometry::TVec3<f32> diff = unkF4.getPoint();
+	JGeometry::TVec3<f32> diff = mCurrentTarget.getPoint();
 	diff -= mPosition;
 
 	f32 dist = diff.length();

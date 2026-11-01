@@ -1,58 +1,51 @@
+
 #include <Enemy/Killer.hpp>
-#include <Enemy/Enemy.hpp>
 #include <Enemy/Conductor.hpp>
 #include <Enemy/EffectObj.hpp>
-#include <Enemy/SmallEnemy.hpp>
-#include <Player/MarioAccess.hpp>
-#include <Camera/CameraShake.hpp>
+#include <Enemy/Walker.hpp>
+#include <Strategic/Spine.hpp>
+#include <Strategic/ObjModel.hpp>
+#include <MoveBG/ItemManager.hpp>
+#include <MoveBG/MapObjManager.hpp>
+#include <MoveBG/MapObjBlock.hpp>
 #include <Map/Map.hpp>
 #include <Map/MapData.hpp>
 #include <Map/MapCollisionData.hpp>
-#include <M3DUtil/MActor.hpp>
-#include <M3DUtil/MActorAnm.hpp>
+#include <Player/MarioAccess.hpp>
+#include <System/MarDirector.hpp>
+#include <System/Particles.hpp>
+#include <Camera/CameraShake.hpp>
 #include <MarioUtil/MathUtil.hpp>
 #include <MarioUtil/PacketUtil.hpp>
 #include <MarioUtil/RumbleMgr.hpp>
-#include <MarioUtil/RandomUtil.hpp>
-#include <MoveBG/MapObjManager.hpp>
-#include <MoveBG/MapObjBlock.hpp>
-#include <MoveBG/ItemManager.hpp>
-#include <Strategic/Spine.hpp>
-#include <Strategic/ObjModel.hpp>
-#include <System/MarDirector.hpp>
-#include <System/Particles.hpp>
+#include <M3DUtil/MActor.hpp>
 #include <MSound/MSound.hpp>
 #include <MSound/MSoundSE.hpp>
 #include <MSound/SoundEffects.hpp>
-#include <JSystem/JMath.hpp>
-#include <JSystem/JUtility/JUTNameTab.hpp>
 #include <JSystem/J3D/J3DGraphBase/J3DSys.hpp>
 #include <JSystem/J3D/J3DGraphAnimator/J3DModel.hpp>
-#include <JSystem/J3D/J3DGraphAnimator/J3DNode.hpp>
+#include <JSystem/J3D/J3DGraphAnimator/J3DJoint.hpp>
 #include <JSystem/J3D/J3DGraphAnimator/J3DCluster.hpp>
-#include <JSystem/J3D/J3DGraphLoader/J3DModelLoader.hpp>
-#include <stdlib.h>
-#include <math.h>
-#include <macros.h>
+#include <JSystem/JUtility/JUTNameTab.hpp>
+#include <JSystem/J3D/J3DGraphLoader/J3DModelLoaderFlags.hpp>
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
-#include <M3DUtil/MActorAnm.hpp>
-
-u8 TKiller::mSerialBomb        = 1;
-u8 TKiller::mTrampleDie        = 1;
-f32 TFlyEnemy::mTestSp         = 2.5f;
-int TFlyEnemy::mInvalidTime    = 200;
-f32 TFlyEnemy::mTestMarioSpMax = 12.0f;
-
-static TKiller* gpCurKiller;
-u8 TKiller::mRollSw;
 
 static const char* killer_bastable[] = {
 	"/scene/killer/bas/downkiller_down1.bas", nullptr, nullptr,
 	"/scene/killer/bas/killer_search1.bas",   nullptr,
 };
+
+TKiller* gpCurKiller;
+bool TKiller::mSerialBomb = true;
+u8 TKiller::mSmokeJntNo;
+bool TKiller::mTrampleDie = true;
+bool TKiller::mRollSw;
+f32 TFlyEnemy::mTestSp         = 2.5f;
+s32 TFlyEnemy::mInvalidTime    = 200;
+f32 TFlyEnemy::mTestMarioSpMax = 12.0f;
 
 TFlyEnemyParams::TFlyEnemyParams(const char* path)
     : TWalkerEnemyParams(path)
@@ -68,25 +61,25 @@ TFlyEnemyParams::TFlyEnemyParams(const char* path)
 void TFlyEnemy::init(TLiveManager* manager)
 {
 	TWalkerEnemy::init(manager);
-	unk19C = (TFlyEnemyParams*)getSaveParam();
+	mFlyParams = (TFlyEnemyParams*)getSaveParam();
 }
 
 f32 TFlyEnemy::getGravityY() const
 {
 	if (mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve())
-		return unk194;
+		return mChaseGravityY;
 
-	return unk19C->mSLNormalFlyGravityY.get();
+	return mFlyParams->mSLNormalFlyGravityY.get();
 }
 
 void TFlyEnemy::reset()
 {
 	TWalkerEnemy::reset();
-	unk1A0 = 0;
-	unk198 = 1;
-	unk1A4 = 0;
-	unk194 = unk19C->mSLNormalFlyGravityY.get();
-	unk1A5 = 0;
+	mFlyTimer      = 0;
+	mFlyMode       = FLY_MODE_NEUTRAL;
+	mForceChase    = false;
+	mChaseGravityY = mFlyParams->mSLNormalFlyGravityY.get();
+	mIsHoming      = false;
 }
 
 void TFlyEnemy::fly()
@@ -94,124 +87,107 @@ void TFlyEnemy::fly()
 	JGeometry::TVec3<f32> pos = mPosition;
 	pos += mPositionDelta;
 
-	JGeometry::TVec3<f32> vel = mVelocity;
-	vel.x += *gpMarioSpeedX / mTestMarioSpMax;
-	vel.z += *gpMarioSpeedZ / mTestMarioSpMax;
-	pos += vel;
-	pos.y += unk194;
+	JGeometry::TVec3<f32> velocity = mVelocity;
+	velocity.x += SMS_GetMarioSpeedX() / mTestMarioSpMax;
+	velocity.z += SMS_GetMarioSpeedZ() / mTestMarioSpMax;
+	pos += velocity;
+	pos.y += mChaseGravityY;
 
 	mGroundHeight
 	    = gpMap->checkGround(pos.x, pos.y + mHeadHeight, pos.z, &mGroundPlane);
 	mGroundHeight += 1.0f;
 
 	if (pos.y <= mGroundHeight) {
-		if (unk1A0 > mInvalidTime) {
+		if (mFlyTimer > mInvalidTime) {
 			offLiveFlag(LIVE_FLAG_AIRBORNE);
-			mVelocity.x = 0.0f;
-			mVelocity.y = 0.0f;
-			mVelocity.z = 0.0f;
-			pos.y       = mGroundHeight;
+			mVelocity.set(0.0f, 0.0f, 0.0f);
+			pos.y = mGroundHeight;
 		}
 
-		if (mGroundPlane->mActor != nullptr) {
-			if (mGroundPlane->mActor->isActorType(ACTOR_TYPE_BASKET_REVERSE))
-				((TLiveActor*)mGroundPlane->mActor)->kill();
-		}
+		if (mGroundPlane->getActor()
+		    && mGroundPlane->getActor()->isActorType(ACTOR_TYPE_BASKET_REVERSE))
+			const_cast<TLiveActor*>(mGroundPlane->getActor())->kill();
 
-		if (mGroundPlane->checkFlag(0x10))
+		if (mGroundPlane->isIllegalData())
 			kill();
 	} else {
 		onLiveFlag(LIVE_FLAG_AIRBORNE);
 	}
-
 	mPositionDelta = pos - mPosition;
 }
 
 void TFlyEnemy::calcChaseParam()
 {
-	JGeometry::TVec3<f32> toMario(SMS_GetMarioPos().x - mPosition.x,
-	                              SMS_GetMarioPos().y - mPosition.y,
-	                              SMS_GetMarioPos().z - mPosition.z);
-	toMario.x *= 1.1f;
-	toMario.z *= 1.1f;
+	JGeometry::TVec3<f32> diff(gpMarioPos->x - mPosition.x,
+	                           gpMarioPos->y - mPosition.y,
+	                           gpMarioPos->z - mPosition.z);
+	diff.x *= 1.1f;
+	diff.z *= 1.1f;
+	JGeometry::TVec3<f32> goal;
+	goal.add(mPosition, diff);
+	if (mIsHoming)
+		setGoal(goal);
 
-	JGeometry::TVec3<f32> goal(mPosition.x + toMario.x, mPosition.y + toMario.y,
-	                           mPosition.z + toMario.z);
-	if (unk1A5)
-		setGoalPath(TPathNode(goal));
-
-	if (toMario.y > 100.0f || abs(toMario.y) < 100.0f) {
-		if (unk1A5) {
-			if (unk198 != 2 && mSprayedByWaterCooldown == 0)
-				unk194 = unk19C->mSLChaseFlyGravityY.get();
-			unk198 = 2;
+	if (diff.y > 100.0f || fabsf(diff.y) < 100.0f) {
+		if (mIsHoming) {
+			if (mFlyMode != FLY_MODE_HOMING && mSprayedByWaterCooldown == 0)
+				mChaseGravityY = mFlyParams->mSLChaseFlyGravityY.get();
+			mFlyMode = FLY_MODE_HOMING;
 		} else {
 			mPosition.y -= 1.0f;
 		}
 		return;
 	}
 
-	unk194 = unk19C->mSLNormalFlyGravityY.get();
-	JGeometry::TVec3<f32> vel(0.0f, 0.0f, 0.0f);
-	if (unk198 != 2 || toMario.y > 150.0f) {
-		unk198 = 0;
-		MsVECNormalize(&toMario, &toMario);
-		f32 speed = unk19C->mSLNormalFlySpeed.get();
-		vel.x     = toMario.x * speed;
-		vel.z     = toMario.z * speed;
-		unk194 = unk19C->mSLForceGravityY.get();
+	mChaseGravityY = mFlyParams->mSLNormalFlyGravityY.get();
+	JGeometry::TVec3<f32> velocity(0.0f, 0.0f, 0.0f);
+	if (mFlyMode != FLY_MODE_HOMING || diff.y > 150.0f) {
+		mFlyMode = FLY_MODE_DIVE;
+		MsVECNormalize(&diff, &diff);
+		f32 speed      = mFlyParams->mSLNormalFlySpeed.get();
+		velocity.x     = diff.x * speed;
+		velocity.z     = diff.z * speed;
+		mChaseGravityY = mFlyParams->mSLForceGravityY.get();
 	} else {
 		mPosition.y -= 3.0f;
 	}
 
-	vel.z     = 0.0f;
-	vel.x     = 0.0f;
-	mVelocity = vel;
+	velocity.x = velocity.z = 0.0f;
+	mVelocity               = velocity;
 }
 
 void TFlyEnemy::bind()
 {
 	if (mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve()
-	    || unk1A0 < mInvalidTime)
+	    || mFlyTimer < mInvalidTime)
 		fly();
 	else
 		TLiveActor::bind();
 }
 
 // fabricated
-static inline void calcFlyVec(JGeometry::TVec3<f32>& v, f32 angle, f32 speed)
+static inline JGeometry::TVec3<f32> fromPolar(f32 speed, f32 angle)
 {
-	v.set(speed * MsSin(angle), 0.0f, speed * MsCos(angle));
+	return JGeometry::TVec3<f32>(speed * MsSin(angle), 0.0f,
+	                             speed * MsCos(angle));
 }
 
-// TODO: in the target, MsSin, MsCos and TVec3::set<f32> stay out-of-line
-// calls inside the copy of this function inlined into
-// TNerveFlyEnemyChaseFly::execute, so the real inline nesting here is deeper
-// than this reconstruction.
 void TFlyEnemy::flyMove()
 {
-	JGeometry::TVec3<f32> vel = getVelocity();
-	vel *= 0.9f;
-	setVelocity(vel);
-
-
-	JGeometry::TVec3<f32> toGoal = unkF4.getPoint();
-	toGoal -= mPosition;
-	PSVECMag(&toGoal);
-
-	f32 target = MsWrap(MsGetRotFromZaxisY(toGoal), 0.0f, 360.0f);
-	f32 diff   = target - MsWrap(mRotation.y, target - 180.0f, target + 180.0f);
-	mRotation.y
-	    = MsWrap(mRotation.y
-	                 + (diff > 0.0f ? (diff > mTurnSpeed ? mTurnSpeed : diff)
-	                                : (diff > -mTurnSpeed ? diff : -mTurnSpeed)),
-	             0.0f, 360.0f);
-
-	JGeometry::TVec3<f32> delta = mPositionDelta;
-	JGeometry::TVec3<f32> move;
-	calcFlyVec(move, mRotation.y, mMarchSpeed);
-	delta += move;
-	mPositionDelta = delta;
+	JGeometry::TVec3<f32> velocity = mVelocity;
+	velocity.scale(0.9f);
+	mVelocity                  = velocity;
+	JGeometry::TVec3<f32> diff = getCurrentTarget().getPoint();
+	diff -= mPosition;
+	VECMag(&diff);
+	f32 angle   = MsWrap(MsGetRotFromZaxisY(diff), 0.0f, 360.0f);
+	f32 delta   = MsAngleDiff(angle, mRotation.y);
+	delta       = delta > 0.0f ? MsMin(delta, getTurnSpeed())
+	                           : MsMax(delta, -getTurnSpeed());
+	mRotation.y = MsWrap(mRotation.y + delta, 0.0f, 360.0f);
+	JGeometry::TVec3<f32> deltaPos = mPositionDelta;
+	deltaPos += fromPolar(mMarchSpeed, mRotation.y);
+	mPositionDelta = deltaPos;
 }
 
 DEFINE_NERVE(TNerveFlyEnemyNormalFly, TLiveActor)
@@ -221,25 +197,27 @@ DEFINE_NERVE(TNerveFlyEnemyNormalFly, TLiveActor)
 	if (spine->getTime() == 0)
 		self->setNormalFlyAnm();
 
-	if (self->unk1A4 && self->unk1A0 > 500) {
+	if (self->isForceChase() && self->getFlyTimer() > 500) {
 		self->updateSquareToMario();
-		if (self->mDistToMarioSquared < self->unk19C->mSLChaseDist.get()
-		                                    * self->unk19C->mSLChaseDist.get()) {
+		f32 dist = self->getFlyParams()->mSLChaseDist.get();
+		dist *= dist;
+		if (self->mDistToMarioSquared < dist) {
 			spine->pushAfterCurrent(&TNerveFlyEnemyChaseFly::theNerve());
 			return true;
 		}
-	} else if (!self->unk1A6 && self->isFindMario(1.0f)
-	           && self->unk1A0 > 100) {
+	} else if (!self->isGold() && self->isFindMario(1.0f)
+	           && self->getFlyTimer() > 100) {
 		self->updateSquareToMario();
-		if (self->mDistToMarioSquared < self->unk19C->mSLChaseDist.get()
-		                                    * self->unk19C->mSLChaseDist.get()) {
+		f32 dist = self->getFlyParams()->mSLChaseDist.get();
+		dist *= dist;
+		if (self->mDistToMarioSquared < dist) {
 			spine->pushAfterCurrent(&TNerveFlyEnemyChaseFly::theNerve());
 			return true;
 		}
 	}
 
 	self->mRotation.x = MsGetRotFromZaxis(self->getVelocity()).x;
-	f32 scale = MsClamp(1.05f * self->mScaling.x, 0.0f, self->getBodyScale());
+	f32 scale = MsClamp(1.05f * self->mScaling.x, 0.0f, self->mBodyScale);
 	self->mScaling.x = self->mScaling.y = self->mScaling.z = scale;
 	return false;
 }
@@ -249,43 +227,45 @@ DEFINE_NERVE(TNerveFlyEnemyChaseFly, TLiveActor)
 	TFlyEnemy* self = (TFlyEnemy*)spine->getBody();
 
 	if (spine->getTime() == 0) {
-		self->unk1A8 = self->mVelocity;
+		self->mLaunchVelocity = self->mVelocity;
 		self->calcChaseParam();
 		self->setChaseFlyAnm();
 	}
 
-	f32 walkRate = 1.0f;
-	if (!self->unk1A5) {
-		f32 march2     = self->getMarchSpeed() * self->getMarchSpeed();
-		self->unk1A8.y = 0.1f;
-		walkRate       = self->unk1A8.length() / march2 * TFlyEnemy::mTestSp;
-	} else if (self->unk198 == 0) {
-		walkRate = 2.0f;
+	f32 speed = 1.0f;
+	if (!self->isHoming()) {
+		f32 marchSpeed          = self->mMarchSpeed * self->mMarchSpeed;
+		self->mLaunchVelocity.y = 0.1f;
+		speed                   = self->mLaunchVelocity.length();
+		speed /= marchSpeed;
+		speed *= TFlyEnemy::mTestSp;
+	} else if (self->getFlyMode() == TFlyEnemy::FLY_MODE_DIVE) {
+		speed = 2.0f;
 	}
-	self->walkBehavior(2, walkRate);
 
-	if ((self->unk1A5 && self->isReachedToGoalXZ())
-	    || (self->unk198 == 0
+	self->walkBehavior(2, speed);
+
+	if ((self->isHoming() && self->isReachedToGoalXZ())
+	    || (self->getFlyMode() == TFlyEnemy::FLY_MODE_DIVE
 	        && self->mPosition.y < 100.0f + self->mGroundHeight))
 		self->calcChaseParam();
 
-	switch (self->unk198) {
-	case 0:
-	case 1:
+	switch (self->getFlyMode()) {
+	case TFlyEnemy::FLY_MODE_DIVE:
+	case TFlyEnemy::FLY_MODE_NEUTRAL:
 		self->walkBehavior(3, 1.0f);
 		break;
-	case 2:
+	case TFlyEnemy::FLY_MODE_HOMING:
 		self->flyMove();
 		break;
 	}
 
-	if (self->unk198 != 2
+	if (self->getFlyMode() != TFlyEnemy::FLY_MODE_HOMING
 	    && self->mPosition.y > 200.0f + self->mGroundHeight) {
-		JGeometry::TVec3<f32> dir(self->getMarchSpeed(),
-		                          -40.0f * self->getGravityY(),
-		                          self->getMarchSpeed());
-		self->mRotation.x = MsGetRotFromZaxis(dir).x;
-
+		f32 marchSpeed = self->mMarchSpeed;
+		JGeometry::TVec3<f32> dir(self->mMarchSpeed,
+		                          -40.0f * self->getGravityY(), marchSpeed);
+		self->mRotation.x           = MsGetRotFromZaxis(dir).x;
 		JGeometry::TVec3<f32> delta = self->mPositionDelta;
 		delta.y                     = self->getGravityY();
 		self->mRotation.x           = MsGetRotFromZaxis(delta).x;
@@ -294,8 +274,7 @@ DEFINE_NERVE(TNerveFlyEnemyChaseFly, TLiveActor)
 	}
 
 	self->flyBehavior();
-
-	f32 scale = MsClamp(1.1f * self->mScaling.x, 0.0f, self->getBodyScale());
+	f32 scale        = MsClamp(1.1f * self->mScaling.x, 0.0f, self->mBodyScale);
 	self->mScaling.x = self->mScaling.y = self->mScaling.z = scale;
 	return false;
 }
@@ -315,6 +294,8 @@ TKillerManager::TKillerManager(const char* name)
 	gpCurKiller = nullptr;
 }
 
+TFlyEnemyParams::~TFlyEnemyParams() { }
+
 void TKillerManager::load(JSUMemoryInputStream& stream)
 {
 	TSmallEnemyManager::load(stream);
@@ -324,43 +305,44 @@ void TKillerManager::load(JSUMemoryInputStream& stream)
 void TKillerManager::createModelData()
 {
 	static TModelDataLoadEntry entry[] = {
-		{ "killer_model1.bmd", 0x10220000, 0 },
-		{ "downkiller_model1.bmd", 0x10220000, 0 },
+		{ "killer_model1.bmd",
+		  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+		      | (2 << J3DMLF_TevStageNumShift),
+		  0 },
+		{ "downkiller_model1.bmd",
+		  J3DMLF_MaterialPEFull | J3DMLF_UseUniqueMaterials
+		      | (2 << J3DMLF_TevStageNumShift),
+		  0 },
 		{ nullptr, 0, 0 },
 	};
-
 	createModelDataArray(entry);
 }
 
-// TODO: the target spills the new object to the stack and calls the
-// TMtx34f constructor out of line; the inlining depth differs here.
 TSpineEnemy* TKillerManager::createEnemyInstance() { return new TKiller; }
 
-// TODO: the target keeps &rollMtx in a register and has a 0x10 bigger frame,
-// as does genEventCoin with its rotation matrix; some matrix helper is missing.
-static BOOL KillerBodyCallback(J3DNode* node, int calc)
+static BOOL KillerBodyCallback(J3DNode* node, int timing)
 {
-	if (calc == 0) {
-		TKiller* killer = gpCurKiller;
-		if (killer == nullptr || !TKiller::mRollSw || !killer->isRollFly())
+	if (timing == 0) {
+		TKiller* self = gpCurKiller;
+		if (!self || !TKiller::mRollSw || !self->isRollFly())
 			return TRUE;
 
-		MtxPtr anmMtx = gpCurKiller->getModel()->getAnmMtx(
-		    ((J3DJoint*)node)->getJntNo());
+		u16 joint     = ((J3DJoint*)node)->getJntNo();
+		MtxPtr matrix = gpCurKiller->getModel()->getAnmMtx(joint);
 
-		// TODO: the target keeps &rollMtx in r31 for both concats with it,
-		// as if it were read through a pointer.
-		TPosition3f scaleMtx;
-		Mtx rollMtx;
-		scaleMtx.zeroTrans();
-		f32 scale = gpCurKiller->getBodyScale();
-		scaleMtx.setScale(scale, scale, scale);
-		MsMtxSetRotZ(rollMtx, gpCurKiller->unk1B8);
+		TPosition3f scale;
+		scale.setTrans(0.0f, 0.0f, 0.0f);
+		scale.setScale(gpCurKiller->mBodyScale, gpCurKiller->mBodyScale,
+		               gpCurKiller->mBodyScale);
 
-		MTXConcat(anmMtx, rollMtx, anmMtx);
-		MTXConcat(anmMtx, scaleMtx, anmMtx);
-		MTXConcat(J3DSys::mCurrentMtx, rollMtx, J3DSys::mCurrentMtx);
-		MTXConcat(J3DSys::mCurrentMtx, scaleMtx, J3DSys::mCurrentMtx);
+		// TODO: a MtxPtr ptr = rotation; hack works but not completely
+		TRotation3f rotation;
+		MsMtxSetRotZ(rotation, gpCurKiller->getRollAngle());
+
+		MTXConcat(matrix, rotation, matrix);
+		MTXConcat(matrix, scale, matrix);
+		MTXConcat(J3DSys::mCurrentMtx, rotation, J3DSys::mCurrentMtx);
+		MTXConcat(J3DSys::mCurrentMtx, scale, J3DSys::mCurrentMtx);
 	}
 	return TRUE;
 }
@@ -372,29 +354,26 @@ TKiller::TKiller(const char* name)
 
 void TKiller::init(TLiveManager* manager)
 {
-	TWalkerEnemy::init(manager);
-	unk19C      = (TFlyEnemyParams*)getSaveParam();
-	mActorType  = ACTOR_TYPE_ENEMY_UNK1F;
-	unk150      = 17;
-	unk1B4      = getSaveParam2();
+	TFlyEnemy::init(manager);
+	mActorType    = ACTOR_TYPE_ENEMY_UNK1F;
+	unk150        = 0x11;
+	mKillerParams = (TKillerSaveLoadParams*)getSaveParam();
 	mSpine->initWith(&TNerveFlyEnemyNormalFly::theNerve());
 	onLiveFlag(LIVE_FLAG_FORCE_SHADOW);
 	offLiveFlag(LIVE_FLAG_UNK800);
 	onHitFilter(HIT_CATEGORY_MAP_OBJECT);
 
-	J3DModel* model = getMActor()->getModel();
+	J3DModel* model = mMActor->getModel();
 	if (model->getSkinDeform() == nullptr) {
 		J3DSkinDeform* deform = new J3DSkinDeform;
 		model->setSkinDeform(deform, J3D_DEFORM_ATTACH_FLAG_UNK_1);
 	}
-	getMActor()->resetDL();
 
-	if (mInstanceIndex == 0) {
-		for (u8 i = 0; i < getModel()->getModelData()->getJointNum(); i++)
-			;
-	}
+	mMActor->resetDL();
+	if (mInstanceIndex == 0)
+		for (u8 i = 0; i < getModel()->getModelData()->getJointNum(); i++) { }
 
-	getMActor()->setJointCallback(1, KillerBodyCallback);
+	mMActor->setJointCallback(1, KillerBodyCallback);
 	unk188 = 0.0f;
 }
 
@@ -403,38 +382,36 @@ void TKiller::setMActorAndKeeper()
 	mMActorKeeper = new TMActorKeeper(mManager, 2);
 	mMActor       = mMActorKeeper->createMActor("killer_model1.bmd", 3);
 	mMActorKeeper->createMActor("downkiller_model1.bmd", 3);
-
-	s32 noseMatIdx = getActorKeeper()
-	                     ->getMActor("killer_model1.bmd")
-	                     ->getModel()
-	                     ->getModelData()
-	                     ->getMaterialName()
-	                     ->getIndex("_nosemat1");
-	s32 eyesMatIdx = getActorKeeper()
-	                     ->getMActor("killer_model1.bmd")
-	                     ->getModel()
-	                     ->getModelData()
-	                     ->getMaterialName()
-	                     ->getIndex("_eyesmat1");
-	s32 bodyMatIdx = getActorKeeper()
-	                     ->getMActor("killer_model1.bmd")
-	                     ->getModel()
-	                     ->getModelData()
-	                     ->getMaterialName()
-	                     ->getIndex("_body1");
-
-	SMS_InitPacket_OneTevColor(getMActor()->getModel(), noseMatIdx, GX_TEVREG0,
+	int nose = getActorKeeper()
+	               ->getMActor("killer_model1.bmd")
+	               ->getModel()
+	               ->getModelData()
+	               ->getMaterialName()
+	               ->getIndex("_nosemat1");
+	int eyes = getActorKeeper()
+	               ->getMActor("killer_model1.bmd")
+	               ->getModel()
+	               ->getModelData()
+	               ->getMaterialName()
+	               ->getIndex("_eyesmat1");
+	int body = getActorKeeper()
+	               ->getMActor("killer_model1.bmd")
+	               ->getModel()
+	               ->getModelData()
+	               ->getMaterialName()
+	               ->getIndex("_body1");
+	SMS_InitPacket_OneTevColor(mMActor->getModel(), nose, GX_TEVREG0,
 	                           &mNoseColor);
-	SMS_InitPacket_OneTevColor(getMActor()->getModel(), eyesMatIdx, GX_TEVREG0,
+	SMS_InitPacket_OneTevColor(mMActor->getModel(), eyes, GX_TEVREG0,
 	                           &mEyesColor);
-	SMS_InitPacket_OneTevColor(getMActor()->getModel(), bodyMatIdx, GX_TEVREG0,
+	SMS_InitPacket_OneTevColor(mMActor->getModel(), body, GX_TEVREG0,
 	                           &mBodyColor);
 	SMS_InitPacket_OneTevColor(
-	    getActorKeeper()->getMActor("downkiller_model1.bmd")->getModel(),
-	    bodyMatIdx, GX_TEVREG0, &mBaseColor);
+	    mMActorKeeper->getMActor("downkiller_model1.bmd")->getModel(), body,
+	    GX_TEVREG0, &mDownBodyColor);
 }
 
-void TKiller::behaveToWater(THitActor* water)
+void TKiller::behaveToWater(THitActor*)
 {
 	if (mSpine->getCurrentNerve() == &TNerveFlyEnemyNormalFly::theNerve()
 	    || mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve())
@@ -449,23 +426,25 @@ void TKiller::behaveToWater(THitActor* water)
 
 void TKiller::genEventCoin()
 {
-	int num = 2;
-	if (unk1A6)
-		num = 8;
+	MtxPtr rotationMtx;
+	int count = 2;
+	if (mIsGold)
+		count = 8;
 
-	for (int i = 0; i < num; i++) {
-		JGeometry::TVec3<f32> offset(0.0f, 0.0f, 30.0f);
-		Mtx rot;
-		MsMtxSetRotY(rot, 360.0f * (1.0f / num) * (i + 1));
-		MTXMultVec(rot, &offset, &offset);
+	for (int i = 0; i < count; ++i) {
+		JGeometry::TVec3<f32> dir(0.0f, 0.0f, 30.0f);
+		TRotation3f rotation;
+		rotationMtx = rotation; // TODO: fakematch
+		MsMtxSetRotY(rotationMtx, 360.0f * (1.0f / count) * (i + 1));
+		MTXMultVec(rotationMtx, &dir, &dir);
 
-		TLiveActor* coin = (TLiveActor*)gpItemManager->makeObjAppear(
-		    mPosition.x + offset.x, mPosition.y, mPosition.z + offset.z,
-		    0x2000000E, true);
-		if (coin != nullptr) {
+		TMapObjBase* coin = gpItemManager->makeObjAppear(
+		    mPosition.x + dir.x, mPosition.y, mPosition.z + dir.z,
+		    ACTOR_TYPE_COIN, true);
+		if (coin) {
 			coin->mPosition.y = mPosition.y;
-			MsVECNormalize(&offset, &offset);
-			coin->mVelocity.set(3.0f * offset.x, 20.0f, 3.0f * offset.z);
+			MsVECNormalize(&dir, &dir);
+			coin->mVelocity.set(3.0f * dir.x, 20.0f, 3.0f * dir.z);
 			coin->offLiveFlag(LIVE_FLAG_UNK10);
 		}
 	}
@@ -481,7 +460,7 @@ bool TKiller::isHitValid(u32 message)
 	}
 
 	if (mTrampleDie)
-		unk194 -= 12.0f;
+		mChaseGravityY -= 12.0f;
 
 	return false;
 }
@@ -490,11 +469,13 @@ void TKiller::setDeadAnm()
 {
 	mMActor = getActorKeeper()->getMActor("downkiller_model1.bmd");
 	setBckAnm(0);
+
 	TEffectExplosion* effect
 	    = (TEffectExplosion*)gpConductor->makeOneEnemyAppear(
 	        mPosition, "エフェクト爆発マネージャー", 1);
-	if (effect != nullptr)
+	if (effect)
 		effect->generate(mPosition, mScaling);
+
 	gpCameraShake->startShake(CAM_SHAKE_MODE_UNK6, 1.0f);
 	SMSRumbleMgr->start(0x15, 5, (f32*)nullptr);
 }
@@ -517,17 +498,19 @@ void TKiller::setNormalFlyAnm()
 {
 	mMActor = getActorKeeper()->getMActor("killer_model1.bmd");
 	setBckAnm(2);
-	unk1B8 = 0.0f;
-	unk1A0 = 0;
+	mRollAngle = 0.0f;
+	mFlyTimer  = 0;
 }
 
 void TKiller::setChaseFlyAnm() { setBckAnm(3); }
 
 bool TKiller::isRollFly()
 {
-	if (mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve()
-	    && isBckAnm(1))
-		return true;
+	if (mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve()) {
+		if (isBckAnm(1))
+			return true;
+	}
+
 	return false;
 }
 
@@ -536,23 +519,26 @@ bool TKiller::isCollidMove(THitActor* actor)
 	if (actor->isActorType(ACTOR_TYPE_BASKET_REVERSE))
 		((TLiveActor*)actor)->kill();
 
-	if (mSerialBomb
-	    && mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve())
-		mSpine->pushNerve(&TNerveKillerExplosion::theNerve());
+	if (mSerialBomb) {
+		if (mSpine->getCurrentNerve() == &TNerveFlyEnemyChaseFly::theNerve())
+			mSpine->pushNerve(&TNerveKillerExplosion::theNerve());
+	}
 
 	return true;
 }
 
 void TKiller::flyBehavior()
 {
-	mTurnSpeed = unk1B4->mSLTurnSpeedLow.get();
-	if (mSpine->getTime() > unk1B4->mSLChaseTimer.get())
-		unk194 -= unk1B4->mSLWaterAddGravityY.get();
+	mTurnSpeed = mKillerParams->mSLTurnSpeedLow.get();
 
-	if (checkCurAnmEnd(0) && isBckAnm(3))
-		setBckAnm(1);
+	if (mSpine->getTime() > mKillerParams->mSLChaseTimer.get())
+		mChaseGravityY -= mKillerParams->mSLWaterAddGravityY.get();
 
-	unk1B8 += 2.5f;
+	if (checkCurAnmEnd(ANM_TYPE_BCK)) {
+		if (isBckAnm(3))
+			setBckAnm(1);
+	}
+	mRollAngle += 2.5f;
 }
 
 void TKiller::changeOut()
@@ -563,9 +549,11 @@ void TKiller::changeOut()
 	genEventCoin();
 	onHitFilter(HIT_FILTER_NO_COLLISION);
 	mPosition = mJuiceBlock->mPosition;
-	gpMarioParticleManager->emitAndBindToPosPtr(PARTICLE_MS_TLS_CHANGE,
-	                                            &mPosition, 0, nullptr);
-	getMActor()->setFrameRate(SMSGetAnmFrameRate(), ANM_TYPE_BCK);
+	gpMarioParticleManager->emitAndBindToPosPtr(
+	    PARTICLE_MS_TLS_CHANGE, &mPosition,
+	    TMarioParticleManager::EFFECT_ONETIME_NORMAL, nullptr);
+	MActor* actor = mMActor;
+	actor->setFrameRate(SMSGetAnmFrameRate(), ANM_TYPE_BCK);
 	mJuiceBlock->kill();
 	mJuiceBlock = nullptr;
 }
@@ -573,61 +561,55 @@ void TKiller::changeOut()
 void TKiller::reset()
 {
 	gpCurKiller = this;
-	TWalkerEnemy::reset();
-	unk1A0 = 0;
-	unk198 = 1;
-	unk1A4 = 0;
-	unk194 = unk19C->mSLNormalFlyGravityY.get();
-	unk1A5 = 0;
-
+	TFlyEnemy::reset();
 	TMsRange<f32> range(0.0f, 1.0f);
-	mBodyColor.r = mBodyColor.g = mBodyColor.b = mBaseColor.r = mBaseColor.g
-	    = mBaseColor.b                         = 0;
-	unk1A6 = 0;
-	if (range.rand() < 0.05f) {
+	mDownBodyColor.r = mDownBodyColor.g = mDownBodyColor.b = 0;
+	mBodyColor.r = mBodyColor.g = mBodyColor.b = 0;
+	mIsGold                                    = false;
 
-		unk1A6       = 1;
-		mBodyColor.r = 200;
-		mBodyColor.g = 185;
-		mBodyColor.b = 0;
-		mBaseColor.r = 255;
-		mBaseColor.g = 225;
-		mBaseColor.b = 70;
+	if (range.rand() < 0.05f) {
+		mIsGold          = true;
+		mBodyColor.r     = 200;
+		mBodyColor.g     = 185;
+		mBodyColor.b     = 0;
+		mDownBodyColor.r = 255;
+		mDownBodyColor.g = 225;
+		mDownBodyColor.b = 70;
 	}
 }
 
 void TKiller::setColorType()
 {
-	if (unk1A6)
-		unk1A5 = 0;
+	if (mIsGold)
+		mIsHoming = false;
 
-	if (unk1A5) {
-		mBodyColor.r = 70;
-		mBodyColor.g = 20;
-		mBodyColor.b = 70;
-		mBaseColor.r = 70;
-		mBaseColor.g = 20;
-		mBaseColor.b = 70;
+	if (mIsHoming) {
+		mBodyColor.r     = 70;
+		mBodyColor.g     = 20;
+		mBodyColor.b     = 70;
+		mDownBodyColor.r = 70;
+		mDownBodyColor.g = 20;
+		mDownBodyColor.b = 70;
 	}
 }
 
 void TKiller::bind()
 {
 	TFlyEnemy::bind();
-	unk1A0++;
+	++mFlyTimer;
 
 	if (mSpine->getCurrentNerve() != &TNerveKillerExplosion::theNerve()) {
-		if (!isAirborne() && unk1A0 > mInvalidTime) {
+		if (!isAirborne() && mFlyTimer > mInvalidTime) {
 			mSpine->pushNerve(&TNerveKillerExplosion::theNerve());
-		} else if (unk1A0 > mInvalidTime) {
+		} else if (mFlyTimer > mInvalidTime) {
 			TBGWallCheckRecord record(mPosition.x, mPosition.y + mHeadHeight,
 			                          mPosition.z, 2.0f * mBodyRadius, 1, 0);
 			if (gpMap->isTouchedWallsAndMoveXZ(&record)) {
-				if (record.mResultWalls[0]->mActor != nullptr) {
-					if (record.mResultWalls[0]->mActor->isActorType(
-					        ACTOR_TYPE_BASKET_REVERSE))
-						((TLiveActor*)record.mResultWalls[0]->mActor)->kill();
-				}
+				if (record.mResultWalls[0]->getActor()
+				    && record.mResultWalls[0]->getActor()->isActorType(
+				        ACTOR_TYPE_BASKET_REVERSE))
+					const_cast<TLiveActor*>(record.mResultWalls[0]->getActor())
+					    ->kill();
 				mSpine->pushNerve(&TNerveKillerExplosion::theNerve());
 			}
 		}
@@ -636,29 +618,35 @@ void TKiller::bind()
 	if (isAirborne()) {
 		SMSGetMSound()->startSoundActor(MSD_SE_EN_KILLER_FLY, &mPosition, 0,
 		                                nullptr, 0, 4);
-		mRotation.x = MsClamp(mRotation.x, -25.0f, 90.0f);
-		MsMtxSetXYZRPH(mSmokeMtx, mPosition.x, mPosition.y, mPosition.z,
+		mRotation.x   = MsClamp(mRotation.x, -25.0f, 90.0f);
+		MtxPtr matrix = mTrailEmitterTransform;
+		MsMtxSetXYZRPH(matrix, mPosition.x, mPosition.y, mPosition.z,
 		               mRotation.x, mRotation.y, mRotation.z);
-		gpMarioParticleManager->emitAndBindToMtxPtr(PARTICLE_MS_KIL_SMOKE,
-		                                            mSmokeMtx, 1, this);
+		gpMarioParticleManager->emitAndBindToMtxPtr(
+		    PARTICLE_MS_KIL_SMOKE, matrix,
+		    TMarioParticleManager::EFFECT_LOOP_NORMAL, this);
 	}
 }
 
 void TKiller::calcRootMatrix()
 {
-	if (gpMarDirector->checkFlag(0xF)) {
+	if (SMSGetMarDirector()->checkFlag(
+	        TMarDirector::DIRECTOR_FLAG_SHINE_GET_PENDING
+	        | TMarDirector::DIRECTOR_FLAG_STAGE_TRANSITION_PENDING
+	        | TMarDirector::DIRECTOR_FLAG_ACTOR_DEMO_STAGE_TRANSITION_PENDING
+	        | TMarDirector::DIRECTOR_FLAG_GATE_DEMO_STAGE_TRANSITION_PENDING)) {
 		onLiveFlag(LIVE_FLAG_DEAD);
 		onHitFilter(HIT_FILTER_NO_COLLISION);
 	}
 
 	if (isBckAnm(2)) {
-		if (unk1A6) {
+		if (mIsGold) {
 			mNoseColor.r = mEyesColor.r = 170;
 			mNoseColor.g = mEyesColor.g = 140;
 			mNoseColor.b = mEyesColor.b = 0;
 		} else {
-			mNoseColor.r = mNoseColor.g = mNoseColor.b = mEyesColor.r
-			    = mEyesColor.g = mEyesColor.b = 0;
+			mEyesColor.r = mEyesColor.g = mEyesColor.b = 0;
+			mNoseColor.r = mNoseColor.g = mNoseColor.b = 0;
 		}
 	}
 
@@ -666,13 +654,13 @@ void TKiller::calcRootMatrix()
 		mNoseColor.b = 0;
 		mNoseColor.g = 0;
 		mEyesColor.r = 0;
+
 		if (mSpine->getTime() % 10 < 5) {
 			mNoseColor.r = 0;
-			mEyesColor.b = 0;
-			mEyesColor.g = 0;
+			mEyesColor.g = mEyesColor.b = 0;
 		}
 
-		if (unk1A6) {
+		if (mIsGold) {
 			if (mSpine->getTime() % 10 < 5) {
 				mNoseColor.r = 170;
 				mNoseColor.g = 140;
@@ -684,11 +672,11 @@ void TKiller::calcRootMatrix()
 			}
 		}
 
-		if (unk1A5) {
+		if (mIsHoming) {
 			if (mSpine->getTime() % 10 < 5) {
 				mNoseColor.r = mEyesColor.r = 200;
-				mNoseColor.g = 0;
-				mNoseColor.b = 0;
+				mNoseColor.g                = 0;
+				mNoseColor.b                = 0;
 			} else {
 				mNoseColor.r = 70;
 				mNoseColor.g = 20;
@@ -699,107 +687,99 @@ void TKiller::calcRootMatrix()
 
 	if (isBckAnm(1)) {
 		mEyesColor.r = 0;
-		mEyesColor.b = 0;
-		mEyesColor.g = 0;
-		mNoseColor.b = 0;
-		mNoseColor.g = 0;
+		mEyesColor.g = mEyesColor.b = 0;
+		mNoseColor.g = mNoseColor.b = 0;
 
-		f32 glow = fabsf(MsSin(360.0f * mSpine->getTime() / 120.0f));
-		if (unk1A6) {
+		f32 wave = fabsf(MsSin(360.0f * mSpine->getTime() / 120.0f));
+		if (mIsGold) {
 			mBodyColor.r = 170;
 			mBodyColor.g = 140;
 			mBodyColor.b = 0;
-			mNoseColor.r = (u8)(10.0f * glow + 160.0f);
-			mNoseColor.g = (u8)(30.0f * glow + 140.0f);
-			mNoseColor.b = (u8)(150.0f * glow);
+			mNoseColor.r = (u8)(10.0f * wave + 160.0f);
+			mNoseColor.g = (u8)(30.0f * wave + 140.0f);
+			mNoseColor.b = (u8)(150.0f * wave);
 		}
 
-		if (unk1A5) {
-			mBodyColor.r = 70;
-			mBodyColor.g = 20;
-			mBodyColor.b = 70;
-			mBaseColor.r = 70;
-			mBaseColor.g = 20;
-			mBaseColor.b = 70;
-			mNoseColor.r = (u8)(130.0f * glow + 70.0f);
-			mNoseColor.g = (u8)-(20.0f * glow - 20.0f);
-			mNoseColor.b = (u8)-(70.0f * glow - 70.0f);
+		if (mIsHoming) {
+			mBodyColor.r     = 70;
+			mBodyColor.g     = 20;
+			mBodyColor.b     = 70;
+			mDownBodyColor.r = 70;
+			mDownBodyColor.g = 20;
+			mDownBodyColor.b = 70;
+			mNoseColor.r     = (u8)(130.0f * wave + 70.0f);
+			mNoseColor.g     = (u8)(20.0f - 20.0f * wave);
+			mNoseColor.b     = (u8)(70.0f - 70.0f * wave);
 		}
 	}
-
 	gpCurKiller = this;
 	mRotation.x = MsClamp(mRotation.x, -25.0f, 90.0f);
 	TSpineEnemy::calcRootMatrix();
 }
 
-bool TKiller::isFindMario(f32 param_1)
+bool TKiller::isFindMario(f32 scale)
 {
-	TSmallEnemyParams* prms = getSaveParams();
-
-	f32 searchHeight = prms->mSLSearchHeight.get();
-
-	if (abs(SMS_GetMarioPos().y - mPosition.y) < searchHeight) {
-		JGeometry::TVec3<f32> marioPos = SMS_GetMarioPos();
-
-		f32 searchLength = prms->mSLSearchLength.get();
-		f32 searchAngle  = prms->mSLSearchAngle.get();
-		f32 searchAware  = prms->mSLSearchAware.get();
-
-		if (isInSight(marioPos, searchLength * param_1, searchAngle * param_1,
-		              searchAware * param_1))
+	TSmallEnemyParams* params = (TSmallEnemyParams*)getSaveParam();
+	if (fabsf(gpMarioPos->y - mPosition.y) < params->getSLSearchHeight()) {
+		JGeometry::TVec3<f32> pos(gpMarioPos->x, gpMarioPos->y, gpMarioPos->z);
+		f32 length = params->getSLSearchLength();
+		f32 angle  = params->getSLSearchAngle();
+		f32 aware  = params->getSLSearchAware();
+		length *= scale;
+		angle *= scale;
+		aware *= scale;
+		if (isInSight(pos, length, angle, aware))
 			return true;
-		else
-			return false;
-	}
 
+		return false;
+	}
 	return false;
 }
 
 DEFINE_NERVE(TNerveKillerExplosion, TLiveActor)
 {
 	TKiller* self = (TKiller*)spine->getBody();
-
 	if (spine->getTime() == 0) {
-		self->unk20C = self->getSaveParam2()->mSLBombRange.get()
-		               * self->getBodyScale() / self->getAttackRadius();
+		self->mBombScaleMax
+		    = ((TKillerSaveLoadParams*)self->getSaveParam())->mSLBombRange.get()
+		      * self->getBodyScale() / self->getAttackRadius();
 		self->mRotation.x = 0.0f;
 		self->setDeadAnm();
-
 		if (!self->isAirborne()) {
-			if (self->mGroundPlane->isWaterSurface()) {
+			if (self->getGroundPlane()->isWaterSurface()) {
 				TEffectBombColumWater* effect
 				    = (TEffectBombColumWater*)gpConductor->makeOneEnemyAppear(
 				        self->mPosition, "エフェクト爆発水柱マネージャー", 1);
-				if (effect != nullptr)
-					effect->generate(self->mPosition,
-					                 JGeometry::TVec3<f32>(2.0f, 2.0f, 2.0f));
+				if (effect) {
+					JGeometry::TVec3<f32> scale(2.0f, 2.0f, 2.0f);
+					effect->generate(self->mPosition, scale);
+				}
 			}
 
-			if (self->mGroundPlane->isSand()) {
+			if (self->getGroundPlane()->isSand()) {
 				TEffectColumSand* effect
 				    = (TEffectColumSand*)gpConductor->makeOneEnemyAppear(
 				        self->mPosition, "エフェクト砂柱マネージャー", 1);
-				if (effect != nullptr)
-					effect->generate(self->mPosition,
-					                 JGeometry::TVec3<f32>(0.6f, 0.9f, 0.6f));
+				if (effect) {
+					JGeometry::TVec3<f32> scale(0.6f, 0.9f, 0.6f);
+					effect->generate(self->mPosition, scale);
+				}
 			}
 		}
-
 		SMSRumbleMgr->start(0x13, &self->mPosition);
 	}
 
-	if (self->unk190 < self->unk20C) {
+	if (self->unk190 < self->mBombScaleMax) {
 		self->unk190 *= 1.3f;
 	} else {
 		self->onHitFilter(HIT_FILTER_NO_COLLISION);
-		if (self->checkCurAnmEnd(0)) {
+		if (self->checkCurAnmEnd(ANM_TYPE_BCK)) {
 			self->onLiveFlag(LIVE_FLAG_DEAD);
 			self->onLiveFlag(LIVE_FLAG_UNK8);
-			self->offLiveFlag(TSmallEnemy::LIVE_FLAG_MELT_ON_DEATH);
+			self->offLiveFlag(LIVE_FLAG_UNK10000);
 			self->mHolder = nullptr;
 			self->stopAnmSound();
 			spine->reset();
-
 			spine->setNext(&TNerveSmallEnemyDie::theNerve());
 			spine->pushAfterCurrent(spine->getDefault());
 			self->mPosition.y -= 200.0f;

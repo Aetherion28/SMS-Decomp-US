@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <System/MarDirector.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <JSystem/JKernel/JKRFileLoader.hpp>
@@ -36,6 +37,12 @@
 #include <MSound/MSSetSound.hpp>
 #include <MSound/MSoundBGM.hpp>
 #include <Map/MapCollisionEntry.hpp>
+
+#ifdef SMS_ORACLE
+// playable build only (tools/playable/oracle.cpp)
+void SMSOracle_onStateChange(u8);
+void SMSOracle_onTick(u32, u32, u32);
+#endif
 
 extern OSThread gSetupThread;
 
@@ -155,6 +162,11 @@ int TMarDirector::direct()
 				else
 					mPerformListCalcAnim->perform(~blacklistedCues, &local_140);
 			}
+#ifdef SMS_ORACLE
+			// playable build only (tools/playable/oracle.cpp)
+			SMSOracle_onTick(mTickCount, mMoveTickCount,
+			                 movementCue & CUE_MOVE);
+#endif
 
 			if (checkFlag(DIRECTOR_FLAG_LAST_SIMULATION_TICK)) {
 				local_140.unk0 = 0;
@@ -306,7 +318,8 @@ int TMarDirector::changeState()
 
 	case STATE_UNK1:
 		if (checkDemoFlag(DEMO_FLAG_CAMERA_DEMO_WIPE_STARTED)) {
-			if (getConsole()->unk94->unk2BC == 4) {
+			if (getConsole()->unk94->mScenarioDemoState
+			    == TConsoleStr::SCENARIO_DEMO_TITLE_CLOSED) {
 				nextState = STATE_UNK3;
 				offDemoFlag(DEMO_FLAG_CAMERA_DEMO_WIPE_STARTED);
 			}
@@ -332,9 +345,11 @@ int TMarDirector::changeState()
 
 	case STATE_UNK3:
 		if (SMSGetApplication()->getCurrArea().getStage() == 1) {
-			if (getConsole()->unk94->unk2BC == 6)
+			if (getConsole()->unk94->mScenarioDemoState
+			    == TConsoleStr::SCENARIO_DEMO_WIPER_OPENED)
 				nextState = STATE_UNK2;
-		} else if (getConsole()->unk94->unk2BC == 6
+		} else if (getConsole()->unk94->mScenarioDemoState
+		               == TConsoleStr::SCENARIO_DEMO_WIPER_OPENED
 		           && !gpMarioOriginal->checkStatusType(
 		               MARIO_STATUS_FLAG_UNK1000)) {
 			nextState = STATE_UNK4;
@@ -458,6 +473,10 @@ int TMarDirector::changeState()
 		currentStateFinalize(nextState);
 		nextStateInitialize(nextState);
 		mState = nextState;
+#ifdef SMS_ORACLE
+		// playable build only (tools/playable/oracle.cpp)
+		SMSOracle_onStateChange(mState);
+#endif
 	}
 
 	return desiredAppState;
@@ -474,8 +493,10 @@ void TMarDirector::currentStateFinalize(u8 next_state)
 
 		SMSGetApplication()->getFader()->startWipe(unkE4, 0.4f, 0.0f);
 		SMSRumbleMgr->reset();
+#if defined(VERSION_GMSJ01)
 		if (SMSGetApplication()->getCurrArea().getStage() == 1)
 			THPPlayerPlay();
+#endif
 		break;
 
 	case STATE_UNK1:
@@ -521,11 +542,11 @@ void TMarDirector::currentStateFinalize(u8 next_state)
 			THPPlayerPlay();
 		switch (unk261) {
 		case TCardSave::PURPOSE_ROCKET_NOZZLE_GET:
-			getConsole()->startAppearBalloon(0xE0048, true);
+			getConsole()->startAppearBalloon(BALLOON_MSG(0xE0048), true);
 			break;
 
 		case TCardSave::PURPOSE_TURBO_NOZZLE_GET:
-			getConsole()->startAppearBalloon(0xE0049, true);
+			getConsole()->startAppearBalloon(BALLOON_MSG(0xE0049), true);
 			break;
 		}
 		break;
@@ -705,6 +726,10 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		}
 		if (mStage != 0xf)
 			getConsole()->unkC.off(CUE_MOVE | CUE_CALC_ANIM | CUE_DRAW);
+#if !defined(VERSION_GMSJ01)
+		if (currSeq.getStage() == 1)
+			THPPlayerPlay();
+#endif
 		break;
 
 	case STATE_UNK4:
@@ -776,6 +801,15 @@ void TMarDirector::nextStateInitialize(u8 next_state)
 		unkAC->mCardSave->init(unk261);
 		for (int i = 0; i < 4; ++i)
 			JUTGamePad::CRumble::stopMotor(mGamePads[i]->mPortNum);
+#if !defined(VERSION_GMSJ01)
+		switch (unk261) {
+		case 3:
+		case 4:
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_COLLECT_DELIGHT, 0,
+			                                   nullptr, 0);
+			break;
+		}
+#endif
 		mGamePads[0]->onFlag(TMarioGamePad::PAD_FLAG_MENU_INPUT);
 		break;
 

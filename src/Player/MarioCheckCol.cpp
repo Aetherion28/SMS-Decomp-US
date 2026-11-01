@@ -55,8 +55,14 @@ void TMario::hitNormal(THitActor* actor)
 // TODO: wrong size! maybe we return the receiveMessage result?
 void TMario::hitHipDrop(THitActor* actor)
 {
+#if !defined(VERSION_GMSJ01)
+	if (mStatus == MARIO_STATUS_HIP_DROP
+	    && (mStatusState == 2 || mStatusState == 3)
+	    && actor->mPosition.y < mPosition.y) {
+#else
 	if (mStatus == MARIO_STATUS_HIP_DROP && mStatusState == 2
 	    && actor->mPosition.y < mPosition.y) {
+#endif
 		actor->receiveMessage(this, HIT_MESSAGE_HIP_DROP);
 	}
 }

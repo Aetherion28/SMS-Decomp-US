@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/BossGessoTentacle.hpp>
 #include <Enemy/BossGesso.hpp>
 #include <Enemy/Spline.hpp>
@@ -262,6 +263,9 @@ BOOL TBGTakeHit::receiveMessage(THitActor* sender, u32 message)
 			if (mOwner->canTake()) {
 				mHolder = casted;
 				mOwner->changeStateAndFixNodes(TBGTentacle::TSTATE_HELD);
+#if !defined(VERSION_GMSJ01)
+				mOwner->mOwner->unk1A0 = 1;
+#endif
 				return true;
 			}
 		}
@@ -613,7 +617,7 @@ void TBGTentacle::throwMario(THitActor* param_1, THitActor* param_2)
 	SMS_SendMessageToMario(param_2, HIT_MESSAGE_THROWN);
 
 	SMS_ThrowMario(local_e0, 60.0f);
-	mOwner->showMessage(0xE0005);
+	mOwner->showMessage(BALLOON_MSG(0xE0005));
 	mOwner->stopIfRoll();
 }
 

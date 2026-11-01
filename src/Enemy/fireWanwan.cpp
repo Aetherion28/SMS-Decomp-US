@@ -1,3 +1,4 @@
+#include <System/BalloonMsg.hpp>
 #include <Enemy/FireWanwan.hpp>
 #include <JSystem/JDrama/JDRNameRefGen.hpp>
 #include <System/MarDirector.hpp>
@@ -335,7 +336,7 @@ void TFireWanwanManager::checkBalloonHelpBoss22()
 		f32 helpRange22 = getWanwanParams()->mBoss22HelpRange.get();
 		if (diff.squared() < helpRange22 * helpRange22) {
 			mBoss22BalloonWasShown = true;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0016,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0016),
 			                                                      true);
 		}
 	}
@@ -347,7 +348,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 	    && getWanwanParams()->mBoss23TimerMax.get() > unk64) {
 		if (++unk64 >= getWanwanParams()->mBoss23TimerMax.get()) {
 			unk64 = getWanwanParams()->mBoss23TimerMax.get();
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0017,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0017),
 			                                                      true);
 		}
 	}
@@ -356,7 +357,7 @@ void TFireWanwanManager::checkBalloonHelpBoss23()
 void TFireWanwanManager::checkBalloonHelpBoss24()
 {
 	if (mWanwanRecoversBeforeHelpBalloon == 0) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0018, true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0018), true);
 		mWanwanRecoversBeforeHelpBalloon = -1;
 	}
 }
@@ -940,14 +941,6 @@ bool TFireWanwan::isFindMario(f32 param_1)
 	return isFindMarioFromParam(param_1);
 }
 
-static inline f32 dist(const JGeometry::TVec3<f32>& a,
-                       const JGeometry::TVec3<f32>& b)
-{
-	JGeometry::TVec3<f32> tmp = a;
-	tmp.sub(b);
-	return tmp.length();
-}
-
 bool TFireWanwan::isMissMario() const
 {
 	if (SMS_CheckMarioFlag(MARIO_FLAG_VISIBLE)
@@ -961,7 +954,7 @@ bool TFireWanwan::isMissMario() const
 		return true;
 
 	f32 giveUpLen = getSaveParam2()->mSLGiveUpLength.get();
-	if (dist(unk104.getPoint(), mPosition) > giveUpLen)
+	if (getGoalDistance() > giveUpLen)
 		return true;
 
 	return false;
@@ -1906,7 +1899,7 @@ DEFINE_NERVE(TNerveFireWanwanAttack, TLiveActor)
 
 	if (spine->getTime() == 0) {
 		self->setBckAnm(3);
-		self->setGoalPath(TPathNode((THitActor*)gpMarioAddress));
+		self->setGoal((THitActor*)gpMarioAddress);
 	}
 
 	if (self->doAttack()) {
@@ -1955,7 +1948,7 @@ DEFINE_NERVE(TNerveFireWanwanRecoverGraph, TLiveActor)
 		self->unk124->mCurrIdx = -1;
 		self->goToShortestNextGraphNode();
 
-		self->decideTarget(self->unk104.getPoint());
+		self->decideTarget(self->getGoal().getPoint());
 	}
 
 	// TODO: inline?
@@ -2022,7 +2015,7 @@ DEFINE_NERVE(TNerveFireWanwanDie, TLiveActor)
 		manager->mWanwanRecoversBeforeHelpBalloon = -1;
 
 		if (++manager->mWanwansKilled == manager->getActiveObjNum()) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(0xE0019,
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0019),
 			                                                      true);
 		}
 

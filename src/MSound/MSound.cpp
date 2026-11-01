@@ -121,7 +121,7 @@ void MSSeCallBack::setWaterCameraFir(bool enabled)
 		smWaterFilter = 0x78;
 	else
 		smWaterFilter = 0;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	if (MSGMSound->mWaterFirEnabled == true)
 		smWaterFilter = 0x78;
 #endif
@@ -250,14 +250,20 @@ u16 MSSeCallBack::setParameterSeqSync(JASystem::TTrack* param_1, u16 param_2)
 		return uVar3;
 	}
 
+#if !(!defined(VERSION_GMSJ01))
 	case 40:
 		MSGMSound->unkD1 = 1;
 		return 0;
 
+#endif
 	case 110: {
 		u8 a = MSGMSound->unkCD;
 		u8 b = MSGMSound->unkCE;
+#if !defined(VERSION_GMSJ01)
+		if (a == 8 && (b == 6 || b == 1))
+#else
 		if (a == 8 && b == 6)
+#endif
 			return 0xffff;
 		return MSGMSound->unkCD;
 	}
@@ -435,7 +441,7 @@ f32 MSound::getDistFromCamera(Vec* pos)
 	return JALCalc::getDist(pos, mAudioCameras->mPosition);
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 f32 MSound::getDistPowFromCamera(const Vec& pos)
 {
 	const Vec* cam = mAudioCameras->mPosition;
@@ -478,7 +484,9 @@ MSound::MSound(JKRHeap* param_1, JKRHeap* param_2, u32 param_3, u8* param_4,
 	if (param_5 != nullptr)
 		JAInter::TAsnData::asnData = param_5;
 
+#if !(!defined(VERSION_GMSJ01))
 	MSSeCallBack::smWaterFilter = 0;
+#endif
 	initDriver(heap, aramSize, 1);
 	initInterface(1);
 	f32 fVar1 = 0.0f;
@@ -506,7 +514,7 @@ MSound::MSound(JKRHeap* param_1, JKRHeap* param_2, u32 param_3, u8* param_4,
 
 	unk7C = 0;
 	unk80 = 0;
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 	unk94            = -1;
 	mWaterFirEnabled = false;
 	MSSeCallBack::setWaterCameraFir(false);
@@ -540,7 +548,7 @@ void MSound::mainLoop()
 	if (unkCF == 0 && mSeGateMask == MSSeGate_None)
 		return;
 
-#ifndef VERSION_GMSP01
+#if !(!defined(VERSION_GMSJ01))
 	if (unkD1 == 1) {
 		MSBgm::startBGM(MSD_BGM_KUPPA);
 		unkD1 = 0;
@@ -761,9 +769,20 @@ void MSound::stopAllSeInCategory(u8 param_1, u32 param_2) { }
 void MSound::setCategoryAllVolume(u8 category, f32 volume, u32 param_3,
                                   u8 param_4)
 {
+#if !defined(VERSION_GMSJ01)
+	u32 count = 0;
+	for (JAISound* sound = unk0->getLinkBuffer(category)->mUsedHead;
+	     sound != nullptr; sound = sound->getNextSound()) {
+		if (count >= 100)
+			break;
+		sound->setVolume(volume, param_3, param_4);
+		count++;
+	}
+#else
 	for (JAISound* sound         = unk0->getLinkBuffer(category)->mUsedHead;
 	     sound != nullptr; sound = sound->getNextSound())
 		sound->setVolume(volume, param_3, param_4);
+#endif
 }
 
 void MSound::fadeOutAllSound(u32 fadeout)
@@ -902,7 +921,12 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 
 	switch (param_1) {
 	case 0xffff0003:
+#if !defined(VERSION_GMSJ01)
+		if (unk94 != MSD_SE_MV13_ACTION_SMALL_01 && param_3 != 2
+		    && JALCalc::getRandom_0_1() < 0.5f)
+#else
 		if (param_3 != 2 && JALCalc::getRandom_0_1() < 0.5f)
+#endif
 			param_1 = MSD_SE_MA_VO_JUMP_MID_3;
 		if (param_1 + 0x10000 == 3)
 			param_1 = MSD_SE_MA_VO_LAND_LOW_4;
@@ -987,7 +1011,12 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 			param_1 = MSD_SE_MV41_JUMP_T_01;
 			break;
 		}
+#if !defined(VERSION_GMSJ01)
+		if (unk94 != MSD_SE_MV13_ACTION_SMALL_01 && param_3 != 2
+		    && JALCalc::getRandom_0_1() < 0.7f)
+#else
 		if (param_3 != 2 && JALCalc::getRandom_0_1() < 0.7f)
+#endif
 			param_1 = MSD_SE_MA_VO_JUMP_MID_0;
 		break;
 
@@ -1042,6 +1071,9 @@ u32 MSound::startMarioVoice(u32 param_1, s16 param_2, u8 param_3)
 	                  unkAC[iVar3].mPosition, 0);
 	MSoundSESystem::MSoundSE::startSoundActorInner(param_1, unk8C + iVar6,
 	                                               &local_48, 1, 4);
+#if !defined(VERSION_GMSJ01)
+	unk94 = param_1;
+#endif
 	if (unk8C[iVar6] != nullptr) {
 		if (param_3 == 2) {
 			unk8C[iVar6]->setPortData(11, 1);

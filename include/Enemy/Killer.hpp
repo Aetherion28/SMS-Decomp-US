@@ -2,12 +2,11 @@
 #define ENEMY_KILLER_HPP
 
 #include <Enemy/WalkerEnemy.hpp>
-#include <Enemy/EnemyManager.hpp>
-#include <Strategic/Spine.hpp>
 
 class TFlyEnemyParams : public TWalkerEnemyParams {
 public:
-	TFlyEnemyParams(const char* path);
+	TFlyEnemyParams(const char*);
+	~TFlyEnemyParams();
 
 	/* 0x32C */ TParamRT<f32> mSLNormalFlyGravityY;
 	/* 0x340 */ TParamRT<f32> mSLNormalFlySpeed;
@@ -18,24 +17,40 @@ public:
 
 class TKillerSaveLoadParams : public TFlyEnemyParams {
 public:
-	TKillerSaveLoadParams(const char* path);
+	TKillerSaveLoadParams(const char*);
 
 	/* 0x390 */ TParamRT<f32> mSLWaterAddGravityY;
 	/* 0x3A4 */ TParamRT<s32> mSLChaseTimer;
 	/* 0x3B8 */ TParamRT<f32> mSLBombRange;
 };
 
+class TKillerManager : public TSmallEnemyManager {
+public:
+	TKillerManager(const char* = "キラーマネージャー");
+	virtual ~TKillerManager() { }
+	virtual void load(JSUMemoryInputStream&);
+	virtual void createModelData();
+	virtual TSpineEnemy* createEnemyInstance();
+};
+
 class TFlyEnemy : public TWalkerEnemy {
 public:
+	enum FlyMode {
+		FLY_MODE_DIVE    = 0,
+		FLY_MODE_NEUTRAL = 1,
+		FLY_MODE_HOMING  = 2,
+	};
+
 	TFlyEnemy(const char* name)
 	    : TWalkerEnemy(name)
-	    , unk198(0)
-	    , unk19C(nullptr)
-	    , unk1A0(0)
-	    , unk1A5(1)
-	    , unk1A6(0)
+	    , mFlyMode(FLY_MODE_DIVE)
+	    , mFlyParams(nullptr)
+	    , mFlyTimer(0)
+	    , mIsHoming(true)
+	    , mIsGold(false)
 	{
 	}
+	virtual ~TFlyEnemy() { }
 
 	virtual void init(TLiveManager*);
 	virtual void bind();
@@ -50,25 +65,33 @@ public:
 	void calcChaseParam();
 	void fly();
 
+	FlyMode getFlyMode() const { return mFlyMode; }
+	TFlyEnemyParams* getFlyParams() const { return mFlyParams; }
+	s32 getFlyTimer() const { return mFlyTimer; }
+	bool isForceChase() const { return mForceChase; }
+	bool isHoming() const { return mIsHoming; }
+	void setHoming(bool homing) { mIsHoming = homing; }
+	bool isGold() const { return mIsGold; }
+
 	static f32 mTestSp;
-	static int mInvalidTime;
+	static s32 mInvalidTime;
 	static f32 mTestMarioSpMax;
 
 public:
-	/* 0x194 */ f32 unk194; // current gravity
-	/* 0x198 */ s32 unk198; // chase state: 0, 1 or 2
-	/* 0x19C */ TFlyEnemyParams* unk19C;
-	/* 0x1A0 */ s32 unk1A0; // frames since reset
-	/* 0x1A4 */ u8 unk1A4;
-	/* 0x1A5 */ u8 unk1A5;
-	/* 0x1A6 */ u8 unk1A6;
-	/* 0x1A7 */ u8 unk1A7;
-	/* 0x1A8 */ JGeometry::TVec3<f32> unk1A8;
+	/* 0x194 */ f32 mChaseGravityY;
+	/* 0x198 */ FlyMode mFlyMode;
+	/* 0x19C */ TFlyEnemyParams* mFlyParams;
+	/* 0x1A0 */ s32 mFlyTimer;
+	/* 0x1A4 */ bool mForceChase;
+	/* 0x1A5 */ bool mIsHoming;
+	/* 0x1A6 */ bool mIsGold;
+	/* 0x1A8 */ JGeometry::TVec3<f32> mLaunchVelocity;
 };
 
 class TKiller : public TFlyEnemy {
 public:
 	TKiller(const char* name = "キラー");
+	virtual ~TKiller() { }
 
 	virtual void init(TLiveManager*);
 	virtual void calcRootMatrix();
@@ -92,37 +115,28 @@ public:
 	void setColorType();
 	bool isRollFly();
 
-	TKillerSaveLoadParams* getSaveParam2() const
-	{
-		return (TKillerSaveLoadParams*)getSaveParam();
-	}
+	f32 getRollAngle() const { return mRollAngle; }
 
-	static u8 mSerialBomb;
-	static u8 mTrampleDie;
-	static u8 mRollSw;
+	static bool mSerialBomb;
+	static u8 mSmokeJntNo;
+	static bool mTrampleDie;
+	static bool mRollSw;
 
 public:
-	/* 0x1B4 */ TKillerSaveLoadParams* unk1B4;
-	/* 0x1B8 */ f32 unk1B8; // roll angle
-	/* 0x1BC */ TMtx34f mSmokeMtx;
+	/* 0x1B4 */ TKillerSaveLoadParams* mKillerParams;
+	/* 0x1B8 */ f32 mRollAngle;
+	/* 0x1BC */ TPosition3f mTrailEmitterTransform;
 	/* 0x1EC */ GXColorS10 mNoseColor;
 	/* 0x1F4 */ GXColorS10 mEyesColor;
 	/* 0x1FC */ GXColorS10 mBodyColor;
-	/* 0x204 */ GXColorS10 mBaseColor;
-	/* 0x20C */ f32 unk20C;
+	/* 0x204 */ GXColorS10 mDownBodyColor;
+	/* 0x20C */ f32 mBombScaleMax;
 };
 
-class TKillerManager : public TSmallEnemyManager {
-public:
-	TKillerManager(const char* name);
+extern TKiller* gpCurKiller;
 
-	virtual void load(JSUMemoryInputStream&);
-	virtual void createModelData();
-	virtual TSpineEnemy* createEnemyInstance();
-};
-
-DECLARE_NERVE(TNerveKillerExplosion, TLiveActor);
-DECLARE_NERVE(TNerveFlyEnemyChaseFly, TLiveActor);
 DECLARE_NERVE(TNerveFlyEnemyNormalFly, TLiveActor);
+DECLARE_NERVE(TNerveFlyEnemyChaseFly, TLiveActor);
+DECLARE_NERVE(TNerveKillerExplosion, TLiveActor);
 
 #endif

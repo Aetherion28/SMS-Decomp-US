@@ -1276,7 +1276,7 @@ static void evIsWaterMelonIsReached(TSpcTypedInterp<TEventWatcher>* interp,
 	interp->push(result);
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 static void evStartMontemanBGM(TSpcTypedInterp<TEventWatcher>* interp,
                                u32 arg_num)
 {
@@ -1376,7 +1376,7 @@ template <> void TSpcTypedBinary<TEventWatcher>::initUserBuiltin()
   bindSystemDataToSymbol("appearReadyGo", (u32)&evAppearReadyGo);
   bindSystemDataToSymbol("onNeutralMarioKey", (u32)&evOnNeutralMarioKey);
   bindSystemDataToSymbol("invalidatePad", (u32)&evInvalidatePad);
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
   bindSystemDataToSymbol("startMontemanBGM", (u32)&evStartMontemanBGM);
   bindSystemDataToSymbol("startMontemanFanfare", (u32)&evStartMontemanFanfare);
 #endif

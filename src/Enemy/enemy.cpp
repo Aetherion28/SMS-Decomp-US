@@ -20,7 +20,7 @@
 
 TSpineEnemy::TSpineEnemy(const char* name)
     : TLiveActor(name)
-    , unk114(4)
+    , mGoalPath(4)
     , unk128(0)
     , unk12C(0.0f)
     , unk130(0)
@@ -273,10 +273,7 @@ void TSpineEnemy::setGoalPathFromGraph()
 {
 	JGeometry::TVec3<f32> local_48;
 	unk124->getCurrent().getPoint(&local_48);
-	TPathNode local_3c(local_48);
-	unkF4  = local_3c;
-	unk104 = local_3c;
-	unk114.clear();
+	setGoal(local_48);
 }
 
 void TSpineEnemy::goToInitialVisibleNode(f32, f32) { }
@@ -424,7 +421,7 @@ void TSpineEnemy::updateStayCount(f32) { }
 
 BOOL TSpineEnemy::turnToCurPathNode(f32 param_1)
 {
-	JGeometry::TVec3<f32> tmp = getUnkF4().getPoint();
+	JGeometry::TVec3<f32> tmp = getCurrentTarget().getPoint();
 	tmp -= mPosition;
 
 	f32 rot = MsAngleDiff(MsGetRotFromZaxisY(tmp), mRotation.y);
@@ -451,7 +448,7 @@ BOOL TSpineEnemy::turnToCurPathNode(f32 param_1)
 void TSpineEnemy::walkToCurPathNode(f32 march_speed, f32 turn_speed,
                                     f32 param_3)
 {
-	JGeometry::TVec3<f32> tmp = getUnkF4().getPoint();
+	JGeometry::TVec3<f32> tmp = getCurrentTarget().getPoint();
 	tmp -= mPosition;
 
 	f32 fVar7 = tmp.length();
@@ -499,7 +496,7 @@ void TSpineEnemy::zigzagToCurPathNode(f32 march_speed, f32 turn_speed,
 
 	f32 f29 = angle * unk124->unk10;
 
-	f32 dVar9 = (unkF4.getPoint() - mPosition).length();
+	f32 dVar9 = (mCurrentTarget.getPoint() - mPosition).length();
 
 	f32 dVar13 = MsWrap(dVar9, 0.0f, cycle);
 
@@ -508,7 +505,7 @@ void TSpineEnemy::zigzagToCurPathNode(f32 march_speed, f32 turn_speed,
 
 	f29 *= MsSin(dVar13);
 
-	JGeometry::TVec3<f32> local_58 = unkF4.getPoint();
+	JGeometry::TVec3<f32> local_58 = mCurrentTarget.getPoint();
 	local_58 -= mPosition;
 	f32 dVar12 = f29 + MsGetRotFromZaxisY(local_58);
 
@@ -551,16 +548,16 @@ void TSpineEnemy::zigzagToCurPathNode(f32 march_speed, f32 turn_speed,
 
 void TSpineEnemy::doShortCut()
 {
-	if (unk114.size() <= 0)
+	if (mGoalPath.size() <= 0)
 		return;
 
-	if ((unkF4.getPoint() - mPosition).length() < getBodyRadius()) {
-		if (!unk114.empty())
-			unkF4 = unk114.pop();
+	if ((mCurrentTarget.getPoint() - mPosition).length() < getBodyRadius()) {
+		switchNextGoalPathNode();
 		return;
 	}
 
-	TPathNode node = unk114.pop();
+	TPathNode node;
+	node = mGoalPath.peek();
 
 	JGeometry::TVec3<f32> local_28 = node.getPoint() - mPosition;
 	if (local_28.x == 0.0f && local_28.y == 0.0f && local_28.z == 0.0f)
@@ -571,8 +568,7 @@ void TSpineEnemy::doShortCut()
 	if (!gpMap->isTouchedOneWallAndMoveXZ(
 	        &local_28.x, local_28.y + getHeadHeight(), &local_28.z,
 	        getBodyRadius() * 2.0f)) {
-		if (!unk114.empty())
-			unkF4 = unk114.pop();
+		switchNextGoalPathNode();
 	}
 }
 

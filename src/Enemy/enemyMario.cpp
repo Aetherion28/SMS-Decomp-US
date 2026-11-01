@@ -762,22 +762,15 @@ void TEnemyMario::emWalkAround()
 	setStickToAngle(mFaceAngle.y, 0.5f);
 }
 
-// TODO: this sure feels like it should be a method of TSpineEnemy
-// fabricated
-static inline f32 getGoalDistance(const TSpineEnemy* enemy)
-{
-	return (enemy->getUnk104().getPoint() - enemy->mPosition).length();
-}
-
 void TEnemyMario::emWalkGraph()
 {
-	if (getGoalDistance(mEMario) < 100.0f) {
+	if (mEMario->getGoalDistance() < 100.0f) {
 		if (mDistanceToMario > 3000.0f)
 			mEMario->goToRandomNextGraphNode();
 		else
 			mEMario->goToRandomEscapeGraphNode();
 	}
-	const JGeometry::TVec3<f32>& goal = mEMario->getUnkF4().getPoint();
+	const JGeometry::TVec3<f32>& goal = mEMario->getCurrentTarget().getPoint();
 	u16 angle = matan(goal.z - mPosition.z, goal.x - mPosition.x);
 	setStickToAngle(angle, 1.0f);
 	++mEMDoingTimer;
@@ -901,6 +894,9 @@ void TEnemyMario::emReplay()
 		mStampActor->setBck("stamp_koopa_sign_draw1");
 		MActor* stampActor = mStampActor;
 		stampActor->setFrameRate(SMSGetAnmFrameRate(), ANM_TYPE_BCK);
+#ifdef VERSION_GMSP01
+		mStampActor->getFrameCtrl(ANM_TYPE_BCK)->setRate(0.8333333f);
+#endif
 		changeEMDoing(EM_DOING_UNK13);
 		startSoundActor(MSD_SE_MA_KAGE_PAINTS);
 		startSoundActor(MSD_SE_MA_KAGE_PAINTINGWIND);
@@ -1262,6 +1258,9 @@ void TEnemyMario::emEnforceTake()
 	if (tryTake()) {
 		if (mStampActor != nullptr && mSettingParams->mStampFlag.get() == 1) {
 			mStampActor->setBck("stamp_koopa_sign_draw1");
+#ifdef VERSION_GMSP01
+			mStampActor->getFrameCtrl(ANM_TYPE_BCK)->setRate(0.8333333f);
+#endif
 			changeEMDoing(EM_DOING_UNK13);
 		} else {
 			decideDoingAfterCarry();
@@ -1549,6 +1548,21 @@ void TEnemyMario::checkReturn()
 	if (!mGroundPlane->isIllegalData())
 		return;
 
+#if !defined(VERSION_GMSJ01)
+	int nodeIndex
+	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
+	int nodeNum = mEMario->getTracer()->getGraph()->getNodeNum();
+	for (int i = 0; i < nodeNum; i++) {
+		JGeometry::TVec3<f32> point;
+		mEMario->getTracer()
+		    ->getGraph()
+		    ->getGraphNode((nodeIndex + i) % nodeNum)
+		    .getPoint(&point);
+
+		if (point.distance(SMS_GetMarioPos()) > 1000.0f)
+			mPosition = point;
+	}
+#else
 	int nodeIndex
 	    = mEMario->getTracer()->getGraph()->findNearestNodeIndex(mPosition, -1);
 	BOOL searching = true;
@@ -1565,6 +1579,7 @@ void TEnemyMario::checkReturn()
 		nodeIndex
 		    = (nodeIndex + 1) % mEMario->getTracer()->getGraph()->getNodeNum();
 	}
+#endif
 }
 
 void TEnemyMario::checkController(JDrama::TGraphics*)
@@ -1731,8 +1746,12 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 	}
 
 	if (cue & CUE_MOVE) {
-		if (mStatus != MARIO_STATUS_RUN || mFreezeTimer == 0)
+		if (mStatus != MARIO_STATUS_RUN || mFreezeTimer == 0) {
 			calcAnim(CUE_CALC_ANIM, graphics);
+#if !defined(VERSION_GMSJ01)
+			animSound();
+#endif
+		}
 
 		if (mSpecialModel != nullptr) {
 			for (u16 i = 0;
@@ -1743,6 +1762,9 @@ void TEnemyMario::perform(u32 cue, JDrama::TGraphics* graphics)
 			mSpecialModel->calcWeightEnvelopeMtx();
 		} else {
 			emarioActor->calcAnm();
+#if !defined(VERSION_GMSJ01)
+			animSound();
+#endif
 			for (u16 i = 0;
 			     i < mModel->getModel()->getModelData()->getJointNum(); ++i) {
 				MTXCopy(mModel->getModel()->getAnmMtx(i),

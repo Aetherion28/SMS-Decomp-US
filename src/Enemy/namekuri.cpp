@@ -626,10 +626,16 @@ bool TNameKuri::isHitValid(u32 param_1)
 	if (param_1 == HIT_MESSAGE_SPRAYED_BY_WATER)
 		unk198 = 0;
 
+#if !defined(VERSION_GMSJ01)
+	if (mLiveFlag & LIVE_FLAG_HIDDEN)
+		return false;
+	if (param_1 == HIT_MESSAGE_UNKB)
+		onLiveFlag(LIVE_FLAG_HIDDEN);
+#else
 	if (checkLiveFlag(2))
 		return false;
-	else
-		return true;
+#endif
+	return true;
 }
 
 bool TNameKuri::isCollidMove(THitActor* param_1)
@@ -678,7 +684,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 
 	if (spine->getTime() <= 1) {
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 
 		self->unk1B0 = self->mScaling.y;
 		self->unk1AC = 0.0f;
@@ -706,7 +712,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 				self->unk1AC = 0.0f;
 				self->unk1B8 = 0.0f;
 
-				self->setGoalPath(SMS_GetMarioPos());
+				self->setGoal(SMS_GetMarioPos());
 			}
 
 			self->walkToCurPathNode(0.0f, 6.0f, 0.0f);
@@ -730,7 +736,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttack, TLiveActor)
 				self->setBckAnm(2);
 		} else if (self->isBckAnm(2)) {
 			if (self->checkCurAnmEnd(0)) {
-				self->switchNextGoalPath();
+				self->switchNextGoalPathNode();
 				self->onLiveFlag(LIVE_FLAG_UNK20000);
 				spine->pushAfterCurrent(&TNerveSmallEnemyDie::theNerve());
 				return true;
@@ -747,7 +753,7 @@ DEFINE_NERVE(TNerveNameKuriJumpAttackPrepare, TLiveActor)
 {
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 	if (spine->getTime() == 1) {
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 		self->setBckAnm(6);
 	} else if (self->isBckAnm(6)) {
 		if (self->isInSight(SMS_GetMarioPos(), 100000.0f, 30.0f, 0.0f)
@@ -798,7 +804,7 @@ DEFINE_NERVE(TNerveNKFollowMario, TLiveActor)
 	TNameKuri* self = (TNameKuri*)spine->getBody();
 
 	if (spine->getTime() == 0)
-		self->setGoalPath(SMS_GetMarioHitActor());
+		self->setGoal(SMS_GetMarioHitActor());
 
 	self->walkToCurPathNode(self->getMarchSpeed(), 3.0f, 0.0f);
 

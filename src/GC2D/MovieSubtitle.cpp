@@ -9,7 +9,7 @@
 #include <System/Application.hpp>
 #include <version.h>
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 #include <JSystem/JSupport/JSUMemoryInputStream.hpp>
 #include <JSystem/JSupport/JSUMemoryOutputStream.hpp>
 #include <JSystem/JUtility/JUTColor.hpp>
@@ -120,7 +120,7 @@ void TMovieSubTitle::hide()
 
 const JMSMesgEntry* TMovieSubTitle::getCurEntry() const
 {
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSJ01_01)
 	if (unk20->getMessageNum() <= unk24
 	    || !TFlagManager::getInstance()->getFlag(MSF_SUBTITLES))
 		return nullptr;

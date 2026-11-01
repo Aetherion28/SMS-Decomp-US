@@ -76,7 +76,7 @@ TARAMBlock gArBkGuide;
 extern "C" void ReInitializeGX();
 u8 SMS_getShineIDofExStage(u8);
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX) || defined(VERSION_GMSJ01_01)
 f32 SMSGetRealVSyncTimesPerSec()
 {
 	f32 result = 60.0f;
@@ -890,6 +890,18 @@ int TApplication::drawDVDErr()
 	case -1:
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][0]);
+#elif defined(VERSION_GMSE01)
+#if defined(VERSION_GMSE01_KR)
+		snprintf(message, 512,
+		         "An error has occurred. Turn the\npower OFF and check the\n"
+		         "NINTENDO GAMECUBE(TM)\nInstruction Booklet for\n"
+		         "further instructions.");
+#else
+		snprintf(message, 512,
+		         "An error has occurred. Turn the\npower OFF and check the\n"
+		         "NINTENDO GAMECUBE\x99"
+		         "\nInstruction Booklet for further instructions.");
+#endif
 #else
 		snprintf(message, 512,
 		         "エラーが発生しました。\n"
@@ -902,6 +914,17 @@ int TApplication::drawDVDErr()
 	case 11:
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][1]);
+#elif defined(VERSION_GMSE01)
+#if defined(VERSION_GMSE01_KR)
+		snprintf(message, 512,
+		         "The Disc could not be read.\nPlease read the NINTENDO "
+		         "GAMECUBE(TM)\nInstruction Booklet for\nmore information.\n");
+#else
+		snprintf(message, 512,
+		         "The Disc could not be read.\nPlease read the NINTENDO "
+		         "GAMECUBE\x99"
+		         "\nInstruction Booklet for\nmore information.\n");
+#endif
 #else
 		snprintf(message, 512,
 		         "ディスクを読めませんでした。\n"
@@ -915,6 +938,8 @@ int TApplication::drawDVDErr()
 		if (DVDCheckDisk() == 0) {
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 			snprintf(message, 512, sDvdErrMsgs[language][2]);
+#elif defined(VERSION_GMSE01)
+			snprintf(message, 512, "Reading Disc...");
 #else
 			snprintf(message, 512, "ディスクを読み込んでいます。");
 #endif
@@ -925,6 +950,9 @@ int TApplication::drawDVDErr()
 	case 5:
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][3]);
+#elif defined(VERSION_GMSE01)
+		snprintf(message, 512, "The Disc Cover is open.\nTo continue playing,\nplease close the\nDisc "
+		         "Cover.");
 #else
 		snprintf(message, 512,
 		         "ディスクカバーが開いています。\n"
@@ -937,6 +965,8 @@ int TApplication::drawDVDErr()
 	case 4:
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][4]);
+#elif defined(VERSION_GMSE01)
+		snprintf(message, 512, "Please insert a Super Mario Sunshine\nGame Disc.");
 #else
 		snprintf(message, 512,
 		         "「スーパーマリオサンシャイン」の\n"
@@ -948,6 +978,9 @@ int TApplication::drawDVDErr()
 	case 6:
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][5]);
+#elif defined(VERSION_GMSE01)
+		snprintf(message, 512, "This Disc is not\nSuper Mario Sunshine.\nPlease insert a Super\n"
+		         "Mario Sunshine Game Disc.");
 #else
 		snprintf(message, 512,
 		         "このディスクは、「スーパーマリオサンシャイン」の\n"

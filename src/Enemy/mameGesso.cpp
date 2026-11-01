@@ -359,15 +359,15 @@ DEFINE_NERVE(TNerveMameGessoGraphJumpWander, TLiveActor)
 				self->goToShortestNextGraphNode();
 				f32 jumpWanderSpeed = self->unk194->mSLJumpWanderSpeed.get();
 				JGeometry::TVec3<f32> local_4c = self->calcVelocityToJumpToY(
-				    self->getUnk104().getPoint(), jumpWanderSpeed,
+				    self->getGoal().getPoint(), jumpWanderSpeed,
 				    self->getGravityY());
 				self->mPosition.y += 10.0f;
 				self->setVelocity(local_4c);
 				self->onLiveFlag(LIVE_FLAG_AIRBORNE);
 			} else {
 				JGeometry::TVec3<f32> local_34(
-				    self->getUnk104().getPoint().x - self->mPosition.x, 0.0f,
-				    self->getUnk104().getPoint().z - self->mPosition.z);
+				    self->getGoal().getPoint().x - self->mPosition.x, 0.0f,
+				    self->getGoal().getPoint().z - self->mPosition.z);
 
 				if (local_34.x == 0.0f && local_34.y == 0.0f
 				    && local_34.z == 0.0f)
@@ -478,9 +478,7 @@ DEFINE_NERVE(TNerveMameGessoJitabata, TLiveActor)
 				if (spine->getTime() > self->unk194->mSLFreezeWait.get())
 					self->setBckAnm(5);
 			} else if (self->isBckAnm(5)) {
-				// TODO: operator- inline is wrong here, too much stack frame
-				if ((self->unk104.getPoint() - self->getPosition()).length()
-				    > 300.0f)
+				if (self->getGoalDistance() > 300.0f)
 					self->unk1EC = 0;
 
 				spine->pushAfterCurrent(&TNerveMameGessoWait::theNerve());

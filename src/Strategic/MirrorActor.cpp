@@ -25,8 +25,14 @@ void TMirrorActor::checkIsInMirror()
 	}
 
 	if (mFlags & MIRROR_ACTOR_FLAG_ALWAYS) {
+#if !defined(VERSION_GMSJ01)
+		if (!gpMirrorModelManager->isMirrorActive()
+		    && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)
+		    && !(mFlags & MIRROR_ACTOR_FLAG_UNK20)) {
+#else
 		if (!gpMirrorModelManager->isMirrorActive()
 		    && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)) {
+#endif
 			if (mMirrorModel->getShapePacket(0)->isVisible())
 				SMS_HideAllShapePacket(mMirrorModel);
 			mIsInMirror = false;
@@ -51,8 +57,14 @@ void TMirrorActor::checkIsInMirror()
 	    = gpCubeMirror->getDataNo(gpCubeMirror->getInCubeNo(position));
 	if (mirrorIdx != gpMirrorModelManager->getActiveMirrorIdx()) {
 		mIsInMirror = false;
+#if !defined(VERSION_GMSJ01)
+	} else if (!gpMirrorModelManager->isMirrorActive()
+	           && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)
+	           && !(mFlags & MIRROR_ACTOR_FLAG_UNK20)) {
+#else
 	} else if (!gpMirrorModelManager->isMirrorActive()
 	           && !(mFlags & MIRROR_ACTOR_FLAG_MARIO)) {
+#endif
 		mIsInMirror = false;
 	} else if (gpMirrorModelManager->isMirrorActive()
 	           && !gpMirrorModelManager->isUpperThanMirrorPlane(position)) {

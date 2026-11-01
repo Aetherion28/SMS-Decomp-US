@@ -497,8 +497,13 @@ void TRollBlock::calcRootMatrix()
 {
 	J3DModel* model = getModel();
 	MtxPtr mtx      = model->getBaseTRMtx();
+#if !defined(VERSION_GMSJ01)
+	MsMtxSetXYZRPH(mtx, mPosition.x, mPosition.y - mYOffset, mPosition.z,
+	               mInitialRotation.x, mInitialRotation.y, mInitialRotation.z);
+#else
 	MsMtxSetXYZRPH(mtx, mPosition.x, mPosition.y - mYOffset, mPosition.z,
 	               mRotation.x, mRotation.y, mRotation.z);
+#endif
 	model->setBaseScale(mScaling);
 
 	Mtx rot;

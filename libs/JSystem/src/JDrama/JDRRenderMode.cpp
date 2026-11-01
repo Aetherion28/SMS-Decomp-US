@@ -74,7 +74,7 @@ void JDrama::CalcRenderModeXFBHeight(GXRenderModeObj* rmo, u16 param_2)
 
 void JDrama::CalcRenderModeVIXOrigin(GXRenderModeObj* rmo)
 {
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX) || defined(VERSION_GMSJ01_01)
 	rmo->viXOrigin = (GetVIWidthMax(rmo->viTVmode >> 2) - rmo->viWidth) / 2;
 #else
 	rmo->viXOrigin = (GetVIWidthMax() - rmo->viWidth) / 2;
@@ -83,7 +83,7 @@ void JDrama::CalcRenderModeVIXOrigin(GXRenderModeObj* rmo)
 
 void JDrama::CalcRenderModeVIYOrigin(GXRenderModeObj* rmo)
 {
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX) || defined(VERSION_GMSJ01_01)
 	rmo->viYOrigin = (GetVIHeightMax(rmo->viTVmode >> 2) - rmo->viHeight) / 2;
 #else
 	rmo->viYOrigin = (GetVIHeightMax() - rmo->viHeight) / 2;

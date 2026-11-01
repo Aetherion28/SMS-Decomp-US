@@ -65,9 +65,11 @@ void SMSSetupTitleRenderMode(GXRenderModeObj* rmo)
     || defined(VERSION_GMSP01_NX)
 	u32 tvFormat = VIGetTvFormat();
 	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT))
-		tvFormat = VI_PAL;
+		tvFormat = VERSION_SELECT(VI_PAL, GMSJ01_01(VI_NTSC));
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	if (OSGetEuRgb60Mode() == 1)
 		tvFormat = VI_EURGB60;
+#endif
 
 	bool noFilter = tvFormat == VI_NTSC && OSGetProgressiveMode() == 1;
 
@@ -110,9 +112,11 @@ void SMSSetupGameRenderingInfo(JDrama::TDisplay* param_1, bool param_2)
     || defined(VERSION_GMSP01_NX)
 	u32 tvFormat = VIGetTvFormat();
 	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT))
-		tvFormat = VI_PAL;
+		tvFormat = VERSION_SELECT(VI_PAL, GMSJ01_01(VI_NTSC));
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	if (OSGetEuRgb60Mode() == 1)
 		tvFormat = VI_EURGB60;
+#endif
 
 	bool noFilter = tvFormat == VI_NTSC && OSGetProgressiveMode() == 1;
 
@@ -163,9 +167,11 @@ void SMSSetupMovieRenderingInfo(JDrama::TDisplay* param_1)
     || defined(VERSION_GMSP01_NX)
 	u32 tvFormat = VIGetTvFormat();
 	if (!(OSGetConsoleType() & OS_CONSOLE_DEVELOPMENT))
-		tvFormat = VI_PAL;
+		tvFormat = VERSION_SELECT(VI_PAL, GMSJ01_01(VI_NTSC));
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 	if (OSGetEuRgb60Mode() == 1)
 		tvFormat = VI_EURGB60;
+#endif
 
 	bool noFilter = tvFormat == VI_NTSC && OSGetProgressiveMode() == 1;
 

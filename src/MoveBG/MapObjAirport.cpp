@@ -8,6 +8,8 @@
 
 // rogue includes needed for matching sinit & bss
 #include <MSound/MSSetSound.hpp>
+#include <MSound/MSound.hpp>
+#include <MSound/MSoundSE.hpp>
 #include <MSound/MSoundBGM.hpp>
 #include <M3DUtil/MActorAnm.hpp>
 
@@ -73,6 +75,10 @@ bool TAirportEventSink::watch()
 		                              0.0f, true, nullptr, 0, nullptr,
 		                              JDrama::TFlagT<u16>(0));
 		getPollution()->getLayer(0)->startDecay();
+#if !defined(VERSION_GMSJ01)
+		SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_CLEAR_SIGN_BIG, 0, nullptr,
+		                                   0);
+#endif
 		return true;
 	}
 

@@ -204,7 +204,7 @@ bool TRollEnemy::isCollidMove(THitActor* param_1)
 
 bool TRollEnemy::isReachedToGoalXZ()
 {
-	JGeometry::TVec3<f32> tmp = getUnk104().getPoint();
+	JGeometry::TVec3<f32> tmp = getGoal().getPoint();
 	tmp -= mPosition;
 	if (!unk1A8)
 		tmp.y = 0.0f;
@@ -496,7 +496,7 @@ void TIgaiga::walkBehavior(int param_1, f32 param_2)
 
 bool TIgaiga::isReachedToGoalXZ()
 {
-	JGeometry::TVec3<f32> tmp = getUnk104().getPoint();
+	JGeometry::TVec3<f32> tmp = getGoal().getPoint();
 	tmp -= mPosition;
 	if (!unk1A8)
 		tmp.y = 0.0f;
@@ -1114,7 +1114,7 @@ void TGorogoro::setGenerateGraphIdx(int param_1)
 	dir.sub(point, mPosition);
 	mRotation.y = MsWrap(MsGetRotFromZaxisY(dir), 0.0f, 360.0f);
 
-	setGoalPath(TPathNode(point));
+	setGoal(point);
 }
 
 void TGorogoro::generateByGateKeeper(const JGeometry::TVec3<f32>& param_1,
@@ -1158,11 +1158,8 @@ void TGorogoro::generateByGateKeeper(const JGeometry::TVec3<f32>& param_1,
 		mRotation.y = MsWrap(MsGetRotFromZaxisY(dir), 0.0f, 360.0f);
 	}
 
-	if (toMario) {
-		TPathNode goal(SMS_GetMarioPos());
-		unk114.push(unkF4);
-		unkF4 = goal;
-	}
+	if (toMario)
+		pushGoalPathNode(SMS_GetMarioPos());
 
 	unk1A8 = true;
 }

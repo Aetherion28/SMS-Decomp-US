@@ -334,7 +334,7 @@ void TJuiceBlock::kill()
 	makeObjDead();
 }
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
+#if !defined(VERSION_GMSJ01)
 void TJuiceBlock::touchActor(THitActor* actor)
 {
 	if (actor->isHitCategory(HIT_CATEGORY_MAP_OBJECT)
