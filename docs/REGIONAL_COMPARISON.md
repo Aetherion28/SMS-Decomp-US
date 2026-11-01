@@ -43,30 +43,27 @@ The normal matching build still uses original objects for unfinished translation
 
 | Repository target | Source code matched | Fuzzy | Functions matched | Units complete |
 |---|---:|---:|---:|---:|
-| JP 1.0 | 52.7475% | 98.9482% | 10515 / 12881 | 411 / 736 |
-| PAL | 49.6615% | 97.2834% | 10208 / 12751 | 399 / 730 |
-| US | 50.3995% | 98.3772% | 10354 / 12905 | 394 / 732 |
-| Korean image | 50.3995% | 98.3772% | 10354 / 12905 | 394 / 732 |
-| JP 1.1 | 51.1582% | 98.4019% | 10256 / 12724 | 392 / 731 |
-| 3D All-Stars | 50.5145% | 98.3593% | 10216 / 12718 | 391 / 730 |
+| JP 1.0 | 52.96% | 99.15% | 10534 / 12881 | 411 / 736 |
+| PAL | 52.47% | 99.11% | 10391 / 12751 | 403 / 730 |
+| US | 52.09% | 99.09% | 10476 / 12905 | 394 / 732 |
+| Korean image | 52.09% | 99.09% | 10476 / 12905 | 394 / 732 |
+| JP 1.1 | 52.64% | 99.11% | 10372 / 12724 | 392 / 731 |
+| 3D All-Stars | 51.67% | 98.91% | 10284 / 12718 | 391 / 730 |
 
-PAL uses its own repository's sources; the four new regional repositories were initialized from the main project's source history.
-Their source trees have not been changed to force regional matches.
-The statistics replace inherited README snapshots with fresh native Windows measurements.
+Measured on 2026-11-01.
+All regional repositories now share one source tree with the PAL repository; each change between releases is behind a version check (`VERSION_GMSJ01`, `VERSION_GMSE01`, `VERSION_GMSJ01_01`, `VERSION_GMSP01`, `VERSION_GMSP01_NX`, and `VERSION_GMSE01_KR` for the Korean image).
+JP 1.0 is measured from the main project's committed README.
 
 ## Verification and provenance
 
-All five standard target DOLs match the SHA-1 values already configured in the main project.
+Each repository rebuilds a DOL whose SHA-1 equals its own original executable (`config/<version>/build.sha1`, recorded in `assets/build-verification.json`).
 The Korean target is verified against the executable extracted from the supplied Korean-named ISO, after correcting its stale read-only-data symbol layout.
-Each regional repository was independently built against its own target.
-`ninja baseline` and `ninja changes_all` were run; all five standard versions were also checked in the main project.
-The corrected Korean layout has its own new baseline; the pre-correction baseline is retained locally for audit and is not treated as valid evidence of source regressions.
-No C/C++ source or headers were changed.
+`ninja baseline` and `ninja changes_all` were run in every repository against its previous commit.
+Seven functions score lower than in the earlier upstream-derived snapshot, because this source removes upstream's `#pragma dont_inline` and fabricated helpers; they score the same as in the main JP project.
 No ISO files were added to Git.
 
-Toolchain: decomp-toolkit v1.8.4, objdiff-cli v3.8.1, the repository's pinned MWCC compilers, native Windows, and Ninja 1.13.2.
+Toolchain: decomp-toolkit v1.8.4, objdiff-cli v3.8.1 and the repository's pinned MWCC compilers; the 2026-11-01 measurements were made on Linux.
 The comparison tool records original DOL SHA-256 hashes, base Git revisions, source-tree content hashes, and hashes of the configuration/symbol/split files.
-The source revision is the pre-map-update commit; the content hashes also capture the regional configuration used for these measurements.
 Complete ISO SHA-256 and executable SHA-1/SHA-256 values are in `assets/disc-inventory.json`.
 `assets/build-verification.json` records expected and rebuilt DOL hashes.
 
