@@ -31,7 +31,7 @@ def reuse_page(root,comparison,report,label,baseline_label='JP 1.0',basename='re
     data=dict(repo='https://github.com/'+json.loads((root/'region.json').read_text())['repository'],built='2026-10-31',catNames={c['id']:c['name'] for c in report['categories']},total=total,units=units)
     html=(root/'tools/progress_page.html').read_text(encoding='utf-8')
     html=re.sub(r'Sunshine [^<\n]* Decomp Map',f'Sunshine {label} Code Reuse vs {baseline_label}',html)
-    html=html.replace('<div class="tools">','<nav style="margin:12px 0"><a href="reuse.html">Compare with JP 1.0</a> · <a href="reuse-vs-pal.html">Compare with PAL</a> · <a href="progress.html">Decompilation progress</a></nav>\n<div class="tools">',1)
+    html=html.replace('<div class="tools">','<nav style="margin:12px 0"><a href="reuse.html">Compare with JP 1.0</a> · <a href="progress.html">Decompilation progress</a></nav>\n<div class="tools">',1)
     html=html.replace('All functions match','All function bytes identical').replace('Partly matched (brighter is closer)','Includes relocation-masked candidates').replace('Not started','Changed / not paired')
     html=html.replace('"Complete", "--match"','"All bytes identical", "--match"').replace('"In progress", "--part"','"Mixed comparison results", "--part"')
     html=html.replace('code matched','byte-identical code').replace('functions match','functions byte-identical').replace('files complete','files byte-identical')
