@@ -1,8 +1,9 @@
 name: Build
 
+# Needs a build image that holds the original game files, which this public
+# repository cannot provide; start it by hand from a setup that has one.
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
