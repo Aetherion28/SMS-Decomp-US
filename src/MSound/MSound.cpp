@@ -771,7 +771,7 @@ void MSound::setCategoryAllVolume(u8 category, f32 volume, u32 param_3,
 {
 #if !defined(VERSION_GMSJ01)
 	u32 count = 0;
-	for (JAISound* sound = unk0->getLinkBuffer(category)->mUsedHead;
+	for (JAISound* sound         = unk0->getLinkBuffer(category)->mUsedHead;
 	     sound != nullptr; sound = sound->getNextSound()) {
 		if (count >= 100)
 			break;

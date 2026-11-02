@@ -444,9 +444,9 @@ void TRailBlock::control()
 		f32 rotateStep      = VECDistance(&mPosition, &point) / unk144;
 		TRailNode* railNode = rotateNode.getRailNode();
 		unk15C.set(railNode->mPitch, railNode->mYaw, railNode->mRoll);
-		unk150              = MsAngleDiff(unk15C.x, unk168.x) / rotateStep;
-		unk154              = MsAngleDiff(unk15C.y, unk168.y) / rotateStep;
-		unk158              = MsAngleDiff(unk15C.z, unk168.z) / rotateStep;
+		unk150 = MsAngleDiff(unk15C.x, unk168.x) / rotateStep;
+		unk154 = MsAngleDiff(unk15C.y, unk168.y) / rotateStep;
+		unk158 = MsAngleDiff(unk15C.z, unk168.z) / rotateStep;
 	} else {
 		mRotation.x += unk150;
 		mRotation.y += unk154;

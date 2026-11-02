@@ -873,9 +873,8 @@ void TYoshi::movement()
 		// || into two ifs changes nothing, so this looks like the same
 		// unexplained MWCC inline-budget behaviour noted in src/Camera.
 		const TBGCheckData* ground = nullptr;
-		f32 groundY = gpMap->checkGround(mTranslation.x,
-		                                 200.0f + mTranslation.y,
-		                                 mTranslation.z, &ground);
+		f32 groundY                = gpMap->checkGround(
+            mTranslation.x, 200.0f + mTranslation.y, mTranslation.z, &ground);
 		for (int i = 0; i < 5; i++) {
 			if (!ground->isMarioThrough() || ground->isWaterSurface())
 				break;
@@ -1129,10 +1128,11 @@ void TYoshi::entry()
 		bVar1 = false;
 
 #if !defined(VERSION_GMSJ01)
-	// US and later: during a camera demo or a conversation Yoshi is always drawn,
-	// so the hatching blink above is overridden. Same predicate, and the same
-	// spelling, as PAL's TWaterGun::isEmitting().
-	if (gpMarDirector->isInnerDemoModeNow() || gpMarDirector->isTalkingDemoModeNow()
+	// US and later: during a camera demo or a conversation Yoshi is always
+	// drawn, so the hatching blink above is overridden. Same predicate, and the
+	// same spelling, as PAL's TWaterGun::isEmitting().
+	if (gpMarDirector->isInnerDemoModeNow()
+	    || gpMarDirector->isTalkingDemoModeNow()
 	    || gpMarDirector->isTalkModeNow())
 		bVar1 = true;
 #endif
@@ -1191,8 +1191,7 @@ void TYoshi::entry()
 #if !defined(VERSION_GMSJ01)
 	// US and later: Yoshi's models and tongue are entered with the light draw
 	// buffer switched to MActor's own light, then it is put back.
-	gpLightManager->getLightSet(1)->changeLightDrawBuffer(
-	    mActor->getLightId());
+	gpLightManager->getLightSet(1)->changeLightDrawBuffer(mActor->getLightId());
 #endif
 	mMirrorModels[0]->entry();
 	mMirrorModels[1]->entry();

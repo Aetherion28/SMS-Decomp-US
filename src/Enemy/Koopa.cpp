@@ -62,7 +62,8 @@ public:
 		else
 			koopa->changeAnm(KOOPA_ANM_TURN_L, 0,
 			                 -step * koopa->getParam()->turnAnim.get());
-		koopa->mRotation.y = MsWrapMod(koopa->mRotation.y + step, -180.0f, 180.0f);
+		koopa->mRotation.y
+		    = MsWrapMod(koopa->mRotation.y + step, -180.0f, 180.0f);
 	}
 };
 
@@ -84,14 +85,15 @@ class TNerveKoopaTurnR : public TNerveKoopaTurn {
 public:
 	virtual BOOL execute(TSpineBase<TLiveActor>* spine) const
 	{
-		TKoopa* koopa = (TKoopa*)spine->getBody();
+		TKoopa* koopa          = (TKoopa*)spine->getBody();
 		TEnemyManager* manager = (TEnemyManager*)koopa->mManager;
-		f32 diff
-		    = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f, 180.0f);
+		f32 diff = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f,
+		                       180.0f);
 		bool turning;
-		if (diff > ((const TKoopaParams*)manager->getSaveParam())->turnSpeed.get()) {
-			turn(koopa,
-			     ((const TKoopaParams*)manager->getSaveParam())->turnSpeed.get());
+		if (diff
+		    > ((const TKoopaParams*)manager->getSaveParam())->turnSpeed.get()) {
+			turn(koopa, ((const TKoopaParams*)manager->getSaveParam())
+			                ->turnSpeed.get());
 			turning = true;
 		} else if (diff > 0.0f) {
 			turn(koopa, diff);
@@ -112,15 +114,15 @@ class TNerveKoopaTurnL : public TNerveKoopaTurn {
 public:
 	virtual BOOL execute(TSpineBase<TLiveActor>* spine) const
 	{
-		TKoopa* koopa = (TKoopa*)spine->getBody();
+		TKoopa* koopa          = (TKoopa*)spine->getBody();
 		TEnemyManager* manager = (TEnemyManager*)koopa->mManager;
-		f32 diff
-		    = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f, 180.0f);
+		f32 diff = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f,
+		                       180.0f);
 		bool turning;
-		if (diff
-		    < -((const TKoopaParams*)manager->getSaveParam())->turnSpeed.get()) {
-			turn(koopa,
-			     -((const TKoopaParams*)manager->getSaveParam())->turnSpeed.get());
+		if (diff < -((const TKoopaParams*)manager->getSaveParam())
+		                ->turnSpeed.get()) {
+			turn(koopa, -((const TKoopaParams*)manager->getSaveParam())
+			                 ->turnSpeed.get());
 			turning = true;
 		} else if (diff < 0.0f) {
 			turn(koopa, diff);
@@ -178,9 +180,8 @@ static inline int checkTurnDir(TKoopa* koopa, bool* grip)
 	                             koopa->getParam()->waitRange.get(),
 	                             &koopa->mTargetDir);
 	if (!*grip) {
-		JGeometry::TVec3<f32> marioVel2(SMS_GetMarioSpeedX(),
-		                                SMS_GetMarioSpeedY(),
-		                                SMS_GetMarioSpeedZ());
+		JGeometry::TVec3<f32> marioVel2(
+		    SMS_GetMarioSpeedX(), SMS_GetMarioSpeedY(), SMS_GetMarioSpeedZ());
 		JGeometry::TVec3<f32> estimated2;
 		estimated2.scale(koopa->getParam()->marioEstimationFire.get(),
 		                 marioVel2);
@@ -188,8 +189,8 @@ static inline int checkTurnDir(TKoopa* koopa, bool* grip)
 		    = bathtub->getNextJuncture(SMS_GetMarioPos(), estimated2);
 	}
 
-	f32 diff = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f,
-	                       180.0f);
+	f32 diff
+	    = MsWrapFmodf(koopa->mTargetDir - koopa->mRotation.y, -180.0f, 180.0f);
 	f32 range = koopa->getParam()->focusRange.get();
 	if (diff < -range)
 		return -1;
@@ -261,7 +262,8 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaTumble, TLiveActor)
 {
 	TKoopa* koopa = (TKoopa*)spine->getBody();
 
-	koopa->changeAnm(KOOPA_ANM_HIPDROP, 0, koopa->getParam()->tumbleSpeed.get());
+	koopa->changeAnm(KOOPA_ANM_HIPDROP, 0,
+	                 koopa->getParam()->tumbleSpeed.get());
 	koopa->getMActor()->getFrameCtrl(ANM_TYPE_BCK);
 
 	if (spine->getTime() == 190) {
@@ -271,9 +273,9 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaTumble, TLiveActor)
 #else
 		static TBathtub* bathtub = getBathtub();
 #endif
-		gpMarioParticleManager->emitAndBindToMtx(
-		    SCENE_KOOPA_JPA_MS_KP_HIPDROP, *bathtub->getRootJointMtx(), 0,
-		    this);
+		gpMarioParticleManager->emitAndBindToMtx(SCENE_KOOPA_JPA_MS_KP_HIPDROP,
+		                                         *bathtub->getRootJointMtx(), 0,
+		                                         this);
 		if (SMS_IsMarioTouchGround4cm())
 			SMSRumbleMgr->start(1, (f32*)nullptr);
 	}
@@ -328,8 +330,7 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaFlame, TLiveActor)
 					spine->pushNerve(&TNerveKoopaTurnR::theNerve());
 					break;
 				case 0:
-					koopa->mFlameFlipped
-					    = isMarioOnLeft(koopa);
+					koopa->mFlameFlipped = isMarioOnLeft(koopa);
 					koopa->changeAnm(KOOPA_ANM_FIRE_START, 0,
 					                 koopa->getParam()->fireSpeed.get());
 					spine->setNext(&TNerveKoopaFlame::theNerve());
@@ -380,7 +381,8 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaProvoke, TLiveActor)
 DEFINE_NERVE_EXECUTE(TNerveKoopaStagger, TLiveActor)
 {
 	TKoopa* koopa = (TKoopa*)spine->getBody();
-	koopa->changeAnm(KOOPA_ANM_STAGGER, 0, koopa->getParam()->staggerSpeed.get());
+	koopa->changeAnm(KOOPA_ANM_STAGGER, 0,
+	                 koopa->getParam()->staggerSpeed.get());
 	if (koopa->endsAnm())
 		return true;
 	return false;
@@ -427,9 +429,9 @@ DEFINE_NERVE_EXECUTE(TNerveKoopaGetDown, TLiveActor)
 #else
 		static TBathtub* bathtub = getBathtub();
 #endif
-		gpMarioParticleManager->emitAndBindToMtx(
-		    SCENE_KOOPA_JPA_MS_KP_HIPDROP, *bathtub->getRootJointMtx(), 0,
-		    this);
+		gpMarioParticleManager->emitAndBindToMtx(SCENE_KOOPA_JPA_MS_KP_HIPDROP,
+		                                         *bathtub->getRootJointMtx(), 0,
+		                                         this);
 		break;
 	}
 	}
@@ -578,8 +580,7 @@ BOOL TKoopaHead::receiveMessage(THitActor* sender, u32 message)
 			gpMarioParticleManager->emit(PARTICLE_MS_ENM_WATHIT,
 			                             &sender->mPosition, 0, nullptr);
 			SMSGetMSound()->startSoundSet(MSD_SE_EN_COMMON_W_HIT_OK,
-			                              &mKoopa->mPosition, 0, 0.0f, 0, 0,
-			                              4);
+			                              &mKoopa->mPosition, 0, 0.0f, 0, 0, 4);
 		}
 		break;
 	case HIT_MESSAGE_ATTACK:
@@ -796,7 +797,7 @@ void TKoopa::changeAnm(int bck, int btp, f32 speed)
 		getMActor()->setBtpFromIndex(btp);
 
 	J3DFrameCtrl* ctrl = getMActor()->getFrameCtrl(ANM_TYPE_BCK);
-	f32 rate = 0.5f * (speed * SMSGetAnmFrameRate());
+	f32 rate           = 0.5f * (speed * SMSGetAnmFrameRate());
 	ctrl->setRate(rate);
 }
 
@@ -1192,8 +1193,8 @@ void TKoopa::init(TLiveManager* manager)
 	mHeadJoint = names->getIndex("head");
 	mNeckJoint = names->getIndex("neck");
 
-	J3DJoint* neck = getModel()->getModelData()->getJointNodePointer(
-	    mHeadJoint);
+	J3DJoint* neck
+	    = getModel()->getModelData()->getJointNodePointer(mHeadJoint);
 	neck->setCallBack(KoopaNeckCallBack);
 	neck->setCallBackUserData(this);
 
@@ -1243,8 +1244,9 @@ void TKoopa::perform(u32 cue, JDrama::TGraphics* graphics)
 			getMActor()->calc();
 			JGeometry::TVec3<f32> scale(getParam()->flameScale.get());
 
-			JPABaseEmitter* emitter = gpMarioParticleManager->emitAndBindToMtxPtr(
-			    SCENE_KOOPA_JPA_MS_KP_FIRE_E, getHeadMtx(), 3, this);
+			JPABaseEmitter* emitter
+			    = gpMarioParticleManager->emitAndBindToMtxPtr(
+			        SCENE_KOOPA_JPA_MS_KP_FIRE_E, getHeadMtx(), 3, this);
 			if (emitter)
 				emitter->setGlobalScale(scale);
 

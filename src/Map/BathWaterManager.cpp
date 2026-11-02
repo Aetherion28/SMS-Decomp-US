@@ -854,7 +854,8 @@ public:
 		GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1,
 		                GX_TRUE, GX_TEVPREV);
 		GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
-		GXSetZMode(GX_TRUE, VERSION_SELECT(GX_LEQUAL, GMSJ01(GX_LESS), GMSE01(GX_LESS)),
+		GXSetZMode(GX_TRUE,
+		           VERSION_SELECT(GX_LEQUAL, GMSJ01(GX_LESS), GMSE01(GX_LESS)),
 		           GX_FALSE);
 		GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_NOOP);
 		GXSetColorUpdate(GX_FALSE);
@@ -898,8 +899,7 @@ public:
 		}
 
 		if (unk2C->showsCap.get() && !data.unk65) {
-			drawCap(data.getThing(),
-			        data.getSurfaceRadius());
+			drawCap(data.getThing(), data.getSurfaceRadius());
 		}
 
 		GXColor color = (GXColor) { 0x78, 0xFA, 0x14, unk2C->alpha.get() };
@@ -1172,7 +1172,7 @@ public:
 			GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 			GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_U8, 7);
 			JGeometry::TVec3<f32> capCenter = data.getThing();
-			f32 rad = data.getSurfaceRadius();
+			f32 rad                         = data.getSurfaceRadius();
 			drawCap(capCenter, rad);
 			capCenter.y += 0.5f * negR;
 			drawCap(capCenter, unk800B0 * unk80134->meshWidth.get() + rad);
@@ -1262,8 +1262,7 @@ public:
 		}
 
 		if (unk80134->showsCap.get() && !data.unk65) {
-			drawCap(data.getThing(),
-			        data.getSurfaceRadius());
+			drawCap(data.getThing(), data.getSurfaceRadius());
 		}
 
 		GXInitTexObj(&unk800D4, unk800A8, r23, r24, (GXTexFmt)1, GX_CLAMP,
@@ -1662,7 +1661,7 @@ void TBathWaterManager::loadAfter()
 	    JDrama::TNameRefGen::search("スクリーンテクスチャ"));
 #if !defined(VERSION_GMSJ01) && !defined(VERSION_GMSE01)
 	unk28[0] = unk28[1] = new TBathWaterMeshRenderer(unk18, tex->getTexture());
-	unk30    = unk28[1];
+	unk30               = unk28[1];
 #else
 	unk28[0] = new TBathWaterFlatRenderer(unk18);
 	unk28[1] = new TBathWaterMeshRenderer(unk18, tex->getTexture());

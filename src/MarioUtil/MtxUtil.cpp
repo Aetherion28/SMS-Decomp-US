@@ -526,11 +526,11 @@ void TRope::moveHead(const JGeometry::TVec3<f32>& param)
 	}
 	constraintHead(param);
 	for (int i = 0; i < mNumPoints; ++i) {
-		f32 scale               = unk8;
+		f32 scale = unk8;
 		JGeometry::TVec3<f32> v;
-		v = mPoints[i].unkC - mPoints[i].unk0;
-		mPoints[i].unk18        = v * scale;
-		mPoints[i].unk0         = mPoints[i].unkC;
+		v                = mPoints[i].unkC - mPoints[i].unk0;
+		mPoints[i].unk18 = v * scale;
+		mPoints[i].unk0  = mPoints[i].unkC;
 	}
 }
 

@@ -117,9 +117,9 @@ TChuuHanaManager::TChuuHanaManager(const char* param_1)
 	unk65 = 0;
 	unk66 = 0;
 #else
-	unk60         = 0;
-	unk61         = 0;
-	unk62         = 0;
+	unk60 = 0;
+	unk61 = 0;
+	unk62 = 0;
 #endif
 }
 
@@ -135,7 +135,7 @@ void TChuuHanaManager::perform(u32 cue, JDrama::TGraphics* param_2)
 	if (cue & 2) {
 		if (SMS_GetMarioGrPlane()->getActor() != nullptr
 		    && SMS_GetMarioGrPlane()->getActor()->getActorType()
-		        == ACTOR_TYPE_MIRROR_L
+		           == ACTOR_TYPE_MIRROR_L
 		    && unk60 < 900) {
 			unk60++;
 			if (unk60 == 900)
@@ -768,20 +768,19 @@ void TChuuHana::setSafeGoal()
 void TChuuHana::rolling()
 {
 	JGeometry::TVec3<f32> vel = getVelocity();
-	f32 dx = 0.2f * (vel.x - unk204.x);
-	f32 dz = 0.2f * (vel.z - unk204.z);
+	f32 dx                    = 0.2f * (vel.x - unk204.x);
+	f32 dz                    = 0.2f * (vel.z - unk204.z);
 	unk204.x += dx;
 	unk204.z += dz;
 	f32 speed = unk204.x * unk204.x + unk204.z * unk204.z;
 	speed     = JGeometry::TUtil<f32>::sqrt(speed);
-	unk1B8 = 2.0f * (speed / mBodyRadius);
+	unk1B8    = 2.0f * (speed / mBodyRadius);
 	unk210 += unk1B8;
 	if (unk210 > 360.0f)
 		unk210 -= 360.0f;
 	if (unk210 < 0.0f)
 		unk210 += 360.0f;
 }
-
 
 void TChuuHana::rollStart()
 {

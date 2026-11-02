@@ -47,7 +47,7 @@ void CPolarSubCamera::calcInHouseNo_(bool param_1)
 		// (base + i * 12 each copy); an index loop here unrolls eight times
 		// instead and a do-while doesn't unroll at all. The pointer loop
 		// gets the right body but its own unrolling.
-		f32 fVar1 = unk2C4;
+		f32 fVar1                  = unk2C4;
 		JGeometry::TVec3<f32>* src = local_120[0];
 		JGeometry::TVec3<f32>* dst = local_120[1];
 		for (int i = 0; i < 9; ++i, ++src, ++dst) {
@@ -59,10 +59,9 @@ void CPolarSubCamera::calcInHouseNo_(bool param_1)
 			for (int j = 0; j < 2; ++j) {
 				f32 fVar2 = 0.0f;
 				for (int k = 0; k < 2; ++k) {
-					JGeometry::TVec3<f32> local_12C(local_120[j][i].x,
-					                                local_120[j][i].y
-					                                    - fVar2 + -78.0f,
-					                                local_120[j][i].z);
+					JGeometry::TVec3<f32> local_12C(
+					    local_120[j][i].x, local_120[j][i].y - fVar2 + -78.0f,
+					    local_120[j][i].z);
 					const TBGCheckData* local_138;
 					gpMap->checkGroundIgnoreWaterSurface(local_12C, &local_138);
 					if (local_138 && local_138->isOob()) {
@@ -167,8 +166,9 @@ bool CPolarSubCamera::execWallCheck_(Vec* param_1)
 					         + posCam.y * wall->getNormal().y
 					         + posCam.z * wall->getNormal().z
 					         + wall->getPlaneDistance();
-					// TODO: the rest is register coloring only (the target keeps
-					// normal.z in a register through the push; here it is reloaded).
+					// TODO: the rest is register coloring only (the target
+					// keeps normal.z in a register through the push; here it is
+					// reloaded).
 					if ((sd >= 0.0f ? sd : -sd) < radius) {
 						moved      = true;
 						f32 pushSd = (radius - sd)

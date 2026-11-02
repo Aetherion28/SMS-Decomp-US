@@ -38,7 +38,8 @@ DEFINE_NERVE(TNerveBossHanachanTumble, TLiveActor)
 	hanachan->execSlip();
 	if (hanachan->getMarchSpeed() == 0.0f
 	    && hanachan->isTumbleCompletelyAllBody()) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0007), true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(
+		    BALLOON_MSG(0xE0007), true);
 		spine->pushAfterCurrent(&TNerveBossHanachanDown::theNerve());
 		return true;
 	}

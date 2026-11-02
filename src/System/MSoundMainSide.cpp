@@ -549,7 +549,7 @@ void MSMainProc::setMSoundEnterStage(u8 param_1, u8 param_2)
 		MSStageInfo::stageBgm = MSD_BGM_BOSS;
 		break;
 	case 57:
-		MSStageInfo::msStg    = MSBgm::getSceneNo(MSD_BGM_BOSS);
+		MSStageInfo::msStg = MSBgm::getSceneNo(MSD_BGM_BOSS);
 #if !defined(VERSION_GMSJ01)
 		bVar2 = true;
 #endif

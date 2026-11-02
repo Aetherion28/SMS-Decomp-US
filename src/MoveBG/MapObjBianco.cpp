@@ -46,9 +46,8 @@ void TBigWindmill::control()
 	for (int i = 0; i < ARRAY_COUNT(unk138); ++i) {
 		MtxPtr mtx = unk138[i]->getModel()->getAnmMtx(0);
 		mtx[0][3]  = mPosition.x + sRadius * cosf(0.017453294f * angle);
-		mtx[1][3]
-		    = mPosition.y + sRadius * sinf(0.017453294f * angle)
-		      - getObjCollisionHeightOffset();
+		mtx[1][3]  = mPosition.y + sRadius * sinf(0.017453294f * angle)
+		            - getObjCollisionHeightOffset();
 		mtx[2][3] = mPosition.z - sSubZ;
 		unk138[i]->mPosition.set(mtx[0][3], mtx[1][3], mtx[2][3]);
 		angle += 90.0f;
@@ -273,8 +272,8 @@ void TBiancoMiniWindmill::calc()
 #if !defined(VERSION_GMSJ01)
 	if (SMSGetMSound()->getDistPowFromCamera(unk15C->mPosition) < 36000000.0f)
 		SMSGetMSound()->startSoundActorWithInfo(
-		    MSD_SE_OBJ_BI_COINMILL, &unk15C->mPosition, nullptr,
-		    fabsf(unk154), 0, 0, &unk160, 0, 4);
+		    MSD_SE_OBJ_BI_COINMILL, &unk15C->mPosition, nullptr, fabsf(unk154),
+		    0, 0, &unk160, 0, 4);
 #else
 	SMSGetMSound()->startSoundActorWithInfo(MSD_SE_OBJ_BI_COINMILL, &mPosition,
 	                                        nullptr, fabsf(unk154), 0, 0,

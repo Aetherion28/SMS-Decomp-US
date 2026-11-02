@@ -280,7 +280,6 @@ void TBathtubGrip::calcRootMatrix()
 	rot.ref(1, 3) = 0.0f;
 	rot.ref(2, 3) = 0.0f;
 	m.concat(*(TPosition3f*)unk244->getRootJointMtx(), rot);
-
 }
 
 // Unused
@@ -799,8 +798,8 @@ bool TBathtub::allowsTumble() const
 		JGeometry::TVec3<f32> local;
 		mBathtubData.unk18.mult(delta, local);
 		JGeometry::TVec3<f32> flat = local;
-		flat.y       = 0.0f;
-		f32 distance = flat.length();
+		flat.y                     = 0.0f;
+		f32 distance               = flat.length();
 		if (distance < 4200.0f)
 			return false;
 
@@ -808,7 +807,8 @@ bool TBathtub::allowsTumble() const
 			if (mBathtubData.unk18.at(1, 1) > 0.99f) {
 				TBathtubKillerManager* manager
 				    = static_cast<TBathtubKillerManager*>(
-				        JDrama::TNameRefGen::search("バスタブキラーマネージャー"));
+				        JDrama::TNameRefGen::search(
+				            "バスタブキラーマネージャー"));
 				u32 status = SMS_GetMarioStatus();
 				if (status == MARIO_STATUS_HIP_DROP)
 					return false;

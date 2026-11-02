@@ -506,7 +506,7 @@ static int MarioWaistCtrl(J3DNode* param_1, int param_2)
 			MTXConcat(J3DSys::mCurrentMtx, transform, J3DSys::mCurrentMtx);
 			return 1;
 		} else {
-			mario->unkFC.x  = 0;
+			mario->unkFC.x = 0;
 			mario->unkFC.z = 0;
 		}
 	}

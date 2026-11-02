@@ -506,8 +506,7 @@ BOOL TMario::hanging()
 		    && record.mResultWallsNum > 0) {
 			f32 moveSp = mHangingParams.mMoveSp.get();
 			Vec newPos;
-			if (yawDiff > 0x400
- && yawDiff < 0x71c7) {
+			if (yawDiff > 0x400 && yawDiff < 0x71c7) {
 				newPos.x = mPosition.x
 				           - moveSp * (mIntendedMag * foundWall->mNormal.z);
 				newPos.y = mPosition.y;
@@ -532,10 +531,9 @@ BOOL TMario::hanging()
 			                                 newPos.z, &groundDummy);
 			if (mPosition.y - 100.0f < groundY
 			    && groundY < 50.0f + mPosition.y) {
-				record3.set(newPos.x - 30.0f * JMASSin(mFaceAngle.y),
-				            groundY - 20.0f,
-				            newPos.z - 30.0f * JMASCos(mFaceAngle.y), 30.0f, 4,
-				            0);
+				record3.set(
+				    newPos.x - 30.0f * JMASSin(mFaceAngle.y), groundY - 20.0f,
+				    newPos.z - 30.0f * JMASCos(mFaceAngle.y), 30.0f, 4, 0);
 				gpMap->isTouchedWallsAndMoveXZ(&record3);
 				TBGCheckData* foundWall2 = findNearestWall(record3);
 

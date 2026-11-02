@@ -853,8 +853,8 @@ void TBossMantaManager::TMantaMessageState::update()
 	switch (unk4) {
 	case 0:
 		if (((TBossManta*)unk0->getObj(0))->isSpawnState()) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000C),
-			                                                      true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE000C), true);
 			unk4++;
 		}
 		break;
@@ -866,16 +866,16 @@ void TBossMantaManager::TMantaMessageState::update()
 				aliveCount++;
 		}
 		if (aliveCount > 50) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000D),
-			                                                      true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE000D), true);
 			unk4++;
 		}
 		break;
 	}
 	case 2:
 		if (unk0->unk88.mState == 2) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE000E),
-			                                                      true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE000E), true);
 			unk4++;
 		}
 		break;
@@ -926,26 +926,27 @@ void TBossMantaAdditionalCollisionSet::update(u32 cue,
 
 		MtxPtr centerMtx
 		    = unkC->getModel()->getAnmMtx(TBossManta::sCenterJointIndex);
-		f32 centerX      = centerMtx[0][3];
-		f32 centerY      = centerMtx[1][3];
-		f32 centerZ      = centerMtx[2][3];
+		f32 centerX = centerMtx[0][3];
+		f32 centerY = centerMtx[1][3];
+		f32 centerZ = centerMtx[2][3];
 
-		MtxPtr bodyMtx = unkC->getModel()->getAnmMtx(TBossManta::sBodyJointIndex);
-		f32 bodyX      = bodyMtx[0][3];
-		f32 bodyY      = bodyMtx[1][3];
-		f32 bodyZ      = bodyMtx[2][3];
+		MtxPtr bodyMtx
+		    = unkC->getModel()->getAnmMtx(TBossManta::sBodyJointIndex);
+		f32 bodyX = bodyMtx[0][3];
+		f32 bodyY = bodyMtx[1][3];
+		f32 bodyZ = bodyMtx[2][3];
 
 		MtxPtr rwingMtx
 		    = unkC->getModel()->getAnmMtx(TBossManta::sRwingJointIndex);
-		f32 rwingX      = rwingMtx[0][3];
-		f32 rwingY      = rwingMtx[1][3];
-		f32 rwingZ      = rwingMtx[2][3];
+		f32 rwingX = rwingMtx[0][3];
+		f32 rwingY = rwingMtx[1][3];
+		f32 rwingZ = rwingMtx[2][3];
 
 		MtxPtr lwingMtx
 		    = unkC->getModel()->getAnmMtx(TBossManta::sLwingJointIndex);
-		f32 lwingX      = lwingMtx[0][3];
-		f32 lwingY      = lwingMtx[1][3];
-		f32 lwingZ      = lwingMtx[2][3];
+		f32 lwingX = lwingMtx[0][3];
+		f32 lwingY = lwingMtx[1][3];
+		f32 lwingZ = lwingMtx[2][3];
 
 		unk0[0]->mPosition.set(-0.15f * (bodyX - centerX) + centerX,
 		                       -0.15f * (bodyY - centerY) + centerY,

@@ -1529,8 +1529,8 @@ void TBossGesso::perform(u32 cue, JDrama::TGraphics* graphics)
 	if (cue & CUE_MOVE) {
 		if (mBeak->getHolder() != nullptr && unk190.color.a == 0) {
 			if (!mTentacles[1]->isThing() || !mTentacles[3]->isThing())
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0003),
-				                                                      true);
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(
+				    BALLOON_MSG(0xE0003), true);
 		}
 	}
 }

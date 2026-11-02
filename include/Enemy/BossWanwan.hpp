@@ -209,7 +209,8 @@ public:
 
 inline J3DAnmTransformKey* TBossWanwanMtxCalc::getBckAnmPtr(int index) const
 {
-	return mOwner->mMActorKeeper->getMActorAnmData()->mBckAnms->getAnmPtr(index);
+	return mOwner->mMActorKeeper->getMActorAnmData()->mBckAnms->getAnmPtr(
+	    index);
 }
 
 class TBossWanwanManager : public TEnemyManager {

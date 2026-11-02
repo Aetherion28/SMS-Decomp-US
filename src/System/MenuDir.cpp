@@ -217,9 +217,11 @@ int TMenuDirector::direct()
 						code = 'st_a';
 					J2DTextBox* box = (J2DTextBox*)unk3C->search(code);
 					if (i < 6)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("ビーチ %d", "Beach %d"), i);
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("ビーチ %d", "Beach %d"), i);
 					else
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("ホテル %d", "Hotel %d"), i - 6);
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("ホテル %d", "Hotel %d"), i - 6);
 				}
 
 				snprintf(((J2DTextBox*)unk3C->search('st_f'))->getStringPtr(),
@@ -241,9 +243,11 @@ int TMenuDirector::direct()
 						code = 'st_a';
 					J2DTextBox* box = (J2DTextBox*)unk3C->search(code);
 					if (i < 4)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("ビーチサイド %d", "Beach %d"), i);
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("ビーチサイド %d", "Beach %d"), i);
 					else
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("ピンナパーコ %d", "Park %d"),
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("ピンナパーコ %d", "Park %d"),
 						         i - 4);
 				}
 
@@ -268,11 +272,14 @@ int TMenuDirector::direct()
 						code = 'st_a';
 					J2DTextBox* box = (J2DTextBox*)unk3C->search(code);
 					if (i < 8)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("マーレ %d", "Noki %d"), i);
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("マーレ %d", "Noki %d"), i);
 					if (i == 8)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("カイテイ", "sea bottom"));
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("カイテイ", "sea bottom"));
 					if (i == 9)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("ボス", "Boss"));
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("ボス", "Boss"));
 				}
 			} else if (unk40->mSelectedIndex == 0x11
 			           || unk40->mSelectedIndex == 0x12) {
@@ -313,8 +320,9 @@ int TMenuDirector::direct()
 					J2DTextBox* box = (J2DTextBox*)unk3C->search(code);
 
 					if (i < 10)
-						snprintf(box->getStringPtr(), 22, MENU_TEXT("%02d シーン %d", "%02d scene %d"), i,
-						         i);
+						snprintf(box->getStringPtr(), 22,
+						         MENU_TEXT("%02d シーン %d", "%02d scene %d"),
+						         i, i);
 					else
 						snprintf(box->getStringPtr(), 22, "%02d EX %d", i,
 						         i - 10);

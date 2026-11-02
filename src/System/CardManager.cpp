@@ -32,8 +32,8 @@ const char* titles[] = {
 };
 
 const char* comments[] = {
-	"%d/%d Save Data",      "Gespeichert am: %d.%d.", "Dern. sauvegarde le %d/%d",
-	"Datos: %d/%d.",        "Ultimo salvataggio %d/%d",
+	"%d/%d Save Data", "Gespeichert am: %d.%d.",   "Dern. sauvegarde le %d/%d",
+	"Datos: %d/%d.",   "Ultimo salvataggio %d/%d",
 };
 #endif
 

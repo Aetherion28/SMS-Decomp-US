@@ -586,8 +586,8 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 	if (isFixOrDefiniteCameraSpecifyMode(param_1)) {
 #if !defined(VERSION_GMSJ01)
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
-			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
-			                                   0);
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0,
+			                                   nullptr, 0);
 #endif
 		return;
 	}
@@ -608,8 +608,8 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 			execFrontRotate_();
 #if !defined(VERSION_GMSJ01)
 		if (unk120->checkFrameMeaning(TMarioGamePad::MEANING_Y))
-			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0, nullptr,
-			                                   0);
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_NOT_COLLECT, 0,
+			                                   nullptr, 0);
 #endif
 	} else {
 		if (isLButtonCameraSpecifyMode(mMode)) {
@@ -663,7 +663,7 @@ void CPolarSubCamera::execCameraModeChangeProc_(int param_1)
 		newMode = param_1;
 	} else
 #endif
-	if (gpMarioOriginal->checkFlag(MARIO_FLAG_HELMET_FLW_CAMERA)) {
+	    if (gpMarioOriginal->checkFlag(MARIO_FLAG_HELMET_FLW_CAMERA)) {
 		newMode = CAMERA_MODE_DIVING;
 	} else if (SMS_CheckMarioFlag(2)) {
 		if (currentMap == 9)

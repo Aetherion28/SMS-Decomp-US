@@ -34,7 +34,8 @@
 //
 //   O arm tick=<n> frame=<n> tpf=<n> recs=<n> first=<n> log=<a>-<b> seed=<x>
 //   O state tick=<n> frame=<n> state=<n>     every director state change
-//   I frame=<n> tick=<n> rec=<n|-> b=<hex> x=<n> y=<n> cx=<n> cy=<n> l=<n> r=<n>
+//   I frame=<n> tick=<n> rec=<n|-> b=<hex> x=<n> y=<n> cx=<n> cy=<n> l=<n>
+//   r=<n>
 //                                            every pad read after arming
 //   T <tick> <frame> <state> <mode> <cue>    one per sim tick in the log range
 //     st=<status> p=<x> <y> <z> v=<x> <y> <z> fv=<f> yaw=<hex> w=<n>
@@ -59,7 +60,6 @@
 void SMSOracle_onPadRead(PADStatus* status);
 void SMSOracle_onStateChange(u8 state);
 void SMSOracle_onTick(u32 tickCount, u32 moveTickCount, u32 cue);
-
 
 namespace {
 
@@ -88,12 +88,12 @@ struct Header {
 	u32 reserved;
 };
 
-bool sArmed      = false;
-bool sLoaded     = false;
-bool sTriedLoad  = false;
-u32 sArmTick     = 0; // mTickCount at arming
-u32 sFrame       = 0; // pad reads since arming
-u32 sLastTick    = 0; // ticks since arming, as of the last sim tick
+bool sArmed        = false;
+bool sLoaded       = false;
+bool sTriedLoad    = false;
+u32 sArmTick       = 0; // mTickCount at arming
+u32 sFrame         = 0; // pad reads since arming
+u32 sLastTick      = 0; // ticks since arming, as of the last sim tick
 u32 sTicksPerFrame = 4;
 Header sHeader;
 Record* sRecords = 0;
@@ -142,10 +142,10 @@ void arm()
 {
 	if (!sTriedLoad)
 		sLoaded = load();
-	sArmed    = true;
-	sArmTick  = gpMarDirector->mTickCount;
-	sFrame    = 0;
-	sLastTick = 0;
+	sArmed         = true;
+	sArmTick       = gpMarDirector->mTickCount;
+	sFrame         = 0;
+	sLastTick      = 0;
 	sTicksPerFrame = (u32)(600 / (int)SMSGetVSyncTimesPerSec()) / 5;
 	if (sLoaded && (sHeader.flags & 1))
 		srand(sHeader.rngSeed);
@@ -212,9 +212,10 @@ void SMSOracle_onPadRead(PADStatus* status)
 	p->triggerRight = r.triggerR;
 	p->analogA      = r.analogA;
 	p->analogB      = r.analogB;
-	OSReport("I frame=%u tick=%u rec=%d b=%04x x=%d y=%d cx=%d cy=%d l=%u r=%u\n",
-	         sFrame, sLastTick, n, r.buttons, r.stickX, r.stickY, r.substickX,
-	         r.substickY, r.triggerL, r.triggerR);
+	OSReport(
+	    "I frame=%u tick=%u rec=%d b=%04x x=%d y=%d cx=%d cy=%d l=%u r=%u\n",
+	    sFrame, sLastTick, n, r.buttons, r.stickX, r.stickY, r.substickX,
+	    r.substickY, r.triggerL, r.triggerR);
 }
 
 void SMSOracle_onTick(u32 tickCount, u32, u32 cue)
@@ -223,7 +224,8 @@ void SMSOracle_onTick(u32 tickCount, u32, u32 cue)
 		return;
 	sLastTick = tickCount - sArmTick;
 	if (sLoaded
-	    && (sLastTick < sHeader.firstLogTick || sLastTick > sHeader.lastLogTick))
+	    && (sLastTick < sHeader.firstLogTick
+	        || sLastTick > sHeader.lastLogTick))
 		return;
 
 	TMario* mario = gpMarioOriginal;

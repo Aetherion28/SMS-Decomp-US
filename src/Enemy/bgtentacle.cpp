@@ -70,7 +70,7 @@ void TBGTentacleMtxCalc::calc(u16 param_1)
 
 	MtxPtr asdf = mOwner->getUnk2C()->getModel()->getAnmMtx(param_1);
 
-	f32 t = param_1 / f32(iVar8);
+	f32 t                           = param_1 / f32(iVar8);
 	JGeometry::TVec3<f32> local_278 = mOwner->mSpline->getPoint(t);
 
 	asdf[0][3] = local_278.x;

@@ -762,8 +762,8 @@ void TBiancoGateKeeper::perform(u32 cue, JDrama::TGraphics* graphics)
 		if (mHintTimer > 160) {
 			mHintTimer = 0;
 			mHintShown = TRUE;
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002E),
-			                                                      true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE002E), true);
 		}
 	}
 
@@ -830,8 +830,8 @@ DEFINE_NERVE(TNerveBGKAppear, TLiveActor)
 		if (self->unk28A < 0xFF)
 			self->unk28A++;
 		if (self->unk28A == 2)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0047),
-			                                                      true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE0047), true);
 	}
 
 	if (spine->getTime() == 8) {
@@ -950,8 +950,8 @@ DEFINE_NERVE(TNerveBGKWait2, TLiveActor)
 			self->unk288++;
 			if (self->unk288 == 2 && self->unk28A == 1
 			    && SMSGetMarDirector()->getCurrentStage() == 0)
-				SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0000),
-				                                                      true);
+				SMSGetMarDirector()->getConsole()->startAppearBalloon(
+				    BALLOON_MSG(0xE0000), true);
 			if (self->unk288 > self->getSaveParams()->mSLLoop2Dive.get()) {
 				self->changeBck(0xC);
 				self->unk288 = 0;

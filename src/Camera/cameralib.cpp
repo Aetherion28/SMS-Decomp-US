@@ -395,8 +395,8 @@ void CLBCalcNearNinePos(JGeometry::TVec3<f32>* out_grid, S16Vec* out_euler,
 }
 
 // UNUSED (map size 0x104); no linked caller shows its body, so it stays empty
-void CLBCalcNearFourPos(JGeometry::TVec3<f32>*, JGeometry::TVec3<f32>*,
-                        S16Vec*, const JGeometry::TVec3<f32>&,
+void CLBCalcNearFourPos(JGeometry::TVec3<f32>*, JGeometry::TVec3<f32>*, S16Vec*,
+                        const JGeometry::TVec3<f32>&,
                         const JGeometry::TVec3<f32>&, s16, f32,
                         const JGeometry::TVec2<f32>&)
 {

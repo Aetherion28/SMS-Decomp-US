@@ -940,8 +940,8 @@ DEFINE_NERVE(TNervePopoExplosion, TLiveActor)
 		self->onLiveFlag(LIVE_FLAG_UNK8);
 		self->explosionEffect();
 #if !defined(VERSION_GMSJ01)
-		SMSGetMSound()->startSoundActor(MSD_SE_EN_POPO_BREAK, &self->mPosition, 0, nullptr,
-		                                0, 4);
+		SMSGetMSound()->startSoundActor(MSD_SE_EN_POPO_BREAK, &self->mPosition,
+		                                0, nullptr, 0, 4);
 #endif
 	}
 	if (spine->getTime() > self->unk194->mSLExplosionEmitTime.get()) {

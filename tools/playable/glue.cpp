@@ -9,5 +9,5 @@
 
 #include <Enemy/EnemyManager.hpp>
 
-TSpineEnemyParams* (TEnemyManager::*const playable_glue_getSaveParam)() const
+TSpineEnemyParams* (TEnemyManager::* const playable_glue_getSaveParam)() const
     = &TEnemyManager::getSaveParam;

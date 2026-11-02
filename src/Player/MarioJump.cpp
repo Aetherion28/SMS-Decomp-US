@@ -881,8 +881,7 @@ BOOL TMario::boardJumping()
 			loserExec();
 #if !defined(VERSION_GMSJ01)
 			// US and later: crashing the shell plays the damage sound.
-			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr,
-			                                   0);
+			SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr, 0);
 #endif
 		} else {
 			s16 diff
@@ -893,8 +892,8 @@ BOOL TMario::boardJumping()
 			    && mForwardVel > mSurfingParamsWaterRed.mClashSpeed.get()) {
 				loserExec();
 #if !defined(VERSION_GMSJ01)
-				SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0,
-				                                   nullptr, 0);
+				SMSGetMSound()->startSoundSystemSE(MSD_SE_SY_DAMAGE, 0, nullptr,
+				                                   0);
 #endif
 			} else {
 				setPlayerVelocity(0.0f);
@@ -1109,7 +1108,7 @@ BOOL TMario::hipAttacking()
 
 			if (160.0f + (mPosition.y + lift) < mFloorPosition.x) {
 				mPosition.y += lift / 4.0f;
-				unk104      = mPosition.y;
+				unk104 = mPosition.y;
 			}
 		}
 		setPlayerVelocity(0.0f);
@@ -1259,8 +1258,8 @@ BOOL TMario::diving()
 			if (checkFlag(MARIO_FLAG_HAS_FLUDD)) {
 				mWaterGun->setHoverAngleTargetL(-nozzleAngle);
 				mWaterGun->setHoverAngleTargetR(nozzleAngle);
-				s16 diff           = mIntendedYaw - mFaceAngle.y;
-				s16 rotSp          = mDivingParams.mRotSp.get();
+				s16 diff     = mIntendedYaw - mFaceAngle.y;
+				s16 rotSp    = mDivingParams.mRotSp.get();
 				mFaceAngle.y = mIntendedYaw - IConverge(diff, 0, rotSp, rotSp);
 			}
 		}

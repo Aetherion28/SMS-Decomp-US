@@ -1621,7 +1621,7 @@ static inline f32 calcPlaneDistance(const TBGCheckData* plane,
                                     JGeometry::TVec3<f32> pos)
 {
 	return plane->mNormal.x * pos.x + plane->mNormal.y * pos.y
-	     + plane->mNormal.z * pos.z + plane->mPlaneDistance;
+	       + plane->mNormal.z * pos.z + plane->mPlaneDistance;
 }
 
 void TMario::checkCurrentPlane()
@@ -2214,7 +2214,8 @@ void TMario::getOffYoshi(bool fly)
 	setAnimation(ANIM_JUMP, 1.0f);
 	unk78 &= ~0x100;
 #if !(!defined(VERSION_GMSJ01))
-	// US and later drop this: getting off Yoshi no longer lifts Mario 100 units.
+	// US and later drop this: getting off Yoshi no longer lifts Mario 100
+	// units.
 	mPosition.y += 100.0f;
 #endif
 	mForwardVel = -8.0f;

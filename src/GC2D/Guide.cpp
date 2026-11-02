@@ -151,7 +151,8 @@ void TGuide::load(JSUMemoryInputStream& stream)
 		u32 key = (i / 10 << 24) + ('00' << 16) + (i % 10 << 16) + '_0';
 
 		J2DTextBox* box = (J2DTextBox*)unkBC->search(key + 3);
-		SMSMakeTextBuffer(box, VERSION_SELECT(0x40, GMSJ01(0x1e), GMSE01(0x1e)));
+		SMSMakeTextBuffer(box,
+		                  VERSION_SELECT(0x40, GMSJ01(0x1e), GMSE01(0x1e)));
 		box->setFont(gpSystemFont);
 		strncpy(box->getStringPtr(), SMSGetMessageData(message, i + 13),
 		        VERSION_SELECT(0x40, GMSJ01(0x1e), GMSE01(0x1e)));

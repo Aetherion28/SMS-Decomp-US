@@ -76,7 +76,8 @@ TARAMBlock gArBkGuide;
 extern "C" void ReInitializeGX();
 u8 SMS_getShineIDofExStage(u8);
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX) || defined(VERSION_GMSJ01_01)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)                      \
+    || defined(VERSION_GMSJ01_01)
 f32 SMSGetRealVSyncTimesPerSec()
 {
 	f32 result = 60.0f;
@@ -238,7 +239,8 @@ void TApplication::initialize()
 	GXInit(JKRAllocFromHeap(nullptr, 0x80000, 0x20), 0x80000);
 	SMS_ResetTexCacheRegion();
 	GXPokeAlphaRead(GX_READ_NONE);
-	void* pvVar3 = new (0x20) u8[VERSION_SELECT(0xa5000, GMSP01(0xa5a00), GMSP01_NX(0xa5a00))];
+	void* pvVar3 = new (0x20)
+	    u8[VERSION_SELECT(0xa5000, GMSP01(0xa5a00), GMSP01_NX(0xa5a00))];
 	GXRenderModeObj rmode;
 	SMSSetupTitleRenderMode(&rmode);
 	mDisplay = new JDrama::TDisplay(2, pvVar3, pvVar3, rmode);
@@ -951,7 +953,9 @@ int TApplication::drawDVDErr()
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][3]);
 #elif defined(VERSION_GMSE01)
-		snprintf(message, 512, "The Disc Cover is open.\nTo continue playing,\nplease close the\nDisc "
+		snprintf(message, 512,
+		         "The Disc Cover is open.\nTo continue playing,\nplease close "
+		         "the\nDisc "
 		         "Cover.");
 #else
 		snprintf(message, 512,
@@ -966,7 +970,8 @@ int TApplication::drawDVDErr()
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][4]);
 #elif defined(VERSION_GMSE01)
-		snprintf(message, 512, "Please insert a Super Mario Sunshine\nGame Disc.");
+		snprintf(message, 512,
+		         "Please insert a Super Mario Sunshine\nGame Disc.");
 #else
 		snprintf(message, 512,
 		         "「スーパーマリオサンシャイン」の\n"
@@ -979,8 +984,10 @@ int TApplication::drawDVDErr()
 #if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)
 		snprintf(message, 512, sDvdErrMsgs[language][5]);
 #elif defined(VERSION_GMSE01)
-		snprintf(message, 512, "This Disc is not\nSuper Mario Sunshine.\nPlease insert a Super\n"
-		         "Mario Sunshine Game Disc.");
+		snprintf(
+		    message, 512,
+		    "This Disc is not\nSuper Mario Sunshine.\nPlease insert a Super\n"
+		    "Mario Sunshine Game Disc.");
 #else
 		snprintf(message, 512,
 		         "このディスクは、「スーパーマリオサンシャイン」の\n"

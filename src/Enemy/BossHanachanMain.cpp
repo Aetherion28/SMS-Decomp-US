@@ -456,8 +456,8 @@ void TBossHanachan::perform(u32 cue, JDrama::TGraphics* graphics)
 					--unk1B8;
 					if (unk1B8 == 0) {
 						unk1B8 = 7200;
-						gpMarDirector->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0006),
-						                                                true);
+						gpMarDirector->getConsole()->startAppearBalloon(
+						    BALLOON_MSG(0xE0006), true);
 					}
 				}
 			}

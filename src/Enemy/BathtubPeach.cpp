@@ -64,26 +64,26 @@ public:
 
 		peach->changeAnm(1, 1, 2.0f);
 
-		// Aim for the point on the circle around the tub that is `angle` degrees
-		// away from Mario, on whichever side Peach already is.
-		MtxPtr tub = *bathtub->getRootJointMtx();
+		// Aim for the point on the circle around the tub that is `angle`
+		// degrees away from Mario, on whichever side Peach already is.
+		MtxPtr tub  = *bathtub->getRootJointMtx();
 		f32 centerX = tub[0][3];
 		f32 centerZ = tub[2][3];
 
 		JGeometry::TVec3<f32> marioPos = SMS_GetMarioPos();
-		f32 marioDir = (360.0f / 65536.0f)
+		f32 marioDir                   = (360.0f / 65536.0f)
 		               * matan(marioPos.z - centerZ, marioPos.x - centerX);
-		f32 peachDir
-		    = (360.0f / 65536.0f)
-		      * matan(peach->mPosition.z - centerZ, peach->mPosition.x - centerX);
+		f32 peachDir = (360.0f / 65536.0f)
+		               * matan(peach->mPosition.z - centerZ,
+		                       peach->mPosition.x - centerX);
 
 		f32 dir;
 		if (MsWrapFmodf(peachDir - marioDir, -180.0f, 180.0f) < 0.0f)
-			dir = MsWrapFmodf(marioDir - peach->getParam()->angle.get(), -180.0f,
-			                  180.0f);
+			dir = MsWrapFmodf(marioDir - peach->getParam()->angle.get(),
+			                  -180.0f, 180.0f);
 		else
-			dir = MsWrapFmodf(marioDir + peach->getParam()->angle.get(), -180.0f,
-			                  180.0f);
+			dir = MsWrapFmodf(marioDir + peach->getParam()->angle.get(),
+			                  -180.0f, 180.0f);
 
 		f32 radius = peach->getParam()->radius.get();
 		peach->goTo(JGeometry::TVec3<f32>(centerX + radius * MsSin(dir), 0.0f,
@@ -99,28 +99,17 @@ public:
 };
 
 static const char* bathtubpeach_bastable[] = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	"/scene/bathtubpeach/bas/peach_wait.bas",
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, nullptr,
+	nullptr, "/scene/bathtubpeach/bas/peach_wait.bas",
 	nullptr,
 };
 

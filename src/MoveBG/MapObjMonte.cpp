@@ -433,7 +433,7 @@ void THangingBridge::perform(u32 cue, JDrama::TGraphics* param_2)
 			drawRopeBetweenBoards(-60.0f, mPointNumBetweenBoards);
 		else
 #endif
-		drawRopeBetweenBoards(0.0f, mPointNumBetweenBoards);
+			drawRopeBetweenBoards(0.0f, mPointNumBetweenBoards);
 		drawRopeBetweenBoards(mRopeHeight, 1);
 	}
 }

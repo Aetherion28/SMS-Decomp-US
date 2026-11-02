@@ -583,9 +583,9 @@ MtxPtr TCannon::getTakingMtx()
 {
 #if !defined(VERSION_GMSJ01)
 	if (checkLiveFlag(LIVE_FLAG_CLIPPED_OUT)) {
-		unk1E4.translation(JGeometry::TVec3<f32>(
-		    unk1A8->mPosition.x, 800.0f + unk1A8->mPosition.y,
-		    unk1A8->mPosition.z));
+		unk1E4.translation(JGeometry::TVec3<f32>(unk1A8->mPosition.x,
+		                                         800.0f + unk1A8->mPosition.y,
+		                                         unk1A8->mPosition.z));
 		return unk1E4;
 	}
 #else

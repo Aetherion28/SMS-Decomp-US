@@ -582,9 +582,8 @@ void TNozzleTrigger::movement(const TMarioControllerWork& controllerWork)
 	if (canSpray == true && mRumbleOnCharge != true
 	    && mSprayState == TNozzleTrigger::SPRAY_STATE_INACTIVE
 	    && controllerWork.mAnalogR > 0.0f && oldPressure < mInsidePressure) {
-		SMSGetMSound()->startSoundActor(MSD_SE_SY_NEWP_AIR_TAME,
-		                                mFludd->getEmitPos(0), 0, nullptr, 0,
-		                                4);
+		SMSGetMSound()->startSoundActor(
+		    MSD_SE_SY_NEWP_AIR_TAME, mFludd->getEmitPos(0), 0, nullptr, 0, 4);
 	}
 #endif
 
@@ -1682,7 +1681,8 @@ bool TWaterGun::isEmitting()
 	if (mCurrentWater == 0)
 		return false;
 
-	if (gpMarDirector->isInnerDemoModeNow() || gpMarDirector->isTalkingDemoModeNow()
+	if (gpMarDirector->isInnerDemoModeNow()
+	    || gpMarDirector->isTalkingDemoModeNow()
 	    || gpMarDirector->isTalkModeNow())
 		return false;
 

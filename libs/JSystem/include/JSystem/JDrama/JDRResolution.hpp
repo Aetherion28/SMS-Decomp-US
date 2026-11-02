@@ -5,7 +5,8 @@
 
 namespace JDrama {
 
-#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX) || defined(VERSION_GMSJ01_01)
+#if defined(VERSION_GMSP01) || defined(VERSION_GMSP01_NX)                      \
+    || defined(VERSION_GMSJ01_01)
 u16 GetVIWidthMax(u32 tvFormat);
 u16 GetVIHeightMax(u32 tvFormat);
 #else

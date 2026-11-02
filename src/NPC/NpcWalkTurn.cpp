@@ -28,7 +28,8 @@ void TBaseNPC::execWalk(bool param_1)
 		if (checkActionFlag(NPC_ACTION_RUN))
 			fVar1 = 6.0f;
 
-		SMS_GoRotate(mPosition, getCurrentTarget().getPoint(), fVar1, &mRotation.y);
+		SMS_GoRotate(mPosition, getCurrentTarget().getPoint(), fVar1,
+		             &mRotation.y);
 
 		// TODO: vector math is borked
 		JGeometry::TVec3<f32> local_54 = getCurrentTarget().getPoint();

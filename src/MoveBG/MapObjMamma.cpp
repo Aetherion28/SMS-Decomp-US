@@ -812,11 +812,9 @@ void TShiningStone::endDemo()
 	if (unk74 < 3) {
 		MSBgm::setTrackVolume(0, 1.0f, 10, 0);
 		if (unk74 == 1)
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(
-			    0x32, true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x32, true);
 		else
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(
-			    0x33, true);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(0x33, true);
 	}
 #else
 	if (unk74 < 3)
@@ -1079,16 +1077,16 @@ void TSandBird::control()
 		const TBGCheckData* plane = SMS_GetMarioGroundPlane();
 		if (plane->getActor() != nullptr
 		    && plane->getActor()->isActorType(ACTOR_TYPE_SAND_BIRD_BLOCK)) {
-			SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE002F),
-			                                                      false);
+			SMSGetMarDirector()->getConsole()->startAppearBalloon(
+			    BALLOON_MSG(0xE002F), false);
 			mStateTimer = 2400;
 			unk150      = 1;
 		}
 	}
 
 	if (!unk151 && unk150 && !isStateTimerEngaged()) {
-		SMSGetMarDirector()->getConsole()->startDisappearBalloon(BALLOON_MSG(0xE002F),
-		                                                         false);
+		SMSGetMarDirector()->getConsole()->startDisappearBalloon(
+		    BALLOON_MSG(0xE002F), false);
 		unk151 = 1;
 	}
 }

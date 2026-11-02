@@ -72,8 +72,8 @@ TBee::TBee(MActor* actor, TBeeHive* hive)
 
 void TBee::init()
 {
-	initHitActor(ACTOR_TYPE_BEE, 1, HIT_CATEGORY_PLAYER, 20.0f, 20.0f,
-	             50.0f, 50.0f);
+	initHitActor(ACTOR_TYPE_BEE, 1, HIT_CATEGORY_PLAYER, 20.0f, 20.0f, 50.0f,
+	             50.0f);
 
 	TIdxGroupObj* enemyGroup
 	    = static_cast<TIdxGroupObj*>(JDrama::TNameRefGen::search("敵グループ"));

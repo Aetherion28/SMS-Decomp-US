@@ -1466,7 +1466,8 @@ s8 TCardSave::waitForSelect3(TEProgress param_1, TEProgress param_2,
 		    mShineGetSaveWindowInitialBounds.getHeight(), 0, 0);
 
 		mShineGetSaveWindowTextShadow->hide();
-		setMessage(mShineGetSaveWindowText, 0x200, VERSION_SELECT(0x29, GMSJ01(0x21)));
+		setMessage(mShineGetSaveWindowText, 0x200,
+		           VERSION_SELECT(0x29, GMSJ01(0x21)));
 		setMessage(mShineGetSaveWindowTextShadow, 0x200,
 		           VERSION_SELECT(0x29, GMSJ01(0x21)));
 

@@ -949,7 +949,8 @@ void TEggYoshi::touchFruit(THitActor* fruit)
 		mState = 0xB;
 		unk150 = fruit;
 		SMSGetMSound()->startSoundSystemSE(
-		    VERSION_SELECT(MSD_SE_SY_COLLECT_YOSHI, GMSJ01(MSD_SE_SY_COLLECT_PRETTY)),
+		    VERSION_SELECT(MSD_SE_SY_COLLECT_YOSHI,
+		                   GMSJ01(MSD_SE_SY_COLLECT_PRETTY)),
 		    0, nullptr, 0);
 	} else if (animIsFinished()) {
 		startAnim(2);
@@ -1266,11 +1267,13 @@ void TNozzleBox::touchPlayer(THitActor*)
 	    && !TFlagManager::getInstance()->getNozzleRight(
 	        SMSGetMarDirector()->getCurrentStage(), 1)
 	    && !mBalloonShown) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0057), true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(
+		    BALLOON_MSG(0xE0057), true);
 		mBalloonShown = true;
 	}
 	if (!mIsValid && !mBalloonShown) {
-		SMSGetMarDirector()->getConsole()->startAppearBalloon(BALLOON_MSG(0xE0056), true);
+		SMSGetMarDirector()->getConsole()->startAppearBalloon(
+		    BALLOON_MSG(0xE0056), true);
 		mBalloonShown = true;
 	}
 }

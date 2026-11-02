@@ -120,7 +120,6 @@ bool TCubeManagerArea::isInAreaCube(const Vec& pos) const
 	}
 
 	return result;
-
 }
 
 inline bool TCubeManagerFast::isInOtherCube(const Vec& pos) const
